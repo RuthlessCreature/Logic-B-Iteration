@@ -27,6 +27,18 @@ market_gate:
     - RETREAT
     - ICE
 
+strategy:
+  proxy_version: "B0-P.1"
+  min_confirmation: 0.58
+  min_tradability: 0.45
+  neighborhood:
+    confirmation_step: 0.03
+    tradability_step: 0.05
+    min_positive_expectancy_rate: 0.75
+    min_positive_total_return_rate: 0.75
+    max_neighbor_drawdown_abs: 0.30
+    min_closed_trades_each: 20
+
 decision_checkpoints:
   - "09:25"
   - "09:35"
