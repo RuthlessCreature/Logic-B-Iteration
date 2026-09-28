@@ -62,6 +62,11 @@ class FakeProvider(MarketDataProvider):
             "trade_date","ts_code","type"
         ])
 
+    def suspensions(self,trade_date: date) -> pd.DataFrame:
+        return pd.DataFrame(columns=[
+            "trade_date","ts_code","suspend_type"
+        ])
+
     def stock_minute(
         self,
         ts_code: str,
