@@ -48,6 +48,7 @@ class B0ReplayRunner:
         fee_rate: float = 0.0003,
         stamp_rate: float = 0.0005,
         checkpoint: time = time(9,35),
+        minute_loader: Callable[[str,str],pd.DataFrame] | None = None,
     ):
         self.store=store
         self.strategy=strategy or B0Proxy()
@@ -56,16 +57,39 @@ class B0ReplayRunner:
         self.fee_rate=fee_rate
         self.stamp_rate=stamp_rate
         self.checkpoint=checkpoint
+        self.minute_loader=minute_loader
 
     @staticmethod
     def _key(v) -> str:
         return pd.to_datetime(v).strftime("%Y%m%d")
 
-    def _minute(self, day_key: str, code: str, *, required: bool = True) -> pd.DataFrame:
+    def _minute(
+        self,
+        day_key: str,
+        code: str,
+        *,
+        required: bool=True,
+    ) -> pd.DataFrame:
         part=f"{day_key}/{code}"
         frame=self.store.read_optional("minute_1m",part)
+        if frame is None and self.minute_loader is not None:
+            frame=self.minute_loader(day_key,code)
+            if frame is not None and not frame.empty and not self.store.exists("minute_1m",part):
+                self.store.write_frame(
+                    "minute_1m",
+                    part,
+                    frame,
+                    metadata={
+                        "source":"on_demand_loader",
+                        "trade_date":day_key,
+                        "ts_code":code,
+                        "freq":"1min",
+                    },
+                )
         if frame is None and required:
-            raise MissingReplayDataError(f"missing minute data {part}")
+            raise MissingReplayDataError(
+                f"missing minute data {part}"
+            )
         return pd.DataFrame() if frame is None else frame
 
     def _require(self, dataset: str, key: str) -> pd.DataFrame:
