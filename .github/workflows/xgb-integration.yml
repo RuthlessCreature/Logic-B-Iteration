@@ -9,7 +9,7 @@ on:
 jobs:
   xgb-public-pipeline:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v4
 
@@ -29,7 +29,7 @@ jobs:
       - name: Fetch short evidence window
         run: |
           logic-b fetch-xgb-evidence \
-            --start 2026-06-24 \
+            --start 2026-06-26 \
             --end 2026-06-30 \
             --data-root /tmp/logic-b-xgb \
             --sleep 0.05
@@ -37,7 +37,7 @@ jobs:
       - name: Fetch candidate market slices
         run: |
           logic-b fetch-xgb-market \
-            --start 2026-06-24 \
+            --start 2026-06-26 \
             --end 2026-06-30 \
             --data-root /tmp/logic-b-xgb \
             --sleep 0.05
@@ -45,14 +45,14 @@ jobs:
       - name: Candidate-slice readiness
         run: |
           logic-b xgb-readiness \
-            --start 2026-06-24 \
+            --start 2026-06-26 \
             --end 2026-06-30 \
             --data-root /tmp/logic-b-xgb
 
       - name: Replay short B0 window
         run: |
           logic-b run-b0 \
-            --start 2026-06-24 \
+            --start 2026-06-26 \
             --end 2026-06-30 \
             --data-root /tmp/logic-b-xgb \
             --run-root /tmp/logic-b-runs \
