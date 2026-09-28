@@ -12,6 +12,7 @@ from ..models import Action,Fill,FillModel
 from ..portfolio import Portfolio
 from ..storage import LocalParquetStore
 from ..strategy.b0 import B0Proxy
+from ..universe import codes_with_valid_price_limits,filter_boards
 from .checkpoint import build_minute_checkpoint
 from .regime import build_completed_day_regime
 
@@ -47,6 +48,8 @@ class B0ReplayRunner:
             pd.DataFrame,
         ] | None=None,
         exclude_st: bool=True,
+        include_boards: tuple[str,...] | None=None,
+        exclude_no_limit_ipo_days: bool=False,
     ):
         self.store=store
         self.strategy=strategy or B0Proxy()
@@ -57,6 +60,8 @@ class B0ReplayRunner:
         self.checkpoint=checkpoint
         self.minute_loader=minute_loader
         self.exclude_st=exclude_st
+        self.include_boards=include_boards
+        self.exclude_no_limit_ipo_days=exclude_no_limit_ipo_days
 
     @staticmethod
     def _key(value) -> str:
@@ -312,6 +317,13 @@ class B0ReplayRunner:
                     prev,
                 )
 
+                candidates=prev_up.copy()
+                if self.include_boards is not None:
+                    candidates=filter_boards(
+                        candidates,
+                        self.include_boards,
+                    )
+
                 excluded=set(suspended_codes)
                 if self.exclude_st:
                     current_st=self._require(
@@ -323,9 +335,19 @@ class B0ReplayRunner:
                     )
 
                 candidates=self._exclude_codes(
-                    prev_up,
+                    candidates,
                     excluded,
                 )
+
+                if self.exclude_no_limit_ipo_days:
+                    valid_limit_codes=codes_with_valid_price_limits(
+                        limits
+                    )
+                    candidates=candidates[
+                        candidates["ts_code"]
+                        .astype(str)
+                        .isin(valid_limit_codes)
+                    ].copy()
 
                 regime=build_completed_day_regime(
                     limit_up_df=prev_up,
@@ -408,6 +430,12 @@ class B0ReplayRunner:
                 signal.evidence[
                     "candidate_count_after_filters"
                 ]=len(candidate_codes)
+                signal.evidence[
+                    "board_filter_enabled"
+                ]=self.include_boards is not None
+                signal.evidence[
+                    "exclude_no_limit_ipo_days"
+                ]=self.exclude_no_limit_ipo_days
                 signals.append(signal)
 
                 if (
@@ -530,6 +558,14 @@ class B0ReplayRunner:
                 ),
             "exclude_st":
                 self.exclude_st,
+            "include_boards":
+                (
+                    list(self.include_boards)
+                    if self.include_boards is not None
+                    else None
+                ),
+            "exclude_no_limit_ipo_days":
+                self.exclude_no_limit_ipo_days,
             "suspension_blocks":
                 sum(
                     1
