@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from datetime import date
-from typing import Iterable
 
 import pandas as pd
 
@@ -10,11 +9,11 @@ from .storage import LocalParquetStore
 
 
 class XuangubaoMarketIngestor:
-    """Materialize symbol-day market data from Xuangubao historical minutes.
+    """Materialize candidate symbol-day market data from Xuangubao minutes.
 
-    The pre-close override is normally sourced from the prior trading day's
-    limit-pool close price. This avoids relying on historical kline
-    pre_close_px, which is observed to be zero for some archived A-share rows.
+    For day D candidate replay, pre_close should come from the D-1 limit-up
+    evidence row when available. This avoids trusting archived kline
+    pre_close_px values that are zero/missing for some historical rows.
     """
 
     def __init__(
@@ -28,6 +27,22 @@ class XuangubaoMarketIngestor:
     @staticmethod
     def _key(day: date | str) -> str:
         return pd.to_datetime(day).strftime("%Y%m%d")
+
+    @staticmethod
+    def _optional_or_empty(
+        store: LocalParquetStore,
+        dataset: str,
+        partition: str,
+    ) -> pd.DataFrame:
+        frame=store.read_optional(
+            dataset,
+            partition,
+        )
+        return (
+            pd.DataFrame()
+            if frame is None
+            else frame
+        )
 
     @staticmethod
     def _upsert_day(
@@ -61,6 +76,7 @@ class XuangubaoMarketIngestor:
                     subset=[key_col],
                     keep="last",
                 )
+
         store.write_frame(
             dataset,
             day_key,
@@ -68,6 +84,31 @@ class XuangubaoMarketIngestor:
             metadata=metadata or {},
         )
         return merged
+
+    @staticmethod
+    def pre_close_from_prior_row(
+        row: pd.Series,
+    ) -> float | None:
+        """Return D pre-close from a D-1 pool row.
+
+        The preferred value is D-1 final price. Fallback aliases exist for
+        source-neutral fixtures and future adapters.
+        """
+        for field in (
+            "price",
+            "close",
+            "prev_day_close",
+        ):
+            value=row.get(field)
+            if value is None:
+                continue
+            try:
+                number=float(value)
+            except (TypeError,ValueError):
+                continue
+            if number>0:
+                return number
+        return None
 
     def materialize_symbol_day(
         self,
@@ -82,13 +123,11 @@ class XuangubaoMarketIngestor:
             f"{day_key}/{ts_code}"
         )
 
-        if (
-            self.store.exists(
-                "minute_1m",
-                minute_partition,
-            )
-            and not force
-        ):
+        cached_minute=self.store.exists(
+            "minute_1m",
+            minute_partition,
+        )
+        if cached_minute and not force:
             bars=self.store.read_frame(
                 "minute_1m",
                 minute_partition,
@@ -116,23 +155,27 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-        if minute_day is None:
-            # Re-fetch only metadata when day-level rows are missing.
-            need_daily=not self.store.exists(
-                "daily",
-                day_key,
-            )
-            need_limits=not self.store.exists(
-                "limit_prices",
-                day_key,
-            )
-            if need_daily or need_limits:
-                minute_day=self.provider.historical_minute_day(
-                    ts_code,
-                    trade_date,
-                    pre_close_override=pre_close,
-                )
+        need_daily=not self.store.exists(
+            "daily",
+            day_key,
+        )
+        need_limits=not self.store.exists(
+            "limit_prices",
+            day_key,
+        )
 
+        if (
+            minute_day is None
+            and (need_daily or need_limits)
+        ):
+            minute_day=self.provider.historical_minute_day(
+                ts_code,
+                trade_date,
+                pre_close_override=pre_close,
+            )
+
+        daily_row=pd.DataFrame()
+        limit_row=pd.DataFrame()
         if minute_day is not None:
             daily_row=self.provider.daily_from_minute(
                 minute_day
@@ -140,10 +183,6 @@ class XuangubaoMarketIngestor:
             limit_row=self.provider.limit_prices(
                 minute_day
             )
-        else:
-            # Already cached day rows are returned below.
-            daily_row=pd.DataFrame()
-            limit_row=pd.DataFrame()
 
         if not daily_row.empty:
             self._upsert_day(
@@ -171,7 +210,6 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-        # Empty minute bars are persisted as an explicit no-trade observation.
         if bars.empty:
             suspend_row=pd.DataFrame([{
                 "trade_date":day_key,
@@ -193,26 +231,20 @@ class XuangubaoMarketIngestor:
 
         return {
             "minute_1m":bars,
-            "daily":(
-                self.store.read_optional(
-                    "daily",
-                    day_key,
-                )
-                or pd.DataFrame()
+            "daily":self._optional_or_empty(
+                self.store,
+                "daily",
+                day_key,
             ),
-            "limit_prices":(
-                self.store.read_optional(
-                    "limit_prices",
-                    day_key,
-                )
-                or pd.DataFrame()
+            "limit_prices":self._optional_or_empty(
+                self.store,
+                "limit_prices",
+                day_key,
             ),
-            "suspend":(
-                self.store.read_optional(
-                    "suspend",
-                    day_key,
-                )
-                or pd.DataFrame()
+            "suspend":self._optional_or_empty(
+                self.store,
+                "suspend",
+                day_key,
             ),
         }
 
@@ -233,22 +265,9 @@ class XuangubaoMarketIngestor:
         done=[]
         for _,row in prior_limit_up.iterrows():
             code=str(row["ts_code"])
-            pre_close=None
-            for field in (
-                "price",
-                "close",
-                "prev_day_close",
-            ):
-                value=row.get(field)
-                if value is not None:
-                    try:
-                        number=float(value)
-                    except (TypeError,ValueError):
-                        continue
-                    if number>0:
-                        pre_close=number
-                        break
-
+            pre_close=self.pre_close_from_prior_row(
+                row
+            )
             self.materialize_symbol_day(
                 trade_date=trade_date,
                 ts_code=code,
@@ -257,3 +276,57 @@ class XuangubaoMarketIngestor:
             )
             done.append(code)
         return done
+
+    def materialize_range(
+        self,
+        *,
+        trade_dates: list[str],
+        force: bool=False,
+    ) -> dict[str,int]:
+        """Materialize D market data for every D-1 limit-up candidate."""
+        if len(trade_dates)<2:
+            return {
+                "trade_days":len(trade_dates),
+                "candidate_symbol_days":0,
+                "days_with_candidates":0,
+            }
+
+        symbol_days=0
+        days_with_candidates=0
+
+        for index in range(1,len(trade_dates)):
+            day_key=self._key(
+                trade_dates[index]
+            )
+            prior_key=self._key(
+                trade_dates[index-1]
+            )
+            prior=self.store.read_optional(
+                "limit_up",
+                prior_key,
+            )
+            if (
+                prior is None
+                or prior.empty
+            ):
+                continue
+
+            done=self.materialize_from_prior_pool(
+                trade_date=
+                    pd.to_datetime(
+                        day_key
+                    ).date(),
+                prior_limit_up=prior,
+                force=force,
+            )
+            if done:
+                days_with_candidates+=1
+                symbol_days+=len(done)
+
+        return {
+            "trade_days":len(trade_dates),
+            "candidate_symbol_days":
+                symbol_days,
+            "days_with_candidates":
+                days_with_candidates,
+        }
