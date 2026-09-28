@@ -6,6 +6,7 @@ from typing import Callable
 
 import pandas as pd
 
+from ..costs import TradingCosts
 from ..execution import simulate_buy_fill,simulate_sell_fill
 from ..metrics import summarize_equity
 from ..models import Action,Fill,FillModel
@@ -41,6 +42,8 @@ class B0ReplayRunner:
         fill_model: FillModel=FillModel.REALISTIC,
         initial_cash: float=1_000_000.0,
         fee_rate: float=0.0003,
+        minimum_commission: float=5.0,
+        transfer_fee_rate: float=0.00001,
         stamp_rate: float=0.0005,
         checkpoint: time=time(9,35),
         minute_loader: Callable[
@@ -55,8 +58,12 @@ class B0ReplayRunner:
         self.strategy=strategy or B0Proxy()
         self.fill_model=fill_model
         self.initial_cash=initial_cash
-        self.fee_rate=fee_rate
-        self.stamp_rate=stamp_rate
+        self.costs=TradingCosts(
+            commission_rate=fee_rate,
+            minimum_commission=minimum_commission,
+            transfer_fee_rate=transfer_fee_rate,
+            stamp_rate=stamp_rate,
+        )
         self.checkpoint=checkpoint
         self.minute_loader=minute_loader
         self.exclude_st=exclude_st
@@ -176,7 +183,10 @@ class B0ReplayRunner:
                 "at least 3 trading days are required"
             )
 
-        portfolio=Portfolio(self.initial_cash)
+        portfolio=Portfolio(
+            self.initial_cash,
+            costs=self.costs,
+        )
         signals=[]
         fills=[]
         trades=[]
@@ -260,11 +270,18 @@ class B0ReplayRunner:
 
                     if fill.filled:
                         position=portfolio.position
+                        gross=(
+                            position.shares
+                            *fill.fill_price
+                        )
+                        exit_cost=(
+                            self.costs.sell_cost(
+                                gross
+                            )
+                        )
                         net=portfolio.sell_all(
                             fill.fill_time,
                             fill.fill_price,
-                            self.fee_rate,
-                            self.stamp_rate,
                         )
                         trades.append({
                             "ts_code":code,
@@ -278,6 +295,12 @@ class B0ReplayRunner:
                                 fill.fill_price,
                             "shares":
                                 position.shares,
+                            "entry_cost":
+                                position.cash_used
+                                -position.shares
+                                *position.entry_price,
+                            "exit_cost":
+                                exit_cost,
                             "net_return":
                                 net/position.cash_used-1.0,
                             "exit_rule":
@@ -471,7 +494,6 @@ class B0ReplayRunner:
                             code,
                             fill.fill_time,
                             fill.fill_price,
-                            self.fee_rate,
                         )
                         last_mark_price=(
                             fill.fill_price
@@ -556,6 +578,14 @@ class B0ReplayRunner:
                     if portfolio.position
                     else None
                 ),
+            "commission_rate":
+                self.costs.commission_rate,
+            "minimum_commission":
+                self.costs.minimum_commission,
+            "transfer_fee_rate":
+                self.costs.transfer_fee_rate,
+            "stamp_rate":
+                self.costs.stamp_rate,
             "exclude_st":
                 self.exclude_st,
             "include_boards":
