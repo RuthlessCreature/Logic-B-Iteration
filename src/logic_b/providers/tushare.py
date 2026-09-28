@@ -170,6 +170,17 @@ class TushareProvider(MarketDataProvider):
             )
         )
 
+    def suspensions(
+        self,
+        trade_date: date,
+    ) -> pd.DataFrame:
+        return self._call(
+            lambda:self.pro.suspend_d(
+                trade_date=_d(trade_date),
+                suspend_type="S",
+            )
+        )
+
     def stock_minute(
         self,
         ts_code: str,
