@@ -92,6 +92,7 @@ def test_preflight_checks_full_data_contract():
         "stk_limit",
         "stk_auction_o",
         "stock_st",
+        "suspend_d",
         "stock_minute_1m",
     }<=names
 
