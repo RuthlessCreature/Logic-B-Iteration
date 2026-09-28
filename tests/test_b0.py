@@ -34,9 +34,9 @@ def test_higher_core_priority_beats_stronger_lower_tier_candidate():
     })
     cp=pd.DataFrame({
         "ts_code":["LEADER","CAP","MATE1","MATE2"],
-        "pct_from_prev_close":[.055,.095,.01,.01],
-        "relative_to_peer_median":[.02,.06,-.02,-.02],
-        "checkpoint_amount_rank":[.60,1.0,.30,.20],
+        "pct_from_prev_close":[.07,.095,.01,.01],
+        "relative_to_peer_median":[.04,.06,-.02,-.02],
+        "checkpoint_amount_rank":[.70,1.0,.30,.20],
         "at_limit":[False,False,False,False],
         "one_price_limit":[False,False,False,False],
         "opened_after_limit":[False,True,False,False],
