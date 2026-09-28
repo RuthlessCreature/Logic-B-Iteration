@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import numpy as np
 import pandas as pd
 
@@ -18,42 +19,77 @@ def percentile_rank(s: pd.Series, ascending: bool = True) -> pd.Series:
     return s.rank(pct=True, method="average", ascending=ascending)
 
 
+def parse_board_height(value: object) -> int:
+    """Parse Tushare THS tag text such as 首板 / 4天4板 / 7天5板."""
+    text = "" if value is None else str(value)
+    if "首板" in text:
+        return 1
+    m = re.search(r"(\d+)天(\d+)板", text)
+    if m:
+        return int(m.group(2))
+    m = re.search(r"(\d+)连板", text)
+    if m:
+        return int(m.group(1))
+    m = re.search(r"(\d+)板", text)
+    if m:
+        return int(m.group(1))
+    return 1
+
+
 def build_prev_day_candidate_features(limit_df: pd.DataFrame) -> pd.DataFrame:
+    """Build B0-P previous-day features from point-in-time t-1 data.
+
+    Native Tushare limit_list_ths fields are preferred:
+    tag, turnover, turnover_rate, open_num, limit_amount, lu_limit_order.
+    """
     if limit_df.empty:
         return limit_df.copy()
 
     x = limit_df.copy()
-    height = _series(x, "连板数", 1.0)
-    if "limit_times" in x.columns:
+
+    if "tag" in x.columns:
+        height = x["tag"].map(parse_board_height).astype(float)
+    elif "limit_times" in x.columns:
         height = _series(x, "limit_times", 1.0)
+    elif "连板数" in x.columns:
+        height = _series(x, "连板数", 1.0)
+    else:
+        height = pd.Series(1.0, index=x.index)
 
-    amount = _series(x, "成交额", 0.0)
-    if "amount" in x.columns:
+    if "turnover" in x.columns:
+        amount = _series(x, "turnover", 0.0)
+    elif "amount" in x.columns:
         amount = _series(x, "amount", 0.0)
+    else:
+        amount = _series(x, "成交额", 0.0)
 
-    turnover = _series(x, "换手率", 0.0)
-    if "turnover_ratio" in x.columns:
-        turnover = _series(x, "turnover_ratio", 0.0)
+    if "turnover_rate" in x.columns:
+        turnover_rate = _series(x, "turnover_rate", 0.0)
+    elif "turnover_ratio" in x.columns:
+        turnover_rate = _series(x, "turnover_ratio", 0.0)
+    else:
+        turnover_rate = _series(x, "换手率", 0.0)
 
-    open_times = _series(x, "开板次数", 0.0)
-    if "open_num" in x.columns:
-        open_times = _series(x, "open_num", 0.0)
+    open_times = _series(x, "open_num", 0.0) if "open_num" in x.columns else _series(x, "开板次数", 0.0)
 
-    seal_amount = _series(x, "封单金额", 0.0)
-    if "limit_order" in x.columns:
-        seal_amount = _series(x, "limit_order", 0.0)
     if "lu_limit_order" in x.columns:
         seal_amount = _series(x, "lu_limit_order", 0.0)
+    elif "limit_amount" in x.columns:
+        seal_amount = _series(x, "limit_amount", 0.0)
+    elif "limit_order" in x.columns:
+        seal_amount = _series(x, "limit_order", 0.0)
+    else:
+        seal_amount = _series(x, "封单金额", 0.0)
 
     x["f_height"] = height
     x["f_amount"] = amount
-    x["f_turnover"] = turnover
+    x["f_turnover"] = turnover_rate
     x["f_open_times"] = open_times
     x["f_seal_amount"] = seal_amount
 
     x["r_height"] = percentile_rank(height)
     x["r_amount"] = percentile_rank(np.log1p(amount.clip(lower=0)))
-    x["r_turnover"] = percentile_rank(turnover)
+    x["r_turnover"] = percentile_rank(turnover_rate)
     x["r_seal"] = percentile_rank(np.log1p(seal_amount.clip(lower=0)))
     x["r_open_quality"] = percentile_rank(open_times, ascending=False)
 
@@ -75,6 +111,7 @@ def classify_market_regime(
     max_height: int,
     prev_limit_median_return: float,
 ) -> MarketRegime:
+    """Frozen B0-P.0 heuristic; intentionally not optimized on the target window."""
     stress = 0
     strength = 0
 
