@@ -349,10 +349,6 @@ class XuangubaoMarketIngestor:
                 "trade_date","ts_code",
                 "suspend_type","source",
             ],
-            "stock_st":[
-                "trade_date","ts_code",
-                "name","source",
-            ],
         }
         for dataset,columns in empty_specs.items():
             if not self.store.exists(
@@ -475,6 +471,14 @@ class XuangubaoMarketIngestor:
         for raw_day in trade_dates:
             self._ensure_empty_market_partitions(
                 self._key(raw_day)
+            )
+
+        if trade_dates:
+            self._ensure_day_state_partitions(
+                day_key=self._key(
+                    trade_dates[0]
+                ),
+                prior_limit_up=pd.DataFrame(),
             )
 
         for index in range(1,len(trade_dates)):
