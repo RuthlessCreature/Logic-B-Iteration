@@ -2,9 +2,6 @@ name: xgb-integration
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/xgb-integration.yml"
 
 jobs:
   xgb-public-pipeline:
