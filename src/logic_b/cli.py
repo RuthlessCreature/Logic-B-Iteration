@@ -10,6 +10,7 @@ import yaml
 
 from .alignment import compare_human_proxy
 from .audit import audit_daily_bundle,summarize_issues
+from .diagnostics import preflight_provider
 from .features import classify_market_regime
 from .ingest import HistoricalIngestor
 from .models import FillModel
@@ -112,6 +113,21 @@ def cmd_validate(args: argparse.Namespace) -> int:
         ensure_ascii=False,
     ))
     return 0
+
+
+def cmd_preflight_data(args: argparse.Namespace) -> int:
+    day=_date(args.date)
+    result=preflight_provider(
+        TushareProvider(),
+        day,
+        sample_code=args.code,
+    )
+    print(json.dumps(
+        result,
+        ensure_ascii=False,
+        indent=2,
+    ))
+    return 0 if result["ok"] else 2
 
 
 def cmd_fetch_daily(args: argparse.Namespace) -> int:
@@ -345,6 +361,11 @@ def main() -> int:
     p=sub.add_parser("validate-config")
     p.add_argument("path")
     p.set_defaults(func=cmd_validate)
+
+    p=sub.add_parser("preflight-data")
+    p.add_argument("--date",required=True)
+    p.add_argument("--code")
+    p.set_defaults(func=cmd_preflight_data)
 
     p=sub.add_parser("fetch-daily")
     _add_range_args(p,include_force=True)
