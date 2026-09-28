@@ -770,6 +770,26 @@ def _runner_from_config(
     market_loader=None,
     strategy=None,
 ) -> B0ReplayRunner:
+    if strategy is None:
+        strategy_cfg=cfg.get(
+            "strategy",
+            {},
+        )
+        strategy=B0Proxy(
+            min_confirmation=float(
+                strategy_cfg.get(
+                    "min_confirmation",
+                    0.58,
+                )
+            ),
+            min_tradability=float(
+                strategy_cfg.get(
+                    "min_tradability",
+                    0.45,
+                )
+            ),
+        )
+
     return B0ReplayRunner(
         store,
         strategy=strategy,
