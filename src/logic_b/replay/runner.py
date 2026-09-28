@@ -50,6 +50,10 @@ class B0ReplayRunner:
             [str,str],
             pd.DataFrame,
         ] | None=None,
+        market_loader: Callable[
+            [str,str],
+            object,
+        ] | None=None,
         exclude_st: bool=True,
         include_boards: tuple[str,...] | None=None,
         exclude_no_limit_ipo_days: bool=False,
@@ -66,6 +70,7 @@ class B0ReplayRunner:
         )
         self.checkpoint=checkpoint
         self.minute_loader=minute_loader
+        self.market_loader=market_loader
         self.exclude_st=exclude_st
         self.include_boards=include_boards
         self.exclude_no_limit_ipo_days=exclude_no_limit_ipo_days
@@ -88,6 +93,59 @@ class B0ReplayRunner:
             raise MissingReplayDataError(
                 str(exc)
             ) from exc
+
+    @staticmethod
+    def _frame_has_code(
+        frame: pd.DataFrame | None,
+        code: str,
+    ) -> bool:
+        return bool(
+            frame is not None
+            and not frame.empty
+            and "ts_code" in frame.columns
+            and str(code) in set(
+                frame["ts_code"].astype(str)
+            )
+        )
+
+    def _ensure_market_code(
+        self,
+        day_key: str,
+        code: str,
+    ) -> None:
+        if self.market_loader is None:
+            return
+
+        daily=self.store.read_optional(
+            "daily",
+            day_key,
+        )
+        limits=self.store.read_optional(
+            "limit_prices",
+            day_key,
+        )
+        minute_exists=self.store.exists(
+            "minute_1m",
+            f"{day_key}/{code}",
+        )
+
+        if (
+            self._frame_has_code(
+                daily,
+                code,
+            )
+            and self._frame_has_code(
+                limits,
+                code,
+            )
+            and minute_exists
+        ):
+            return
+
+        self.market_loader(
+            day_key,
+            code,
+        )
 
     def _minute(
         self,
@@ -199,6 +257,12 @@ class B0ReplayRunner:
                 day,
                 self.checkpoint,
             )
+
+            if portfolio.position is not None:
+                self._ensure_market_code(
+                    key,
+                    portfolio.position.ts_code,
+                )
 
             daily=self._require("daily",key)
             limits=self._require(
@@ -366,6 +430,57 @@ class B0ReplayRunner:
                     candidates,
                     excluded,
                 )
+
+                if (
+                    self.market_loader is not None
+                    and not candidates.empty
+                    and "ts_code" in candidates.columns
+                ):
+                    for code in (
+                        candidates["ts_code"]
+                        .astype(str)
+                        .tolist()
+                    ):
+                        self._ensure_market_code(
+                            key,
+                            code,
+                        )
+
+                    daily=self._require(
+                        "daily",
+                        key,
+                    )
+                    limits=self._require(
+                        "limit_prices",
+                        key,
+                    )
+                    suspend=self._require(
+                        "suspend",
+                        key,
+                    )
+                    suspended_codes=self._code_set(
+                        suspend
+                    )
+                    limits_idx=(
+                        limits.set_index(
+                            "ts_code",
+                            drop=False,
+                        )
+                        if not limits.empty
+                        else pd.DataFrame()
+                    )
+
+                    excluded=set(
+                        suspended_codes
+                    )
+                    if self.exclude_st:
+                        excluded|=self._code_set(
+                            current_st
+                        )
+                    candidates=self._exclude_codes(
+                        candidates,
+                        excluded,
+                    )
 
                 if self.exclude_no_limit_ipo_days:
                     valid_limit_codes=codes_with_valid_price_limits(
