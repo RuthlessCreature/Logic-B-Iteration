@@ -1,64 +1,97 @@
 # Logic-B-Iteration
 
-将“逻辑A”冻结为 **Logic B0**，并以 point-in-time 数据、真实成交约束、T+1 状态机和盲测协议进行可复现的 A 股超短交易研究。
+将“逻辑A”冻结为 **Logic B0**，再以 point-in-time 数据、真实成交约束、T+1 状态机、walk-forward 和 blind holdout 对其进行可复现、可审计的 A 股超短研究。
 
-项目目标不是寻找历史曲线最漂亮的参数，而是逐步得到一套：
+目标不是把历史曲线拟合得最好看，而是判断一套交易逻辑是否：
 
 - 可解释；
 - 可执行；
 - 可复现；
 - 可审计；
-- 对不同市场阶段具备稳定性的交易逻辑。
+- 对不同市场阶段具有稳定性；
+- 在保守成交口径下仍有正期望。
 
 ## 当前状态
 
-当前策略规格：**B0.0.2 / B0-P.1**
+当前冻结规格：
+
+```text
+Logic spec: B0.0.3
+Proxy:      B0-P.1
+Decision:   09:35
+Exit:       E0_NEXT_DAY_0935
+Portfolio:  single position / full target / T+1
+```
 
 已实现：
 
 - B0-H 人工参考协议；
-- B0-P 可程序化代理；
-- 前一交易日涨停候选池；
-- KPL 历史题材证据；
-- 市场状态 ATTACK / TRIAL / NEUTRAL / RETREAT / ICE；
-- 09:25 / 09:35 checkpoint 特征构建；
-- 官方涨跌停价格 `stk_limit`；
-- 三档成交模型；
+- B0-P 程序化代理；
+- D-1 THS 涨停候选池；
+- D-1 KPL 历史题材证据；
+- ATTACK / TRIAL / NEUTRAL / RETREAT / ICE 市场状态；
+- 09:25 / 09:35 checkpoint 构建；
+- 官方每日涨跌停价；
+- ST 历史状态过滤；
+- 停牌候选过滤；
+- 持仓停牌锁定与复牌后继续卖出；
+- 主板 / 创业板 / 科创板 universe 硬过滤；
+- 无有效涨跌停价格的新股日过滤；
 - T+1；
-- 涨停不可买 / 跌停不可卖；
-- 禁止信号与成交使用同一根完成分钟 K；
+- 涨停不可买；
+- 跌停不可卖；
+- 禁止信号与成交使用同一根已完成分钟 K；
+- 三档成交模型；
 - E0 次日 09:35 基线退出；
-- 本地 Parquet 数据湖和 SHA256 manifest；
-- 数据质量审计；
+- 佣金 / 最低佣金 / 过户费 / 印花税成本账本；
+- 本地 Parquet 数据湖；
+- SHA256 manifest；
+- 断点下载；
+- 缺分钟数据按需补全；
+- 数据源 preflight；
+- 数据质量 audit；
+- 缓存数据 readiness gate；
 - B0-H / B0-P 一致性审计；
+- chronological walk-forward；
 - blind holdout 默认锁定；
 - GitHub Actions 自动测试。
 
-**尚未发布任何两年收益率。**
+**尚未发布任何两年收益结论。**
 
-在真实数据下载、数据审计、B0-H 对齐和完整开发集回放完成之前，任何收益数字均不作为有效研究结论。
+真实开发集尚未在本仓库会话中完成下载和运行，因此任何历史收益数字在此之前都无效。
 
-## 1. B0 的双层定义
+---
+
+## 1. B0 双层定义
 
 ### B0-H — Human Reference
 
-保留 Logic A 的人工语义：
+B0-H 保留 Logic A 的原始语义：
 
 1. 总龙头；
 2. 板块核心容量；
 3. 最强换手前排；
 4. 明确补涨核心；
-5. 冰点 / 退潮不开新仓；
-6. 核心不可买或确认失败时空仓；
-7. 不使用后排作为核心的替代交易。
+5. 冰点 / 退潮不新开仓；
+6. 核心不可买或确认不足时空仓；
+7. 不使用后排替代买不到的核心。
 
-B0-H 用于判断“机器是否真的在表达 Logic A”。
+B0-H 的作用不是制造回测收益，而是回答：
+
+> B0-P 到底还是不是 Logic A？
+
+人工标签协议见：
+
+```text
+schemas/human_reference.schema.yaml
+docs/06_HUMAN_REFERENCE_PROTOCOL.md
+```
 
 ### B0-P — Programmatic Proxy
 
-将 B0-H 映射为程序可重放特征。
+当前为 **B0-P.1**。
 
-B0-P.1 强制执行核心层级：
+核心身份优先级是硬约束：
 
 ```text
 TOTAL_MARKET_LEADER
@@ -70,7 +103,10 @@ TURNOVER_FRONT
 CATCHUP_CORE
 ```
 
-先选最高层级核心，再检查确认度和可成交性。
+程序先确定最高层级候选，再检查：
+
+- confirmation；
+- tradability。
 
 最高层级核心未通过闸门时：
 
@@ -78,48 +114,97 @@ CATCHUP_CORE
 CASH
 ```
 
-而不是向下选择次优候选。
+而不是自动向下选择次优票。
+
+---
 
 ## 2. Point-in-time 原则
 
-任何信号只能使用决策时点已经可观察的信息。
+任何信号只能使用当时已经可观察的信息。
 
-例如 09:35 信号：
+09:35 信号可使用：
 
-- 可以使用 D-1 完成后的涨停体系和题材结构；
-- 可以使用开盘集合竞价结果；
-- 可以使用截至 09:35 已完成的分钟行情；
-- 不可以使用 10:00、14:30 或收盘后的结果；
-- 不可以使用下一交易日溢价；
-- 不可以用事后确认的“大龙头”身份反推早期买点。
+- D-1 完成后的涨停体系；
+- D-1 历史题材结构；
+- D-1 完成后的市场状态；
+- 当日开盘前已知 ST / 风险警示状态；
+- 当日停牌状态；
+- 当日集合竞价；
+- 截至 09:35 已完成的分钟行情。
+
+禁止使用：
+
+- 10:00 / 14:30 / 收盘后的数据反推 09:35；
+- 下一交易日收益；
+- 事后“大龙头”身份；
+- 未来题材成分；
+- 事后成交结果定义当前核心。
 
 另外：
 
-> 若 09:35 完成的分钟 K 被用于产生信号，最早成交只能从下一根分钟 K 开始。
+> 如果 09:35 完成的分钟 K 被用于生成信号，最早成交只能从后续分钟 K 开始。
 
-## 3. 历史题材数据
+---
 
-B0-P 不使用 THS “最新概念成分”回填历史，因为最新成分会污染过去时点。
+## 3. 历史题材证据
+
+B0-P 不使用“最新概念成分”回填历史。
 
 当前采用：
 
-- D-1 KPL 涨停榜 `kpl_list` 的历史 `theme` 字段；
-- 后续可用 `kpl_concept_cons(trade_date=...)` 扩展历史题材成分。
+```text
+D-1 KPL limit-up list
+        ↓
+historical theme
+        ↓
+theme breadth / height / amount
+        ↓
+D day semantic core gate
+```
 
 没有历史题材证据时：
 
 - 不允许标记为 `SECTOR_CAPACITY_CORE`；
 - 不允许标记为 `CATCHUP_CORE`。
 
-## 4. 研究窗口
+题材强度在 B0.0.3 中主要用于**身份合法性**，而不是收益优化权重。
 
-总研究区间：
+---
+
+## 4. Universe
+
+当前默认：
+
+```text
+main
+chinext
+star
+```
+
+排除：
+
+- 北交所等未纳入板块；
+- 当前 ST / 风险警示股票；
+- 当前停牌股票；
+- 当日没有合法 `up_limit/down_limit` 的无涨跌幅限制情形。
+
+Universe 配置见：
+
+```text
+config/b0.yaml
+```
+
+---
+
+## 5. 研究区间
+
+完整研究区间：
 
 ```text
 2024-09-30 ~ 2026-09-28
 ```
 
-当前冻结为：
+冻结拆分：
 
 ```text
 Development:
@@ -129,9 +214,22 @@ Blind Holdout:
 2026-07-01 ~ 2026-09-28
 ```
 
-开发阶段默认禁止运行 blind holdout。
+开发阶段默认禁止运行 holdout。
 
-## 5. 安装
+Walk-forward 默认：
+
+```text
+minimum training window: 120 trading days
+validation window:       40 trading days
+step:                    40 trading days
+warmup:                   2 trading days
+```
+
+warmup 只用于建立 D-1 / D-2 状态，其收益不会计入验证结果。
+
+---
+
+## 6. 安装
 
 Python 3.11+。
 
@@ -148,9 +246,11 @@ pip install -e ".[dev]"
 pytest
 ```
 
-## 6. Tushare 凭证
+---
 
-不要把 token 写入代码、配置文件或 Git 提交。
+## 7. Tushare 凭证
+
+Token 不得写进代码或提交到 Git。
 
 Linux / macOS:
 
@@ -164,27 +264,72 @@ PowerShell:
 $env:TUSHARE_TOKEN="..."
 ```
 
-当前数据层依赖的 Tushare 权限包括：
+当前依赖的数据能力包括：
 
-- THS 涨跌停榜；
-- KPL 涨停榜；
-- 官方每日涨跌停价格；
+- 交易日历；
+- THS 涨停 / 跌停 / 炸板；
+- KPL 历史题材榜；
+- 日线；
+- 官方每日涨跌停价；
 - 历史开盘集合竞价；
-- 股票历史分钟数据。
+- 历史 ST / 风险警示状态；
+- 历史停牌状态；
+- 股票历史 1 分钟行情。
 
-历史分钟数据需要单独权限。
+历史分钟数据通常需要单独权限。
 
-## 7. 下载日级数据
+---
+
+## 8. 先跑数据源 Preflight
+
+不要一上来就抓两年数据。
+
+先用一个已完成交易日验证所有权限：
+
+```bash
+logic-b preflight-data \
+  --date 2026-06-30
+```
+
+如果自动选样本股票不合适，可显式指定：
+
+```bash
+logic-b preflight-data \
+  --date 2026-06-30 \
+  --code 600000.SH
+```
+
+检查项包括：
+
+```text
+trade_calendar
+daily
+limit_list_ths
+kpl_list
+stk_limit
+stk_auction_o
+stock_st
+suspend_d
+stock_minute_1m
+```
+
+任何关键项失败，都不要开始完整历史下载。
+
+---
+
+## 9. 下载日级数据
+
+开发阶段先只下载 development：
 
 ```bash
 logic-b fetch-daily \
   --start 2024-09-30 \
-  --end 2026-09-28
+  --end 2026-06-30
 ```
 
-下载支持断点续跑：已经存在的分区默认跳过。
+支持断点续跑，已存在分区默认跳过。
 
-日级 bundle 当前包括：
+日级 bundle：
 
 ```text
 limit_up
@@ -194,30 +339,41 @@ kpl_limit_up
 daily
 limit_prices
 auction
+stock_st
+suspend
 ```
 
-## 8. 数据审计
+---
+
+## 10. 数据审计
 
 ```bash
 logic-b audit-data \
   --start 2024-09-30 \
-  --end 2026-09-28
+  --end 2026-06-30
 ```
 
-审计内容包括：
+审计包括：
 
 - OHLC 合法性；
 - 重复股票；
-- 官方涨跌停价格覆盖；
-- 收盘价格是否超出官方限制；
-- 涨停池与实际收盘涨停是否一致；
-- 跌停池与实际收盘跌停是否一致；
-- 涨停池 / 跌停池异常交集；
-- 炸板池异常交集。
+- 官方涨跌停价覆盖；
+- 收盘是否超出官方价格限制；
+- THS 涨停池与收盘涨停一致性；
+- THS 跌停池与收盘跌停一致性；
+- 涨停 / 跌停异常交集；
+- 炸板异常交集；
+- KPL 字段完整性；
+- KPL / THS 涨停覆盖率；
+- ST 数据 schema；
+- suspend 数据 schema；
+- auction 数据 schema。
 
-存在 ERROR 时，正式回测不应继续。
+存在 ERROR 时，不应开始正式回测。
 
-## 9. 下载分钟数据
+---
+
+## 11. 下载分钟数据
 
 ```bash
 logic-b fetch-minutes \
@@ -225,17 +381,49 @@ logic-b fetch-minutes \
   --end 2026-06-30
 ```
 
-分钟数据只针对 D-1 涨停候选下载，不下载全市场两年分钟数据。
+不会下载全市场两年分钟数据，只下载 D-1 涨停候选。
 
-完整研究仍需考虑持仓跨日锁死后的补充分钟数据；后续将增加按需补全机制。
+对于持仓跨日锁死、停牌复牌等导致的额外分钟需求，可以在回放时显式启用：
 
-## 10. 运行 B0 开发集
+```text
+--fetch-missing-minutes
+```
+
+缺失分钟一旦补齐，会持久化到本地数据湖，后续运行可复用。
+
+---
+
+## 12. 数据 Readiness Gate
+
+正式回测前：
+
+```bash
+logic-b data-readiness \
+  --start 2024-09-30 \
+  --end 2026-06-30
+```
+
+检查：
+
+- 所有必需日级分区是否存在；
+- manifest/hash 是否有效；
+- 按真实 universe 过滤后，应下载多少 candidate-minute 分区；
+- 当前缺少哪些分钟分区。
+
+`ready=false` 时不要运行正式 baseline。
+
+---
+
+## 13. B0 开发集 Baseline
+
+三档一起跑：
 
 ```bash
 logic-b run-b0 \
   --start 2024-09-30 \
   --end 2026-06-30 \
-  --fill all
+  --fill all \
+  --fetch-missing-minutes
 ```
 
 输出：
@@ -251,15 +439,136 @@ runs/<run_id>/
   run_manifest.json
 ```
 
-三档成交口径：
+成交口径：
 
-- `optimistic`：收益上界；
-- `realistic`：主要研究口径；
-- `conservative`：保守下界。
+- `optimistic`：上界；
+- `realistic`：主研究口径；
+- `conservative`：压力测试下界。
 
-## 11. Blind Holdout
+---
 
-以下命令默认拒绝执行：
+## 14. 交易成本
+
+B0.0.3 显式建模：
+
+```text
+broker commission
+minimum commission
+transfer fee
+sell-side stamp duty
+```
+
+默认值在：
+
+```text
+config/b0.yaml
+```
+
+券商佣金属于账户级条件，必须按真实账户修改，而不是把仓库默认值当成事实。
+
+每笔成交会记录：
+
+- entry_cost；
+- exit_cost；
+- net_return。
+
+---
+
+## 15. 停牌 / 跌停锁死
+
+持仓不能卖出时，不允许凭空成交。
+
+### 跌停锁死
+
+记录 unfilled sell，继续持有，下一交易日继续尝试。
+
+### 停牌
+
+记录：
+
+```text
+side=SELL
+filled=false
+reason=suspended
+```
+
+停牌期间：
+
+- 不成交；
+- 沿用上一可交易 mark；
+- 复牌后重新进入卖出流程。
+
+---
+
+## 16. Walk-forward
+
+开发集 baseline 之后：
+
+```bash
+logic-b walk-forward-b0 \
+  --start 2024-09-30 \
+  --end 2026-06-30 \
+  --fill realistic \
+  --fetch-missing-minutes
+```
+
+默认窗口来自 `config/b0.yaml`，也可以通过 CLI 显式覆盖。
+
+输出：
+
+```text
+runs/walk_forward_<...>/
+  fold_metrics.parquet
+  summary.json
+  spec.json
+```
+
+关键结果包括：
+
+- positive_return_fold_rate；
+- positive_expectancy_fold_rate；
+- median / worst fold return；
+- median / worst drawdown；
+- closed trades；
+- exposure。
+
+禁止随机 shuffle。
+
+---
+
+## 17. B0-H 对齐
+
+人工标签：
+
+```text
+schemas/human_reference.schema.yaml
+```
+
+比较：
+
+```bash
+logic-b align-b0 \
+  --human research/human_labels.csv \
+  --proxy runs/<run_id>/signals.parquet \
+  --out runs/<run_id>/human_alignment.csv
+```
+
+指标：
+
+- action agreement；
+- selected-code agreement；
+- core-type agreement；
+- label coverage。
+
+如果 B0-P 收益更高、但 B0-H 语义对齐明显下降，则不能悄悄宣称“Logic A 改进”。
+
+它应进入一个新的 B1+ 假设。
+
+---
+
+## 18. Blind Holdout
+
+以下命令默认拒绝：
 
 ```bash
 logic-b run-b0 \
@@ -267,7 +576,15 @@ logic-b run-b0 \
   --end 2026-09-28
 ```
 
-只有冻结候选版本、停止修改规则后，才允许显式解锁：
+只有完成以下事项后：
+
+1. B0.0.3 规则冻结；
+2. development baseline 完成；
+3. walk-forward 完成；
+4. B0-H 对齐完成；
+5. 不再修改 B0 参数；
+
+才允许：
 
 ```bash
 logic-b run-b0 \
@@ -277,73 +594,43 @@ logic-b run-b0 \
   --unlock-holdout
 ```
 
-holdout 结果不得反复用于调参。
+holdout 只用于最终一次性评估，不得反复调参。
 
-## 12. B0-H 对齐
+---
 
-人工标签格式：
-
-```text
-schemas/human_reference.schema.yaml
-```
-
-对齐命令：
-
-```bash
-logic-b align-b0 \
-  --human research/human_labels.csv \
-  --proxy runs/<run_id>/signals.parquet \
-  --out runs/<run_id>/human_alignment.csv
-```
-
-报告：
-
-- action agreement；
-- selected-code agreement；
-- core-type agreement；
-- label coverage。
-
-B0-P 如果收益更高但 B0-H 对齐更差，不能自动视为 B0 改进；它应被视为一个新的 B1+ 策略假设。
-
-## 13. 迭代方法
+## 19. 推荐完整运行顺序
 
 ```text
-B0
-↓
-真实开发集重放
-↓
-失败案例聚类
-↓
-提出一个可解释假设
-↓
-只修改一个主要机制
-↓
-walk-forward
-↓
-成交压力测试
-↓
-B0-H 语义审计
-↓
-Promotion Gate
-↓
-B1 / Rejected Experiment
+1. preflight-data
+        ↓
+2. fetch-daily (development only)
+        ↓
+3. audit-data
+        ↓
+4. fetch-minutes
+        ↓
+5. data-readiness
+        ↓
+6. run-b0 (optimistic / realistic / conservative)
+        ↓
+7. walk-forward-b0
+        ↓
+8. B0-H / B0-P alignment
+        ↓
+9. Freeze candidate
+        ↓
+10. Unlock blind holdout once
 ```
 
-优先实验：
+任何一步失败，不向后装死硬跑。
 
-1. 中位股是否存在条件性负期望；
-2. 最高板断板后的空间压缩；
-3. 死尸池负反馈对高位接力的影响；
-4. 次日确认特征；
-5. 核心不可成交时，空仓相对后排替代的机会成本；
-6. 板块宽度与龙头高度的交互；
-7. 退出规则 E0 / E1 / E2 的贡献拆分。
+---
 
-## 14. 数据许可与仓库边界
+## 20. 数据许可与仓库边界
 
 完整历史原始数据默认不提交 GitHub。
 
-`.gitignore` 已排除：
+`.gitignore` 排除：
 
 ```text
 data/raw/
@@ -352,28 +639,36 @@ cache/
 runs/
 ```
 
-Tushare 的部分 THS / KPL 数据来自第三方数据授权。使用者应遵守对应数据源和 Tushare 的授权条款；公开仓库仅保留：
+公开仓库只保留：
 
 - 代码；
 - schema；
 - manifest；
-- 小型合成测试 fixture；
-- 研究协议。
+- 小型合成 fixture；
+- 研究协议；
+- 失败实验记录。
 
-不发布完整第三方历史数据集。
+第三方历史数据应遵守对应数据授权条款，不在公开仓库重新分发完整数据集。
 
-## 15. 研究纪律
+---
+
+## 21. 研究纪律
 
 禁止：
 
 - 随机 shuffle 时间序列；
 - 用收盘信息决定上午交易；
 - 用下一日收益定义当天核心；
-- 默认一字涨停可以买入；
-- 默认一字跌停可以卖出；
-- 用少量异常大赚交易掩盖整体负期望；
-- 在 blind holdout 上反复修改规则；
-- 扫描大量参数后只报告最好结果；
+- 默认一字涨停可以买；
+- 默认一字跌停能卖；
+- 停牌日凭空成交；
+- 用无涨跌幅限制新股污染普通候选集；
+- 用当前概念成分回填历史；
+- 用少数异常大赚遮盖整体负期望；
+- 在 holdout 上反复修改规则；
+- 扫大量参数只报告最好结果；
 - 删除失败实验。
 
-目标不是证明 Logic A 正确，而是让 Logic A 接受历史数据、成交机制和未见样本的检验。
+目标不是证明 Logic A 正确。
+
+目标是让 Logic A 经得起真实历史、真实交易约束、不同市场阶段和未见样本的检验。
