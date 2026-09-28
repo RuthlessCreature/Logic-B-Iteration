@@ -316,6 +316,14 @@ class XuangubaoMarketIngestor:
 
         done=[]
         for _,row in prior_limit_up.iterrows():
+            if bool(
+                row.get(
+                    "is_new_stock",
+                    False,
+                )
+            ):
+                continue
+
             code=str(row["ts_code"])
             pre_close=self.pre_close_from_prior_row(
                 row
