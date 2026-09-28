@@ -491,6 +491,28 @@ def cmd_walk_forward_b0(args: argparse.Namespace) -> int:
         )
     )
 
+    research=cfg["research"]
+    min_train_days=(
+        args.min_train_days
+        if args.min_train_days is not None
+        else int(research.get("walk_forward_min_train_days",120))
+    )
+    validation_days=(
+        args.validation_days
+        if args.validation_days is not None
+        else int(research.get("walk_forward_validation_days",40))
+    )
+    step_days=(
+        args.step_days
+        if args.step_days is not None
+        else int(research.get("walk_forward_step_days",40))
+    )
+    warmup_days=(
+        args.warmup_days
+        if args.warmup_days is not None
+        else int(research.get("walk_forward_warmup_days",2))
+    )
+
     fold_metrics,summary=evaluate_walk_forward(
         trade_dates=dates,
         runner_factory=lambda:_runner_from_config(
@@ -500,10 +522,10 @@ def cmd_walk_forward_b0(args: argparse.Namespace) -> int:
             minute_loader=minute_loader,
         ),
         initial_cash=initial_cash,
-        min_train_days=args.min_train_days,
-        validation_days=args.validation_days,
-        step_days=args.step_days,
-        warmup_days=args.warmup_days,
+        min_train_days=min_train_days,
+        validation_days=validation_days,
+        step_days=step_days,
+        warmup_days=warmup_days,
     )
 
     run_dir=Path(args.run_root)/(
@@ -536,10 +558,10 @@ def cmd_walk_forward_b0(args: argparse.Namespace) -> int:
             "start":args.start,
             "end":args.end,
             "fill_model":model.value,
-            "min_train_days":args.min_train_days,
-            "validation_days":args.validation_days,
-            "step_days":args.step_days,
-            "warmup_days":args.warmup_days,
+            "min_train_days":min_train_days,
+            "validation_days":validation_days,
+            "step_days":step_days,
+            "warmup_days":warmup_days,
         },ensure_ascii=False,indent=2),
         encoding="utf-8",
     )
@@ -616,10 +638,10 @@ def main() -> int:
         ],
         default="realistic",
     )
-    p.add_argument("--min-train-days",type=int,default=120)
-    p.add_argument("--validation-days",type=int,default=40)
-    p.add_argument("--step-days",type=int,default=40)
-    p.add_argument("--warmup-days",type=int,default=2)
+    p.add_argument("--min-train-days",type=int)
+    p.add_argument("--validation-days",type=int)
+    p.add_argument("--step-days",type=int)
+    p.add_argument("--warmup-days",type=int)
     p.add_argument(
         "--fetch-missing-minutes",
         action="store_true",
