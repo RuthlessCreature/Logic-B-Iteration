@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import asdict,dataclass
 from enum import StrEnum
+import math
 from typing import Any
 
 
@@ -35,9 +36,14 @@ def _number(
     if value is None:
         return None
     try:
-        return float(value)
+        number=float(value)
     except (TypeError,ValueError):
         return None
+    return (
+        number
+        if math.isfinite(number)
+        else None
+    )
 
 
 def _gate_min(
@@ -68,6 +74,39 @@ def _gate_min(
             "meets minimum"
             if observed>=minimum
             else "below minimum"
+        ),
+    )
+
+
+def _gate_gt(
+    *,
+    name: str,
+    observed: float | None,
+    minimum_exclusive: float,
+    missing_reason: str,
+) -> GateResult:
+    if observed is None:
+        return GateResult(
+            name,
+            GateStatus.BLOCKED,
+            None,
+            {"gt":minimum_exclusive},
+            missing_reason,
+        )
+    passed=observed>minimum_exclusive
+    return GateResult(
+        name,
+        (
+            GateStatus.PASS
+            if passed
+            else GateStatus.FAIL
+        ),
+        observed,
+        {"gt":minimum_exclusive},
+        (
+            "strictly above threshold"
+            if passed
+            else "not strictly above threshold"
         ),
     )
 
@@ -143,20 +182,20 @@ def evaluate_promotion(
         True,
     ):
         gates.append(
-            _gate_min(
+            _gate_gt(
                 name="conservative_expectancy",
                 observed=_number(
                     conservative_metrics,
                     "expectancy",
                 ),
-                minimum=float(
+                minimum_exclusive=float(
                     cfg.get(
                         "min_conservative_expectancy",
                         0.0,
                     )
                 ),
                 missing_reason=
-                    "conservative expectancy missing",
+                    "conservative expectancy missing or non-finite",
             )
         )
 
