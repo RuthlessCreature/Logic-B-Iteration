@@ -470,32 +470,172 @@ def cmd_align_b0(args: argparse.Namespace) -> int:
     return 0
 
 
-def _minute_loader_for_run(
+def _xgb_pre_close_for_symbol_day(
+    *,
+    store: LocalParquetStore,
+    trade_dates: list[str],
+    day_key: str,
+    code: str,
+) -> float | None:
+    limits=store.read_optional(
+        "limit_prices",
+        day_key,
+    )
+    if (
+        limits is not None
+        and not limits.empty
+        and "ts_code" in limits.columns
+        and "pre_close" in limits.columns
+    ):
+        row=limits[
+            limits["ts_code"].astype(str)
+            ==str(code)
+        ]
+        if not row.empty:
+            value=pd.to_numeric(
+                row.iloc[0]["pre_close"],
+                errors="coerce",
+            )
+            if pd.notna(value) and float(value)>0:
+                return float(value)
+
+    normalized=[
+        pd.to_datetime(value).strftime("%Y%m%d")
+        for value in trade_dates
+    ]
+    try:
+        index=normalized.index(
+            pd.to_datetime(day_key).strftime("%Y%m%d")
+        )
+    except ValueError:
+        index=-1
+
+    if index>0:
+        prev=normalized[index-1]
+
+        daily=store.read_optional(
+            "daily",
+            prev,
+        )
+        if (
+            daily is not None
+            and not daily.empty
+            and "ts_code" in daily.columns
+            and "close" in daily.columns
+        ):
+            row=daily[
+                daily["ts_code"].astype(str)
+                ==str(code)
+            ]
+            if not row.empty:
+                value=pd.to_numeric(
+                    row.iloc[0]["close"],
+                    errors="coerce",
+                )
+                if (
+                    pd.notna(value)
+                    and float(value)>0
+                ):
+                    return float(value)
+
+        prior_pool=store.read_optional(
+            "limit_up",
+            prev,
+        )
+        if (
+            prior_pool is not None
+            and not prior_pool.empty
+            and "ts_code" in prior_pool.columns
+        ):
+            row=prior_pool[
+                prior_pool["ts_code"].astype(str)
+                ==str(code)
+            ]
+            if not row.empty:
+                return XuangubaoMarketIngestor.pre_close_from_prior_row(
+                    row.iloc[0]
+                )
+
+    return None
+
+
+def _loaders_for_run(
     *,
     enabled: bool,
+    source: str,
     store: LocalParquetStore,
+    trade_dates: list[str],
 ):
     if not enabled:
-        return None
+        return None,None
 
-    ingestor=HistoricalIngestor(
-        TushareProvider(),
-        store,
+    if source=="tushare":
+        ingestor=HistoricalIngestor(
+            TushareProvider(),
+            store,
+        )
+
+        def minute_loader(
+            day_key: str,
+            code: str,
+        ) -> pd.DataFrame:
+            day=pd.to_datetime(
+                day_key
+            ).date()
+            ingestor.fetch_minutes(
+                day,
+                [code],
+                force=False,
+            )
+            return store.read_frame(
+                "minute_1m",
+                f"{day_key}/{code}",
+            )
+
+        return minute_loader,None
+
+    if source=="xuangubao":
+        ingestor=XuangubaoMarketIngestor(
+            XuangubaoMarketProvider(),
+            store,
+            inter_request_sleep=0.10,
+        )
+
+        def market_loader(
+            day_key: str,
+            code: str,
+        ):
+            pre_close=_xgb_pre_close_for_symbol_day(
+                store=store,
+                trade_dates=trade_dates,
+                day_key=day_key,
+                code=code,
+            )
+            result=ingestor.materialize_symbol_day(
+                trade_date=pd.to_datetime(
+                    day_key
+                ).date(),
+                ts_code=code,
+                pre_close=pre_close,
+                force=False,
+            )
+            return result
+
+        def minute_loader(
+            day_key: str,
+            code: str,
+        ) -> pd.DataFrame:
+            result=market_loader(
+                day_key,
+                code,
+            )
+            return result["minute_1m"]
+
+        return minute_loader,market_loader
+
+    raise SystemExit(
+        f"unsupported missing-minute source: {source}"
     )
-
-    def loader(day_key: str,code: str) -> pd.DataFrame:
-        day=pd.to_datetime(day_key).date()
-        ingestor.fetch_minutes(
-            day,
-            [code],
-            force=False,
-        )
-        return store.read_frame(
-            "minute_1m",
-            f"{day_key}/{code}",
-        )
-
-    return loader
 
 
 def _runner_from_config(
@@ -504,6 +644,7 @@ def _runner_from_config(
     store: LocalParquetStore,
     model: FillModel,
     minute_loader=None,
+    market_loader=None,
 ) -> B0ReplayRunner:
     return B0ReplayRunner(
         store,
@@ -546,6 +687,7 @@ def _runner_from_config(
             "%H:%M",
         ).time(),
         minute_loader=minute_loader,
+        market_loader=market_loader,
         exclude_st=bool(
             cfg["universe"].get(
                 "exclude_st",
@@ -578,9 +720,11 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
     store=LocalParquetStore(args.data_root)
     dates=_calendar_dates(store,start,end)
 
-    minute_loader=_minute_loader_for_run(
+    minute_loader,market_loader=_loaders_for_run(
         enabled=args.fetch_missing_minutes,
+        source=args.missing_minute_source,
         store=store,
+        trade_dates=dates,
     )
 
     selected=[FillModel(args.fill)] if args.fill!="all" else [
@@ -596,6 +740,7 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             store=store,
             model=model,
             minute_loader=minute_loader,
+            market_loader=market_loader,
         )
         result=runner.run(dates)
         run_dir=Path(args.run_root)/(
@@ -655,9 +800,11 @@ def cmd_walk_forward_b0(args: argparse.Namespace) -> int:
         end,
     )
     model=FillModel(args.fill)
-    minute_loader=_minute_loader_for_run(
+    minute_loader,market_loader=_loaders_for_run(
         enabled=args.fetch_missing_minutes,
+        source=args.missing_minute_source,
         store=store,
+        trade_dates=dates,
     )
 
     initial_cash=float(
@@ -696,6 +843,7 @@ def cmd_walk_forward_b0(args: argparse.Namespace) -> int:
             store=store,
             model=model,
             minute_loader=minute_loader,
+            market_loader=market_loader,
         ),
         initial_cash=initial_cash,
         min_train_days=min_train_days,
@@ -862,6 +1010,11 @@ def main() -> int:
         "--fetch-missing-minutes",
         action="store_true",
     )
+    p.add_argument(
+        "--missing-minute-source",
+        choices=["tushare","xuangubao"],
+        default="tushare",
+    )
     p.set_defaults(func=cmd_walk_forward_b0)
 
     p=sub.add_parser("run-b0")
@@ -883,7 +1036,13 @@ def main() -> int:
     p.add_argument(
         "--fetch-missing-minutes",
         action="store_true",
-        help="fetch missing minute bars on demand and persist them locally",
+        help="fetch missing market/minute data on demand and persist it locally",
+    )
+    p.add_argument(
+        "--missing-minute-source",
+        choices=["tushare","xuangubao"],
+        default="tushare",
+        help="source used only when --fetch-missing-minutes is enabled",
     )
     p.set_defaults(func=cmd_run_b0)
 
