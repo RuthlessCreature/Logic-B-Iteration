@@ -136,6 +136,14 @@ def preflight_provider(
     )
     checks.append(st_check)
 
+    suspend_check,_=_run_check(
+        "suspend_d",
+        lambda:provider.suspensions(
+            trade_date
+        ),
+    )
+    checks.append(suspend_check)
+
     chosen=sample_code
     if not chosen:
         for frame in (limit_up,kpl,daily):
