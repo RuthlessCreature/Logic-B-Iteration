@@ -1,0 +1,61 @@
+name: xgb-integration
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/xgb-integration.yml"
+
+jobs:
+  xgb-public-pipeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - run: pip install -e ".[dev]"
+
+      - name: Evidence preflight
+        run: logic-b preflight-xgb --date 2026-06-30
+
+      - name: Historical minute preflight
+        run: logic-b preflight-xgb-market --date 2026-06-30
+
+      - name: Fetch short evidence window
+        run: |
+          logic-b fetch-xgb-evidence \
+            --start 2026-06-24 \
+            --end 2026-06-30 \
+            --data-root /tmp/logic-b-xgb \
+            --sleep 0.05
+
+      - name: Fetch candidate market slices
+        run: |
+          logic-b fetch-xgb-market \
+            --start 2026-06-24 \
+            --end 2026-06-30 \
+            --data-root /tmp/logic-b-xgb \
+            --sleep 0.05
+
+      - name: Candidate-slice readiness
+        run: |
+          logic-b xgb-readiness \
+            --start 2026-06-24 \
+            --end 2026-06-30 \
+            --data-root /tmp/logic-b-xgb
+
+      - name: Replay short B0 window
+        run: |
+          logic-b run-b0 \
+            --start 2026-06-24 \
+            --end 2026-06-30 \
+            --data-root /tmp/logic-b-xgb \
+            --run-root /tmp/logic-b-runs \
+            --fill realistic \
+            --fetch-missing-minutes \
+            --missing-minute-source xuangubao
