@@ -23,6 +23,16 @@ def _jsonable(v: Any) -> Any:
     return v
 
 
+def _rows(items: list[Any]) -> list[dict]:
+    rows=[]
+    for item in items:
+        row=_jsonable(item)
+        if isinstance(row,dict) and isinstance(row.get("evidence"),dict):
+            row["evidence_json"]=json.dumps(row.pop("evidence"),ensure_ascii=False,sort_keys=True)
+        rows.append(row)
+    return rows
+
+
 def write_run_artifacts(
     *,
     run_dir: str | Path,
@@ -37,8 +47,8 @@ def write_run_artifacts(
     root=Path(run_dir)
     root.mkdir(parents=True,exist_ok=True)
 
-    sig_rows=[_jsonable(x) for x in signals]
-    fill_rows=[_jsonable(x) for x in fills]
+    sig_rows=_rows(signals)
+    fill_rows=_rows(fills)
     pd.DataFrame(sig_rows).to_parquet(root/"signals.parquet",index=False)
     pd.DataFrame(fill_rows).to_parquet(root/"fills.parquet",index=False)
     pd.DataFrame(trades).to_parquet(root/"trades.parquet",index=False)
