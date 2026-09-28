@@ -14,6 +14,7 @@ from .diagnostics import preflight_provider
 from .features import classify_market_regime
 from .ingest import HistoricalIngestor
 from .models import FillModel
+from .neighborhood import build_threshold_neighborhood,evaluate_threshold_neighborhood
 from .promotion import evaluate_promotion
 from .providers.tushare import TushareProvider
 from .providers.xuangubao import XuangubaoEvidenceProvider
@@ -22,6 +23,7 @@ from .readiness import assess_data_readiness
 from .replay.runner import B0ReplayRunner
 from .reporting import write_run_artifacts
 from .storage import LocalParquetStore
+from .strategy.b0 import B0Proxy
 from .walkforward import evaluate_walk_forward
 from .xgb_ingest import XuangubaoEvidenceIngestor
 from .xgb_market_ingest import XuangubaoMarketIngestor
@@ -766,9 +768,11 @@ def _runner_from_config(
     model: FillModel,
     minute_loader=None,
     market_loader=None,
+    strategy=None,
 ) -> B0ReplayRunner:
     return B0ReplayRunner(
         store,
+        strategy=strategy,
         fill_model=model,
         initial_cash=float(
             cfg["portfolio"].get(
@@ -898,6 +902,160 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
         default=str,
         indent=2,
     ))
+    return 0
+
+
+def cmd_parameter_neighborhood_b0(args: argparse.Namespace) -> int:
+    cfg=_config(args.config)
+    start=_date(args.start)
+    end=_date(args.end)
+
+    assert_holdout_access(
+        cfg,
+        start,
+        end,
+        unlock=False,
+    )
+
+    store=LocalParquetStore(
+        args.data_root
+    )
+    dates=_calendar_dates(
+        store,
+        start,
+        end,
+    )
+
+    minute_loader,market_loader=_loaders_for_run(
+        enabled=args.fetch_missing_minutes,
+        source=args.missing_minute_source,
+        store=store,
+        trade_dates=dates,
+    )
+
+    strategy_cfg=cfg.get(
+        "strategy",
+        {},
+    )
+    base_confirmation=float(
+        strategy_cfg.get(
+            "min_confirmation",
+            0.58,
+        )
+    )
+    base_tradability=float(
+        strategy_cfg.get(
+            "min_tradability",
+            0.45,
+        )
+    )
+    neighborhood_cfg=strategy_cfg.get(
+        "neighborhood",
+        {},
+    )
+
+    points=build_threshold_neighborhood(
+        base_confirmation=base_confirmation,
+        base_tradability=base_tradability,
+        confirmation_step=float(
+            neighborhood_cfg.get(
+                "confirmation_step",
+                0.03,
+            )
+        ),
+        tradability_step=float(
+            neighborhood_cfg.get(
+                "tradability_step",
+                0.05,
+            )
+        ),
+    )
+    model=FillModel(args.fill)
+
+    rows,summary=evaluate_threshold_neighborhood(
+        trade_dates=dates,
+        runner_factory=lambda point:_runner_from_config(
+            cfg=cfg,
+            store=store,
+            model=model,
+            minute_loader=minute_loader,
+            market_loader=market_loader,
+            strategy=B0Proxy(
+                min_confirmation=
+                    point.min_confirmation,
+                min_tradability=
+                    point.min_tradability,
+            ),
+        ),
+        points=points,
+        min_positive_expectancy_rate=float(
+            neighborhood_cfg.get(
+                "min_positive_expectancy_rate",
+                0.75,
+            )
+        ),
+        min_positive_total_return_rate=float(
+            neighborhood_cfg.get(
+                "min_positive_total_return_rate",
+                0.75,
+            )
+        ),
+        max_neighbor_drawdown_abs=float(
+            neighborhood_cfg.get(
+                "max_neighbor_drawdown_abs",
+                0.30,
+            )
+        ),
+        min_closed_trades_each=int(
+            neighborhood_cfg.get(
+                "min_closed_trades_each",
+                20,
+            )
+        ),
+    )
+
+    run_dir=Path(args.run_root)/(
+        f'neighborhood_{cfg["version"]}_'
+        f'{start:%Y%m%d}_{end:%Y%m%d}_'
+        f'{model.value}'
+    )
+    run_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    pd.DataFrame(rows).to_parquet(
+        run_dir/"neighbors.parquet",
+        index=False,
+    )
+    (run_dir/"neighborhood.json").write_text(
+        json.dumps(
+            summary,
+            ensure_ascii=False,
+            indent=2,
+            allow_nan=True,
+        ),
+        encoding="utf-8",
+    )
+    (run_dir/"spec.json").write_text(
+        json.dumps({
+            "version":cfg["version"],
+            "base_confirmation":
+                base_confirmation,
+            "base_tradability":
+                base_tradability,
+            "fill_model":model.value,
+            "start":args.start,
+            "end":args.end,
+            "neighbor_count":len(points),
+        },ensure_ascii=False,indent=2),
+        encoding="utf-8",
+    )
+
+    print(json.dumps({
+        "status":"ok",
+        "run_dir":str(run_dir),
+        "summary":summary,
+    },ensure_ascii=False,indent=2,allow_nan=True))
     return 0
 
 
@@ -1130,6 +1288,37 @@ def main() -> int:
     p.add_argument("--candidate-meta")
     p.add_argument("--out")
     p.set_defaults(func=cmd_promotion_check)
+
+    p=sub.add_parser("parameter-neighborhood-b0")
+    _add_range_args(p)
+    p.add_argument(
+        "--run-root",
+        default="runs",
+    )
+    p.add_argument(
+        "--config",
+        default="config/b0.yaml",
+    )
+    p.add_argument(
+        "--fill",
+        choices=[
+            "realistic",
+            "conservative",
+        ],
+        default="conservative",
+    )
+    p.add_argument(
+        "--fetch-missing-minutes",
+        action="store_true",
+    )
+    p.add_argument(
+        "--missing-minute-source",
+        choices=["tushare","xuangubao"],
+        default="tushare",
+    )
+    p.set_defaults(
+        func=cmd_parameter_neighborhood_b0
+    )
 
     p=sub.add_parser("walk-forward-b0")
     _add_range_args(p)
