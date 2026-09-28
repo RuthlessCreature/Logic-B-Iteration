@@ -225,3 +225,70 @@ def test_range_materializes_empty_suspend_and_prior_name_st_state(tmp_path):
         stock_st.iloc[0]["source"]
         =="xuangubao_prior_name_inference"
     )
+
+
+def test_xgb_fallback_does_not_overwrite_existing_daily_or_limits(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+    provider=FakeMarketProvider()
+    ingestor=XuangubaoMarketIngestor(
+        provider,
+        store,
+        inter_request_sleep=0,
+    )
+
+    store.write_frame(
+        "daily",
+        "20260928",
+        pd.DataFrame([{
+            "trade_date":"20260928",
+            "ts_code":"600000.SH",
+            "open":99.0,
+            "high":99.0,
+            "low":99.0,
+            "close":99.0,
+            "vol":1.0,
+            "amount":99.0,
+            "pct_chg":0.0,
+            "source":"authoritative",
+        }]),
+    )
+    store.write_frame(
+        "limit_prices",
+        "20260928",
+        pd.DataFrame([{
+            "trade_date":"20260928",
+            "ts_code":"600000.SH",
+            "pre_close":90.0,
+            "up_limit":99.0,
+            "down_limit":81.0,
+            "source":"authoritative",
+        }]),
+    )
+
+    ingestor.materialize_symbol_day(
+        trade_date=date(2026,9,28),
+        ts_code="600000.SH",
+        pre_close=10.0,
+        force=True,
+    )
+
+    daily=store.read_frame(
+        "daily",
+        "20260928",
+    )
+    limits=store.read_frame(
+        "limit_prices",
+        "20260928",
+    )
+
+    row=daily[
+        daily["ts_code"]=="600000.SH"
+    ].iloc[0]
+    lim=limits[
+        limits["ts_code"]=="600000.SH"
+    ].iloc[0]
+
+    assert row["close"]==99.0
+    assert row["source"]=="authoritative"
+    assert lim["up_limit"]==99.0
+    assert lim["source"]=="authoritative"
