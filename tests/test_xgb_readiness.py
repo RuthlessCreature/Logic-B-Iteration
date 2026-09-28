@@ -123,6 +123,53 @@ def test_xgb_candidate_slice_ready_when_complete(tmp_path):
     assert report.minute_partitions_missing==0
 
 
+def test_xgb_readiness_excludes_flagged_new_stock_without_market_data(tmp_path):
+    store=_build_store(
+        tmp_path,
+        with_minute=True,
+    )
+    store.write_frame(
+        "limit_up",
+        "20260925",
+        pd.DataFrame({
+            "ts_code":[
+                "600000.SH",
+                "001999.SZ",
+            ],
+            "name":[
+                "示例股份",
+                "新股示例",
+            ],
+            "is_new_stock":[
+                False,
+                True,
+            ],
+        }),
+    )
+
+    report=assess_xgb_candidate_readiness(
+        store=store,
+        trade_dates=DATES,
+        include_boards=(
+            "main",
+            "chinext",
+            "star",
+        ),
+        exclude_st=True,
+        exclude_no_limit_ipo_days=True,
+    )
+
+    assert report.ready
+    assert (
+        report.candidate_symbol_days_expected
+        ==1
+    )
+    assert all(
+        "001999.SZ" not in token
+        for token in report.missing_minutes
+    )
+
+
 def test_xgb_readiness_names_missing_candidate_minute(tmp_path):
     store=_build_store(
         tmp_path,
