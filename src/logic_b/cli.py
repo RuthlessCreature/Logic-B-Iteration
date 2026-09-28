@@ -14,6 +14,7 @@ from .diagnostics import preflight_provider
 from .features import classify_market_regime
 from .ingest import HistoricalIngestor
 from .models import FillModel
+from .promotion import evaluate_promotion
 from .providers.tushare import TushareProvider
 from .providers.xuangubao import XuangubaoEvidenceProvider
 from .providers.xuangubao_market import XuangubaoMarketProvider
@@ -38,6 +39,16 @@ def _config(path: str) -> dict:
     if missing:
         raise SystemExit(f"missing config keys: {missing}")
     return cfg
+
+
+def _read_json(path: str | None) -> dict | None:
+    if not path:
+        return None
+    return json.loads(
+        Path(path).read_text(
+            encoding="utf-8"
+        )
+    )
 
 
 def _read_table(path: str) -> pd.DataFrame:
@@ -505,6 +516,24 @@ def cmd_align_b0(args: argparse.Namespace) -> int:
         else:
             raise SystemExit("--out must end in .csv or .parquet")
 
+    if args.metrics_out:
+        metrics_out=Path(
+            args.metrics_out
+        )
+        metrics_out.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        metrics_out.write_text(
+            json.dumps(
+                metrics,
+                ensure_ascii=False,
+                allow_nan=True,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
     print(json.dumps(
         {"status":"ok","metrics":metrics,"audit_rows":len(audit)},
         ensure_ascii=False,
@@ -512,6 +541,54 @@ def cmd_align_b0(args: argparse.Namespace) -> int:
         indent=2,
     ))
     return 0
+
+
+def cmd_promotion_check(args: argparse.Namespace) -> int:
+    cfg=_config(args.config)
+    result=evaluate_promotion(
+        promotion_config=cfg["promotion"],
+        conservative_metrics=_read_json(
+            args.conservative
+        ),
+        walk_forward_summary=_read_json(
+            args.walk_forward
+        ),
+        alignment_metrics=_read_json(
+            args.alignment
+        ),
+        neighborhood_stability=_read_json(
+            args.stability
+        ),
+        candidate_meta=_read_json(
+            args.candidate_meta
+        ),
+    )
+
+    if args.out:
+        out=Path(args.out)
+        out.parent.mkdir(
+            parents=True,
+            exist_ok=True,
+        )
+        out.write_text(
+            json.dumps(
+                result,
+                ensure_ascii=False,
+                indent=2,
+            ),
+            encoding="utf-8",
+        )
+
+    print(json.dumps(
+        result,
+        ensure_ascii=False,
+        indent=2,
+    ))
+    return (
+        0
+        if result["status"]=="PASS"
+        else 2
+    )
 
 
 def _xgb_pre_close_for_symbol_day(
@@ -1041,7 +1118,18 @@ def main() -> int:
     p.add_argument("--human",required=True)
     p.add_argument("--proxy",required=True)
     p.add_argument("--out")
+    p.add_argument("--metrics-out")
     p.set_defaults(func=cmd_align_b0)
+
+    p=sub.add_parser("promotion-check")
+    p.add_argument("--config",default="config/b0.yaml")
+    p.add_argument("--conservative",required=True)
+    p.add_argument("--walk-forward",required=True)
+    p.add_argument("--alignment")
+    p.add_argument("--stability")
+    p.add_argument("--candidate-meta")
+    p.add_argument("--out")
+    p.set_defaults(func=cmd_promotion_check)
 
     p=sub.add_parser("walk-forward-b0")
     _add_range_args(p)
