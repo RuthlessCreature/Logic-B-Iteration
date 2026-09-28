@@ -14,10 +14,17 @@ def _d(v: date) -> str:
 
 
 class TushareProvider(MarketDataProvider):
-    """Thin provider wrapper.
+    """Tushare historical provider.
 
-    Token is read from TUSHARE_TOKEN unless supplied explicitly.
-    Minute data requires separate Tushare minute-data permission.
+    Required:
+      - TUSHARE_TOKEN
+      - 8000-point permission for limit_list_ths
+      - separate stock-minute permission for minute replay
+
+    Note: stk_auction_o is published by Tushare after market close. In historical
+    replay it represents auction information that market participants could
+    observe during the auction, but it must not be described as a live Tushare
+    feed available at 09:25.
     """
 
     def __init__(self, token: str | None = None):
@@ -37,6 +44,12 @@ class TushareProvider(MarketDataProvider):
 
     def daily(self, trade_date: date) -> pd.DataFrame:
         return self.pro.daily(trade_date=_d(trade_date))
+
+    def limit_prices(self, trade_date: date) -> pd.DataFrame:
+        return self.pro.stk_limit(trade_date=_d(trade_date))
+
+    def opening_auction(self, trade_date: date) -> pd.DataFrame:
+        return self.pro.stk_auction_o(trade_date=_d(trade_date))
 
     def stock_minute(
         self, ts_code: str, start: datetime, end: datetime, freq: str = "1min"
