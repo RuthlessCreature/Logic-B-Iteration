@@ -431,6 +431,24 @@ class B0ReplayRunner:
                     excluded,
                 )
 
+                new_stock_excluded_count=0
+                if (
+                    self.exclude_no_limit_ipo_days
+                    and not candidates.empty
+                    and "is_new_stock" in candidates.columns
+                ):
+                    flags=(
+                        candidates["is_new_stock"]
+                        .fillna(False)
+                        .astype(bool)
+                    )
+                    new_stock_excluded_count=int(
+                        flags.sum()
+                    )
+                    candidates=candidates[
+                        ~flags
+                    ].copy()
+
                 if (
                     self.market_loader is not None
                     and not candidates.empty
@@ -579,6 +597,9 @@ class B0ReplayRunner:
                 signal.evidence[
                     "exclude_no_limit_ipo_days"
                 ]=self.exclude_no_limit_ipo_days
+                signal.evidence[
+                    "new_stock_candidate_excluded_count"
+                ]=new_stock_excluded_count
                 signals.append(signal)
 
                 if (
