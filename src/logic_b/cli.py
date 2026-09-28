@@ -238,6 +238,21 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
     store=LocalParquetStore(args.data_root)
     dates=_calendar_dates(store,start,end)
 
+    minute_loader=None
+    if args.fetch_missing_minutes:
+        ingestor=HistoricalIngestor(
+            TushareProvider(),
+            store,
+        )
+
+        def minute_loader(day_key: str,code: str) -> pd.DataFrame:
+            day=pd.to_datetime(day_key).date()
+            ingestor.fetch_minutes(day,[code],force=False)
+            return store.read_frame(
+                "minute_1m",
+                f"{day_key}/{code}",
+            )
+
     selected=[FillModel(args.fill)] if args.fill!="all" else [
         FillModel.OPTIMISTIC,
         FillModel.REALISTIC,
@@ -258,11 +273,7 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             stamp_rate=float(
                 cfg["execution"].get("stamp_rate",0.0005)
             ),
-            checkpoint=datetime.strptime(
-                cfg["execution"].get("decision_checkpoint","09:35"),
-                "%H:%M",
-            ).time(),
-        )
+            checkpoint=datetime.strptime(\n                cfg["execution"].get("decision_checkpoint","09:35"),\n                "%H:%M",\n            ).time(),\n            minute_loader=minute_loader,\n        )
         result=runner.run(dates)
         run_dir=Path(args.run_root)/(
             f'{cfg["version"]}_{start:%Y%m%d}_'
@@ -357,6 +368,11 @@ def main() -> int:
         "--unlock-holdout",
         action="store_true",
         help="explicitly allow final blind-holdout evaluation",
+    )
+    p.add_argument(
+        "--fetch-missing-minutes",
+        action="store_true",
+        help="fetch missing minute bars on demand and persist them locally",
     )
     p.set_defaults(func=cmd_run_b0)
 
