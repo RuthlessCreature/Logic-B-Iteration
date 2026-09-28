@@ -1,0 +1,79 @@
+name: Xuangubao Historical Minute Smoke
+
+on:
+  push:
+    paths:
+      - ".github/workflows/xuangubao-historical-minute-smoke.yml"
+      - "src/logic_b/providers/xuangubao_market.py"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Fetch historical minute day
+        run: |
+          python - <<'PY'
+          from datetime import date
+          import json
+          from logic_b.providers.xuangubao_market import XuangubaoMarketProvider
+
+          provider=XuangubaoMarketProvider()
+          result=provider.historical_minute_day(
+              "603607.SH",
+              date(2026,6,30),
+          )
+          bars=result.bars
+          daily=provider.daily_from_minute(result)
+          limits=provider.limit_prices(result)
+
+          summary={
+              "bars":len(bars),
+              "first":str(bars.iloc[0]["trade_time"]) if len(bars) else None,
+              "last":str(bars.iloc[-1]["trade_time"]) if len(bars) else None,
+              "pre_close":result.pre_close,
+              "open":float(daily.iloc[0]["open"]) if not daily.empty else None,
+              "high":float(daily.iloc[0]["high"]) if not daily.empty else None,
+              "low":float(daily.iloc[0]["low"]) if not daily.empty else None,
+              "close":float(daily.iloc[0]["close"]) if not daily.empty else None,
+              "up_limit":float(limits.iloc[0]["up_limit"]) if not limits.empty else None,
+              "down_limit":float(limits.iloc[0]["down_limit"]) if not limits.empty else None,
+          }
+          print(json.dumps(summary,ensure_ascii=False,indent=2))
+
+          assert len(bars)>=200
+          assert bars.iloc[0]["trade_time"].date()==date(2026,6,30)
+          assert bars.iloc[-1]["trade_time"].date()==date(2026,6,30)
+          assert abs(float(result.pre_close)-22.36)<1e-9
+          assert abs(float(limits.iloc[0]["up_limit"])-24.60)<1e-9
+          assert abs(float(daily.iloc[0]["close"])-24.60)<1e-9
+
+          bars.to_parquet("603607_20260630_1m.parquet",index=False)
+          open("minute_smoke.json","w",encoding="utf-8").write(
+              json.dumps(summary,ensure_ascii=False,indent=2)
+          )
+          PY
+
+      - name: Upload smoke artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xuangubao-historical-minute-smoke
+          path: |
+            minute_smoke.json
+          if-no-files-found: warn
+          retention-days: 7
