@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import timedelta
 from typing import Callable
 
-import numpy as np
 import pandas as pd
 
 from .metrics import summarize_equity
@@ -123,93 +121,82 @@ def validation_fold_metrics(
     *,
     initial_cash: float,
 ) -> dict[str,float | str | int | None]:
-    validation_set=set(
-        fold.validation_dates
-    )
+    """Measure only the validation window.
 
-    equity=pd.DataFrame(
-        result.daily_equity
-    )
-    if equity.empty:
-        raise ValueError(
-            "replay returned no equity rows"
-        )
-    equity["date_key"]=pd.to_datetime(
-        equity["date"]
-    ).dt.strftime("%Y%m%d")
-    equity=equity[
-        equity["date_key"].isin(
-            validation_set
-        )
+    Warmup sessions establish state but their P&L is excluded. Validation is
+    anchored to the actual portfolio equity at the end of the last warmup
+    session. Trade expectancy uses only trades fully contained in validation.
+    """
+    validation_set=set(fold.validation_dates)
+    warmup_set=set(fold.warmup_dates)
+
+    all_equity=pd.DataFrame(result.daily_equity)
+    if all_equity.empty:
+        raise ValueError("replay returned no equity rows")
+
+    all_equity["date"]=pd.to_datetime(all_equity["date"])
+    all_equity["date_key"]=all_equity["date"].dt.strftime("%Y%m%d")
+
+    validation_equity=all_equity[
+        all_equity["date_key"].isin(validation_set)
     ].copy()
+    if validation_equity.empty:
+        raise ValueError("replay returned no validation equity rows")
 
-    if equity.empty:
-        raise ValueError(
-            "replay returned no validation equity rows"
-        )
+    warmup_equity=all_equity[
+        all_equity["date_key"].isin(warmup_set)
+    ].sort_values("date")
 
-    first_date=pd.to_datetime(
-        fold.validation_start
-    )
-    baseline=pd.DataFrame([{
-        "date":
-            first_date
-            -timedelta(days=1),
-        "equity":float(initial_cash),
-    }])
+    if warmup_equity.empty:
+        baseline_date=validation_equity["date"].min()-pd.Timedelta(days=1)
+        baseline_equity=float(initial_cash)
+    else:
+        baseline_row=warmup_equity.iloc[-1]
+        baseline_date=pd.Timestamp(baseline_row["date"])
+        baseline_equity=float(baseline_row["equity"])
+
     metric_equity=pd.concat(
         [
-            baseline,
-            equity[["date","equity"]],
+            pd.DataFrame([{
+                "date":baseline_date,
+                "equity":baseline_equity,
+            }]),
+            validation_equity[["date","equity"]],
         ],
         ignore_index=True,
     )
 
-    trades=pd.DataFrame(
-        result.trades
-    )
+    trades=pd.DataFrame(result.trades)
     if not trades.empty:
-        trades["exit_date_key"]=(
-            pd.to_datetime(
-                trades["exit_time"]
-            )
-            .dt.strftime("%Y%m%d")
-        )
+        trades["entry_date_key"]=pd.to_datetime(
+            trades["entry_time"]
+        ).dt.strftime("%Y%m%d")
+        trades["exit_date_key"]=pd.to_datetime(
+            trades["exit_time"]
+        ).dt.strftime("%Y%m%d")
         trades=trades[
-            trades["exit_date_key"].isin(
-                validation_set
-            )
+            trades["entry_date_key"].isin(validation_set)
+            &trades["exit_date_key"].isin(validation_set)
         ].copy()
-        trades=trades.rename(
-            columns={
-                "net_return":"return"
-            }
-        )
+        trades=trades.rename(columns={"net_return":"return"})
 
-    metrics=summarize_equity(
-        metric_equity,
-        trades,
-    )
+    metrics=summarize_equity(metric_equity,trades)
     metrics.update({
         "fold":fold.index,
         "train_start":fold.train_start,
         "train_end":fold.train_end,
-        "validation_start":
-            fold.validation_start,
-        "validation_end":
-            fold.validation_end,
-        "validation_trade_days":
-            len(fold.validation_dates),
-        "exposure_rate":float(
-            equity["holding"]
-            .notna()
-            .mean()
-        )
-        if "holding" in equity.columns
-        else float("nan"),
+        "validation_start":fold.validation_start,
+        "validation_end":fold.validation_end,
+        "validation_trade_days":len(fold.validation_dates),
+        "validation_baseline_equity":baseline_equity,
+        "complete_validation_trades":int(len(trades)),
+        "exposure_rate":(
+            float(validation_equity["holding"].notna().mean())
+            if "holding" in validation_equity.columns
+            else float("nan")
+        ),
     })
     return metrics
-
 
 def summarize_walk_forward(
     fold_metrics: list[dict],
