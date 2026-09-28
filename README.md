@@ -672,3 +672,91 @@ runs/
 目标不是证明 Logic A 正确。
 
 目标是让 Logic A 经得起真实历史、真实交易约束、不同市场阶段和未见样本的检验。
+
+
+---
+
+## 22. Xuangubao 公共 Candidate-Slice 路线
+
+当 Tushare 的历史分钟或部分高级数据权限不可用时，可以使用 Xuangubao 公共数据路线做独立研究。
+
+这条路线不是全市场日线替代，而是：
+
+```text
+历史涨停/跌停/炸板/题材证据
+        ↓
+D-1 涨停候选
+        ↓
+按候选物化 D 日分钟 / 日线 / 涨跌停价
+        ↓
+candidate-slice readiness
+        ↓
+B0 replay
+```
+
+完整规格：
+
+```text
+docs/07_XUANGUBAO_PUBLIC_PIPELINE.md
+```
+
+### 22.1 接口预检
+
+```bash
+logic-b preflight-xgb \
+  --date 2026-06-30
+
+logic-b preflight-xgb-market \
+  --date 2026-06-30
+```
+
+### 22.2 构建开发集
+
+建议与 Tushare 数据分开存放：
+
+```bash
+logic-b fetch-xgb-evidence \
+  --start 2024-09-30 \
+  --end 2026-06-30 \
+  --data-root data-xgb
+
+logic-b fetch-xgb-market \
+  --start 2024-09-30 \
+  --end 2026-06-30 \
+  --data-root data-xgb
+```
+
+### 22.3 XGB 专用 Readiness
+
+```bash
+logic-b xgb-readiness \
+  --start 2024-09-30 \
+  --end 2026-06-30 \
+  --data-root data-xgb
+```
+
+该检查按策略实际候选 symbol-day 计算覆盖率，不要求伪造全市场日线。
+
+### 22.4 回放与按需补数据
+
+```bash
+logic-b run-b0 \
+  --start 2024-09-30 \
+  --end 2026-06-30 \
+  --data-root data-xgb \
+  --fill all \
+  --fetch-missing-minutes \
+  --missing-minute-source xuangubao
+```
+
+持仓后续交易日若缺市场数据，runner 会先补完整 symbol-day，再判断是否可卖。
+
+### 22.5 重要限制
+
+Xuangubao 公共 fallback 当前有以下明确限制：
+
+- 历史 ST 状态不是官方逐日表，候选侧使用 D-1 名称进行保守推断；
+- `is_new_stock=true` 的候选在启用 IPO 无涨跌幅限制排除时直接保守剔除；
+- fallback 生成的 `daily / limit_prices` 不会静默覆盖已有更高权威数据；
+- 推荐单独使用 `data-xgb`，避免不同源的历史口径混杂；
+- XGB 路线的收益结果必须单独标明数据源，不得与 Tushare 路线静默拼接成同一结论。
