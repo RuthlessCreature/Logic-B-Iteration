@@ -278,6 +278,12 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
                 "%H:%M",
             ).time(),
             minute_loader=minute_loader,
+            exclude_st=bool(
+                cfg["universe"].get(
+                    "exclude_st",
+                    True,
+                )
+            ),
         )
         result=runner.run(dates)
         run_dir=Path(args.run_root)/(
