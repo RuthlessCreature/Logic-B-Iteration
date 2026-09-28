@@ -61,6 +61,26 @@ class XuangubaoMarketIngestor:
         )
 
     @staticmethod
+    def _day_has_code(
+        store: LocalParquetStore,
+        dataset: str,
+        day_key: str,
+        code: str,
+    ) -> bool:
+        frame=store.read_optional(
+            dataset,
+            day_key,
+        )
+        return bool(
+            frame is not None
+            and not frame.empty
+            and "ts_code" in frame.columns
+            and str(code) in set(
+                frame["ts_code"].astype(str)
+            )
+        )
+
+    @staticmethod
     def _upsert_day(
         store: LocalParquetStore,
         dataset: str,
@@ -200,7 +220,15 @@ class XuangubaoMarketIngestor:
                 minute_day
             )
 
-        if not daily_row.empty:
+        if (
+            not daily_row.empty
+            and not self._day_has_code(
+                self.store,
+                "daily",
+                day_key,
+                ts_code,
+            )
+        ):
             self._upsert_day(
                 self.store,
                 "daily",
@@ -213,7 +241,15 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-        if not limit_row.empty:
+        if (
+            not limit_row.empty
+            and not self._day_has_code(
+                self.store,
+                "limit_prices",
+                day_key,
+                ts_code,
+            )
+        ):
             self._upsert_day(
                 self.store,
                 "limit_prices",
@@ -399,21 +435,25 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-        st_rows=self._st_rows_from_prior_pool(
-            prior_limit_up,
-            trade_date=day_key,
-        )
-        self.store.write_frame(
+        if not self.store.exists(
             "stock_st",
             day_key,
-            st_rows,
-            metadata={
-                "source":"xuangubao_prior_name_inference",
-                "trade_date":day_key,
-                "limitation":
-                    "does not detect an overnight ST-name change absent from D-1 pool evidence",
-            },
-        )
+        ):
+            st_rows=self._st_rows_from_prior_pool(
+                prior_limit_up,
+                trade_date=day_key,
+            )
+            self.store.write_frame(
+                "stock_st",
+                day_key,
+                st_rows,
+                metadata={
+                    "source":"xuangubao_prior_name_inference",
+                    "trade_date":day_key,
+                    "limitation":
+                        "does not detect an overnight ST-name change absent from D-1 pool evidence",
+                },
+            )
 
     def materialize_range(
         self,
