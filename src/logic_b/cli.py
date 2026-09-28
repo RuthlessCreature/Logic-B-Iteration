@@ -15,11 +15,13 @@ from .features import classify_market_regime
 from .ingest import HistoricalIngestor
 from .models import FillModel
 from .providers.tushare import TushareProvider
+from .providers.xuangubao import XuangubaoEvidenceProvider
 from .readiness import assess_data_readiness
 from .replay.runner import B0ReplayRunner
 from .reporting import write_run_artifacts
 from .storage import LocalParquetStore
 from .walkforward import evaluate_walk_forward
+from .xgb_ingest import XuangubaoEvidenceIngestor
 
 
 def _date(v: str) -> date:
@@ -130,6 +132,47 @@ def cmd_preflight_data(args: argparse.Namespace) -> int:
         indent=2,
     ))
     return 0 if result["ok"] else 2
+
+
+def cmd_preflight_xgb(args: argparse.Namespace) -> int:
+    day=_date(args.date)
+    result=XuangubaoEvidenceProvider().preflight(
+        day
+    )
+    print(json.dumps(
+        result,
+        ensure_ascii=False,
+        indent=2,
+        default=str,
+    ))
+    return 0 if result["ok"] else 2
+
+
+def cmd_fetch_xgb_evidence(args: argparse.Namespace) -> int:
+    start=_date(args.start)
+    end=_date(args.end)
+    store=LocalParquetStore(args.data_root)
+    ingestor=XuangubaoEvidenceIngestor(
+        XuangubaoEvidenceProvider(),
+        store,
+        inter_request_sleep=args.sleep,
+    )
+    dates=ingestor.fetch_range(
+        start,
+        end,
+        force=args.force,
+    )
+    print(json.dumps({
+        "status":"ok",
+        "source":"xuangubao",
+        "trade_days":len(dates),
+        "first":dates[0] if dates else None,
+        "last":dates[-1] if dates else None,
+        "datasets":list(
+            XuangubaoEvidenceIngestor.DATASETS
+        ),
+    },ensure_ascii=False,indent=2))
+    return 0
 
 
 def cmd_fetch_daily(args: argparse.Namespace) -> int:
@@ -601,6 +644,20 @@ def main() -> int:
     p.add_argument("--date",required=True)
     p.add_argument("--code")
     p.set_defaults(func=cmd_preflight_data)
+
+    p=sub.add_parser("preflight-xgb")
+    p.add_argument("--date",required=True)
+    p.set_defaults(func=cmd_preflight_xgb)
+
+    p=sub.add_parser("fetch-xgb-evidence")
+    _add_range_args(p,include_force=True)
+    p.add_argument(
+        "--sleep",
+        type=float,
+        default=0.15,
+        help="polite delay between public API requests",
+    )
+    p.set_defaults(func=cmd_fetch_xgb_evidence)
 
     p=sub.add_parser("fetch-daily")
     _add_range_args(p,include_force=True)
