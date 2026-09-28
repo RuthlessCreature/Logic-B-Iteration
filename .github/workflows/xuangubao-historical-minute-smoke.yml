@@ -30,12 +30,24 @@ jobs:
           python - <<'PY'
           from datetime import date
           import json
+          from logic_b.providers.xuangubao import XuangubaoEvidenceProvider
           from logic_b.providers.xuangubao_market import XuangubaoMarketProvider
+
+          day=date(2026,6,30)
+          evidence=XuangubaoEvidenceProvider().limit_list(
+              day,
+              "涨停池",
+          )
+          row=evidence[
+              evidence["ts_code"]=="603607.SH"
+          ].iloc[0]
+          pre_close=float(row["prev_close"])
 
           provider=XuangubaoMarketProvider()
           result=provider.historical_minute_day(
               "603607.SH",
-              date(2026,6,30),
+              day,
+              pre_close_override=pre_close,
           )
           bars=result.bars
           daily=provider.daily_from_minute(result)
@@ -46,6 +58,7 @@ jobs:
               "first":str(bars.iloc[0]["trade_time"]) if len(bars) else None,
               "last":str(bars.iloc[-1]["trade_time"]) if len(bars) else None,
               "pre_close":result.pre_close,
+              "pre_close_source":result.pre_close_source,
               "open":float(daily.iloc[0]["open"]) if not daily.empty else None,
               "high":float(daily.iloc[0]["high"]) if not daily.empty else None,
               "low":float(daily.iloc[0]["low"]) if not daily.empty else None,
@@ -58,6 +71,7 @@ jobs:
           assert len(bars)>=200
           assert bars.iloc[0]["trade_time"].date()==date(2026,6,30)
           assert bars.iloc[-1]["trade_time"].date()==date(2026,6,30)
+          assert result.pre_close_source=="override"
           assert abs(float(result.pre_close)-22.36)<1e-9
           assert abs(float(limits.iloc[0]["up_limit"])-24.60)<1e-9
           assert abs(float(daily.iloc[0]["close"])-24.60)<1e-9
