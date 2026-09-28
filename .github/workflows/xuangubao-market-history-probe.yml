@@ -36,6 +36,10 @@ jobs:
             "$BASE/kline?prod_code=$CODE&tick_count=20&period_type=60&end_time=1782802800&fields=$FIELDS" \
             -o kline_end_time.json
 
+          curl --fail --silent --show-error --location -A "$UA" \
+            "$BASE/kline?prod_code=$CODE&tick_count=20&period_type=60&timestamp=1782802800&fields=$FIELDS" \
+            -o kline_timestamp.json
+
           python - <<'PY'
           import json,datetime,os
 
@@ -49,6 +53,7 @@ jobs:
                   print("data type",type(d).__name__)
                   if isinstance(d,dict):
                       print("data keys",list(d.keys())[:20])
+                      print("fields",d.get("fields"))
                       candle=d.get("candle")
                       if isinstance(candle,dict):
                           print("candle keys",list(candle.keys())[:10])
@@ -72,11 +77,13 @@ jobs:
           a=summarize("trend.json")
           b=summarize("kline_recent.json")
           c=summarize("kline_end_time.json")
+          d=summarize("kline_timestamp.json")
 
           open("summary.json","w",encoding="utf-8").write(json.dumps({
               "trend_code":a.get("code") if isinstance(a,dict) else None,
               "recent_code":b.get("code") if isinstance(b,dict) else None,
               "end_code":c.get("code") if isinstance(c,dict) else None,
+              "timestamp_code":d.get("code") if isinstance(d,dict) else None,
           },ensure_ascii=False,indent=2))
           PY
 
@@ -89,6 +96,7 @@ jobs:
             trend.json
             kline_recent.json
             kline_end_time.json
+            kline_timestamp.json
             summary.json
           if-no-files-found: warn
           retention-days: 7
