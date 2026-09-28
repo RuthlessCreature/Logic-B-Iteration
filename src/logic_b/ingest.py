@@ -21,6 +21,7 @@ class HistoricalIngestor:
         "limit_prices",
         "auction",
         "stock_st",
+        "suspend",
     )
 
     def __init__(
@@ -85,6 +86,7 @@ class HistoricalIngestor:
             ),
             "auction":lambda:self.provider.opening_auction(day),
             "stock_st":lambda:self.provider.st_status(day),
+            "suspend":lambda:self.provider.suspensions(day),
         }
 
         out={}
