@@ -31,6 +31,7 @@ class XuangubaoMinuteDay:
     trade_date: str
     bars: pd.DataFrame
     pre_close: float | None
+    pre_close_source: str
     raw_lines: int
 
 
@@ -136,6 +137,7 @@ class XuangubaoMarketProvider:
         trade_date: date,
         *,
         tick_count: int=300,
+        pre_close_override: float | None=None,
     ) -> XuangubaoMinuteDay:
         xgb_code=to_xgb_market_symbol(
             ts_code
@@ -163,9 +165,28 @@ class XuangubaoMarketProvider:
             .get(xgb_code,{})
         )
         lines=candle.get("lines") or []
-        pre_close=candle.get(
+        raw_pre_close=candle.get(
             "pre_close_px"
         )
+        if (
+            pre_close_override is not None
+            and float(pre_close_override)>0
+        ):
+            pre_close=float(
+                pre_close_override
+            )
+            pre_close_source="override"
+        elif (
+            raw_pre_close is not None
+            and float(raw_pre_close)>0
+        ):
+            pre_close=float(
+                raw_pre_close
+            )
+            pre_close_source="api"
+        else:
+            pre_close=None
+            pre_close_source="missing"
 
         empty_columns=[
             "trade_time",
@@ -188,11 +209,9 @@ class XuangubaoMarketProvider:
                 bars=pd.DataFrame(
                     columns=empty_columns
                 ),
-                pre_close=(
-                    float(pre_close)
-                    if pre_close is not None
-                    else None
-                ),
+                pre_close=pre_close,
+                pre_close_source=
+                    pre_close_source,
                 raw_lines=len(lines),
             )
 
@@ -293,11 +312,9 @@ class XuangubaoMarketProvider:
                     "%Y%m%d"
                 ),
             bars=normalized,
-            pre_close=(
-                float(pre_close)
-                if pre_close is not None
-                else None
-            ),
+            pre_close=pre_close,
+            pre_close_source=
+                pre_close_source,
             raw_lines=len(lines),
         )
 
