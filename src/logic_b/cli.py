@@ -24,6 +24,7 @@ from .storage import LocalParquetStore
 from .walkforward import evaluate_walk_forward
 from .xgb_ingest import XuangubaoEvidenceIngestor
 from .xgb_market_ingest import XuangubaoMarketIngestor
+from .xgb_readiness import assess_xgb_candidate_readiness
 
 
 def _date(v: str) -> date:
@@ -344,6 +345,49 @@ def cmd_fetch_minutes(args: argparse.Namespace) -> int:
         "minute_symbol_days":total,
     },ensure_ascii=False))
     return 0
+
+
+def cmd_xgb_readiness(args: argparse.Namespace) -> int:
+    cfg=_config(args.config)
+    start=_date(args.start)
+    end=_date(args.end)
+    store=LocalParquetStore(
+        args.data_root
+    )
+    dates=_calendar_dates(
+        store,
+        start,
+        end,
+    )
+    report=assess_xgb_candidate_readiness(
+        store=store,
+        trade_dates=dates,
+        include_boards=tuple(
+            cfg["universe"].get(
+                "include_boards",
+                [],
+            )
+        ),
+        exclude_st=bool(
+            cfg["universe"].get(
+                "exclude_st",
+                True,
+            )
+        ),
+        exclude_no_limit_ipo_days=bool(
+            cfg["universe"].get(
+                "exclude_no_limit_ipo_days",
+                True,
+            )
+        ),
+    )
+    payload=report.as_dict()
+    print(json.dumps(
+        payload,
+        ensure_ascii=False,
+        indent=2,
+    ))
+    return 0 if report.ready else 2
 
 
 def cmd_data_readiness(args: argparse.Namespace) -> int:
@@ -973,6 +1017,16 @@ def main() -> int:
     p=sub.add_parser("fetch-minutes")
     _add_range_args(p,include_force=True)
     p.set_defaults(func=cmd_fetch_minutes)
+
+    p=sub.add_parser("xgb-readiness")
+    _add_range_args(p)
+    p.add_argument(
+        "--config",
+        default="config/b0.yaml",
+    )
+    p.set_defaults(
+        func=cmd_xgb_readiness
+    )
 
     p=sub.add_parser("data-readiness")
     _add_range_args(p)
