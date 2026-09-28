@@ -1,0 +1,105 @@
+name: Xuangubao Public API Probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/xuangubao-probe.yml"
+  workflow_dispatch:
+    inputs:
+      trade_date:
+        description: "Historical date YYYY-MM-DD"
+        required: false
+        default: "2026-06-30"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Resolve date
+        id: inputs
+        shell: bash
+        run: |
+          D="${{ github.event.inputs.trade_date }}"
+          if [ -z "$D" ]; then D="2026-06-30"; fi
+          echo "date=$D" >> "$GITHUB_OUTPUT"
+
+      - name: Probe limit-up pool
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 1 \
+            -A "Mozilla/5.0" \
+            "https://flash-api.xuangubao.com.cn/api/pool/detail?pool_name=limit_up&date=${{ steps.inputs.outputs.date }}" \
+            -o xgb_limit_up.json
+          python - <<'PY'
+          import json
+          p=json.load(open("xgb_limit_up.json",encoding="utf-8"))
+          d=p.get("data")
+          print("root keys:", sorted(p.keys()))
+          print("data type:", type(d).__name__)
+          print("data len:", len(d) if isinstance(d,list) else None)
+          if isinstance(d,list) and d:
+              row=d[0]
+              print("first row keys:", sorted(row.keys()))
+              print("first row redacted preview:")
+              for k,v in row.items():
+                  if isinstance(v,(str,int,float,bool)) or v is None:
+                      print(f"  {k}={v!r}")
+                  elif isinstance(v,dict):
+                      print(f"  {k}=dict keys {sorted(v.keys())}")
+                  elif isinstance(v,list):
+                      print(f"  {k}=list len {len(v)}")
+          PY
+
+      - name: Probe market indicators
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl --fail --silent --show-error --location \
+            --retry 3 --retry-delay 1 \
+            -A "Mozilla/5.0" \
+            "https://flash-api.xuangubao.com.cn/api/market_indicator/line?fields=rise_count,fall_count,limit_up_count,limit_down_count,limit_up_broken_count,limit_up_broken_ratio,yesterday_limit_up_avg_pcp,market_temperature&date=${{ steps.inputs.outputs.date }}" \
+            -o xgb_market_indicator.json
+          python - <<'PY'
+          import json
+          p=json.load(open("xgb_market_indicator.json",encoding="utf-8"))
+          d=p.get("data")
+          print("root keys:", sorted(p.keys()))
+          print("data type:", type(d).__name__)
+          print("data len:", len(d) if isinstance(d,list) else None)
+          if isinstance(d,list) and d:
+              print("last row:", d[-1])
+          PY
+
+      - name: Probe broken and limit-down pools
+        shell: bash
+        run: |
+          set -euo pipefail
+          for POOL in limit_up_broken limit_down; do
+            curl --fail --silent --show-error --location \
+              --retry 3 --retry-delay 1 \
+              -A "Mozilla/5.0" \
+              "https://flash-api.xuangubao.com.cn/api/pool/detail?pool_name=$POOL&date=${{ steps.inputs.outputs.date }}" \
+              -o "xgb_$POOL.json"
+            python - "$POOL" <<'PY'
+          import json,sys
+          pool=sys.argv[1]
+          p=json.load(open(f"xgb_{pool}.json",encoding="utf-8"))
+          d=p.get("data")
+          print(pool, "rows", len(d) if isinstance(d,list) else None)
+          PY
+          done
+
+      - name: Upload raw probe
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xuangubao-probe
+          path: xgb_*.json
+          if-no-files-found: warn
+          retention-days: 7
