@@ -1,0 +1,104 @@
+name: Xuangubao Provider Smoke
+
+on:
+  push:
+    paths:
+      - ".github/workflows/xuangubao-provider-smoke.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Public API preflight
+        run: |
+          logic-b preflight-xgb --date 2026-06-30 | tee xgb_preflight.json
+
+      - name: Fetch three-session evidence
+        run: |
+          logic-b fetch-xgb-evidence \
+            --start 2026-06-26 \
+            --end 2026-06-30 \
+            --data-root data \
+            --sleep 0.10 \
+            | tee xgb_fetch.json
+
+      - name: Verify stored evidence
+        run: |
+          python - <<'PY'
+          import json
+          import pandas as pd
+          from logic_b.storage import LocalParquetStore
+
+          store=LocalParquetStore("data")
+          cal=store.read_frame("calendar","20260626_20260630")
+          dates=cal["cal_date"].astype(str).tolist()
+          print("calendar:", dates)
+          assert dates, "no trading dates returned"
+
+          checks=[]
+          for d in dates:
+              up=store.read_frame("limit_up",d)
+              broken=store.read_frame("limit_break",d)
+              down=store.read_frame("limit_down",d)
+              theme=store.read_frame("theme_limit_up",d)
+              line=store.read_frame("market_indicator",d)
+              close=line.sort_values("timestamp").iloc[-1]
+
+              assert store.verify("limit_up",d)
+              assert store.verify("limit_break",d)
+              assert store.verify("limit_down",d)
+              assert store.verify("theme_limit_up",d)
+              assert store.verify("market_indicator",d)
+              assert set(theme["ts_code"].astype(str))==set(up["ts_code"].astype(str))
+
+              expected_up=int(close["limit_up_count"])
+              expected_broken=int(close["limit_up_broken_count"])
+              expected_down=int(close["limit_down_count"])
+              checks.append({
+                  "date":d,
+                  "pool_up":len(up),
+                  "indicator_up":expected_up,
+                  "pool_broken":len(broken),
+                  "indicator_broken":expected_broken,
+                  "pool_down":len(down),
+                  "indicator_down":expected_down,
+              })
+
+              # XGB's pool and line endpoints should agree at close.
+              assert len(up)==expected_up
+              assert len(broken)==expected_broken
+              assert len(down)==expected_down
+
+          print(json.dumps(checks,ensure_ascii=False,indent=2))
+          open("xgb_crosscheck.json","w",encoding="utf-8").write(
+              json.dumps(checks,ensure_ascii=False,indent=2)
+          )
+          PY
+
+      - name: Upload smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xuangubao-provider-smoke
+          path: |
+            xgb_preflight.json
+            xgb_fetch.json
+            xgb_crosscheck.json
+            data/manifests/**
+          if-no-files-found: warn
+          retention-days: 7
