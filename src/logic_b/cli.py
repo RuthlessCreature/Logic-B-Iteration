@@ -16,12 +16,14 @@ from .ingest import HistoricalIngestor
 from .models import FillModel
 from .providers.tushare import TushareProvider
 from .providers.xuangubao import XuangubaoEvidenceProvider
+from .providers.xuangubao_market import XuangubaoMarketProvider
 from .readiness import assess_data_readiness
 from .replay.runner import B0ReplayRunner
 from .reporting import write_run_artifacts
 from .storage import LocalParquetStore
 from .walkforward import evaluate_walk_forward
 from .xgb_ingest import XuangubaoEvidenceIngestor
+from .xgb_market_ingest import XuangubaoMarketIngestor
 
 
 def _date(v: str) -> date:
@@ -148,6 +150,109 @@ def cmd_preflight_xgb(args: argparse.Namespace) -> int:
     return 0 if result["ok"] else 2
 
 
+def cmd_preflight_xgb_market(args: argparse.Namespace) -> int:
+    day=_date(args.date)
+    evidence=XuangubaoEvidenceProvider()
+    pool=evidence.limit_list(
+        day,
+        "涨停池",
+    )
+
+    code=args.code
+    pre_close=args.pre_close
+    source_row=None
+
+    if code:
+        if not pool.empty:
+            matched=pool[
+                pool["ts_code"].astype(str)
+                ==str(code)
+            ]
+            if not matched.empty:
+                source_row=matched.iloc[0]
+    else:
+        if pool.empty:
+            print(json.dumps({
+                "ok":False,
+                "trade_date":day.strftime("%Y%m%d"),
+                "error":"no limit-up sample available; pass --code and --pre-close",
+            },ensure_ascii=False,indent=2))
+            return 2
+        source_row=pool.iloc[0]
+        code=str(source_row["ts_code"])
+
+    if pre_close is None and source_row is not None:
+        value=source_row.get("prev_close")
+        try:
+            pre_close=float(value)
+        except (TypeError,ValueError):
+            pre_close=None
+
+    market=XuangubaoMarketProvider()
+    minute_day=market.historical_minute_day(
+        str(code),
+        day,
+        pre_close_override=pre_close,
+    )
+    daily=market.daily_from_minute(
+        minute_day
+    )
+    limits=market.limit_prices(
+        minute_day
+    )
+
+    required_minute={
+        "trade_time","open","high","low",
+        "close","vol","amount",
+    }
+    result={
+        "ok":(
+            not minute_day.bars.empty
+            and required_minute.issubset(
+                minute_day.bars.columns
+            )
+            and not daily.empty
+            and not limits.empty
+        ),
+        "trade_date":day.strftime("%Y%m%d"),
+        "ts_code":str(code),
+        "minute_rows":len(minute_day.bars),
+        "minute_columns":list(
+            minute_day.bars.columns
+        ),
+        "pre_close":minute_day.pre_close,
+        "pre_close_source":
+            minute_day.pre_close_source,
+        "daily_rows":len(daily),
+        "limit_rows":len(limits),
+        "first_bar_time":(
+            str(
+                minute_day.bars.iloc[0][
+                    "trade_time"
+                ]
+            )
+            if not minute_day.bars.empty
+            else None
+        ),
+        "last_bar_time":(
+            str(
+                minute_day.bars.iloc[-1][
+                    "trade_time"
+                ]
+            )
+            if not minute_day.bars.empty
+            else None
+        ),
+    }
+    print(json.dumps(
+        result,
+        ensure_ascii=False,
+        indent=2,
+        default=str,
+    ))
+    return 0 if result["ok"] else 2
+
+
 def cmd_fetch_xgb_evidence(args: argparse.Namespace) -> int:
     start=_date(args.start)
     end=_date(args.end)
@@ -171,6 +276,34 @@ def cmd_fetch_xgb_evidence(args: argparse.Namespace) -> int:
         "datasets":list(
             XuangubaoEvidenceIngestor.DATASETS
         ),
+    },ensure_ascii=False,indent=2))
+    return 0
+
+
+def cmd_fetch_xgb_market(args: argparse.Namespace) -> int:
+    start=_date(args.start)
+    end=_date(args.end)
+    store=LocalParquetStore(args.data_root)
+    dates=_calendar_dates(
+        store,
+        start,
+        end,
+    )
+    ingestor=XuangubaoMarketIngestor(
+        XuangubaoMarketProvider(),
+        store,
+        inter_request_sleep=args.sleep,
+    )
+    summary=ingestor.materialize_range(
+        trade_dates=dates,
+        force=args.force,
+    )
+    print(json.dumps({
+        "status":"ok",
+        "source":"xuangubao",
+        "start":args.start,
+        "end":args.end,
+        **summary,
     },ensure_ascii=False,indent=2))
     return 0
 
@@ -649,6 +782,17 @@ def main() -> int:
     p.add_argument("--date",required=True)
     p.set_defaults(func=cmd_preflight_xgb)
 
+    p=sub.add_parser("preflight-xgb-market")
+    p.add_argument("--date",required=True)
+    p.add_argument("--code")
+    p.add_argument(
+        "--pre-close",
+        type=float,
+    )
+    p.set_defaults(
+        func=cmd_preflight_xgb_market
+    )
+
     p=sub.add_parser("fetch-xgb-evidence")
     _add_range_args(p,include_force=True)
     p.add_argument(
@@ -658,6 +802,21 @@ def main() -> int:
         help="polite delay between public API requests",
     )
     p.set_defaults(func=cmd_fetch_xgb_evidence)
+
+    p=sub.add_parser("fetch-xgb-market")
+    _add_range_args(
+        p,
+        include_force=True,
+    )
+    p.add_argument(
+        "--sleep",
+        type=float,
+        default=0.10,
+        help="polite delay between historical symbol-day requests",
+    )
+    p.set_defaults(
+        func=cmd_fetch_xgb_market
+    )
 
     p=sub.add_parser("fetch-daily")
     _add_range_args(p,include_force=True)
