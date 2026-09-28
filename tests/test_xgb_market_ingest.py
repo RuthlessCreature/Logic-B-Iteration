@@ -292,3 +292,32 @@ def test_xgb_fallback_does_not_overwrite_existing_daily_or_limits(tmp_path):
     assert row["source"]=="authoritative"
     assert lim["up_limit"]==99.0
     assert lim["source"]=="authoritative"
+
+
+def test_xgb_market_ingestor_skips_flagged_new_stock(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+    provider=FakeMarketProvider()
+    ingestor=XuangubaoMarketIngestor(
+        provider,
+        store,
+        inter_request_sleep=0,
+    )
+    prior=pd.DataFrame({
+        "ts_code":[
+            "600000.SH",
+            "001999.SZ",
+        ],
+        "price":[10.0,20.0],
+        "is_new_stock":[False,True],
+    })
+
+    done=ingestor.materialize_from_prior_pool(
+        trade_date=date(2026,9,28),
+        prior_limit_up=prior,
+    )
+
+    assert done==["600000.SH"]
+    assert not store.exists(
+        "minute_1m",
+        "20260928/001999.SZ",
+    )
