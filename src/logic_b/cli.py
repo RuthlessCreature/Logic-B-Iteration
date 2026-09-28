@@ -294,6 +294,12 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             fee_rate=float(
                 cfg["execution"].get("commission_rate",0.0003)
             ),
+            minimum_commission=float(
+                cfg["execution"].get("minimum_commission",5.0)
+            ),
+            transfer_fee_rate=float(
+                cfg["execution"].get("transfer_fee_rate",0.00001)
+            ),
             stamp_rate=float(
                 cfg["execution"].get("stamp_rate",0.0005)
             ),
