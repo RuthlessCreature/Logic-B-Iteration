@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from datetime import date
+import time as time_module
+from typing import Callable
 
 import pandas as pd
 
@@ -20,9 +22,23 @@ class XuangubaoMarketIngestor:
         self,
         provider: XuangubaoMarketProvider,
         store: LocalParquetStore,
+        *,
+        inter_request_sleep: float=0.10,
+        sleeper: Callable[[float],None]=time_module.sleep,
     ):
         self.provider=provider
         self.store=store
+        self.inter_request_sleep=max(
+            0.0,
+            float(inter_request_sleep),
+        )
+        self.sleeper=sleeper
+
+    def _pause(self) -> None:
+        if self.inter_request_sleep>0:
+            self.sleeper(
+                self.inter_request_sleep
+            )
 
     @staticmethod
     def _key(day: date | str) -> str:
@@ -275,6 +291,7 @@ class XuangubaoMarketIngestor:
                 force=force,
             )
             done.append(code)
+            self._pause()
         return done
 
     @staticmethod
