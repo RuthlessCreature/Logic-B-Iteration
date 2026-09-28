@@ -15,6 +15,7 @@ from .features import classify_market_regime
 from .ingest import HistoricalIngestor
 from .models import FillModel
 from .providers.tushare import TushareProvider
+from .readiness import assess_data_readiness
 from .replay.runner import B0ReplayRunner
 from .reporting import write_run_artifacts
 from .storage import LocalParquetStore
@@ -167,6 +168,47 @@ def cmd_fetch_minutes(args: argparse.Namespace) -> int:
         "minute_symbol_days":total,
     },ensure_ascii=False))
     return 0
+
+
+def cmd_data_readiness(args: argparse.Namespace) -> int:
+    cfg=_config(args.config)
+    start=_date(args.start)
+    end=_date(args.end)
+
+    # Readiness can inspect holdout cache, but this command never runs or
+    # reports strategy performance.
+    store=LocalParquetStore(args.data_root)
+    dates=_calendar_dates(store,start,end)
+
+    report=assess_data_readiness(
+        store=store,
+        trade_dates=dates,
+        include_boards=tuple(
+            cfg["universe"].get(
+                "include_boards",
+                [],
+            )
+        ),
+        exclude_st=bool(
+            cfg["universe"].get(
+                "exclude_st",
+                True,
+            )
+        ),
+        exclude_no_limit_ipo_days=bool(
+            cfg["universe"].get(
+                "exclude_no_limit_ipo_days",
+                True,
+            )
+        ),
+    )
+    payload=report.as_dict()
+    print(json.dumps(
+        payload,
+        ensure_ascii=False,
+        indent=2,
+    ))
+    return 0 if report.ready else 2
 
 
 def cmd_audit_data(args: argparse.Namespace) -> int:
@@ -545,6 +587,11 @@ def main() -> int:
     p=sub.add_parser("fetch-minutes")
     _add_range_args(p,include_force=True)
     p.set_defaults(func=cmd_fetch_minutes)
+
+    p=sub.add_parser("data-readiness")
+    _add_range_args(p)
+    p.add_argument("--config",default="config/b0.yaml")
+    p.set_defaults(func=cmd_data_readiness)
 
     p=sub.add_parser("audit-data")
     _add_range_args(p)
