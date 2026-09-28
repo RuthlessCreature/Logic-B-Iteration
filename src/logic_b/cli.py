@@ -38,10 +38,26 @@ def _calendar_dates(store: LocalParquetStore, start: date, end: date) -> list[st
     return [d for d in dates if f"{start:%Y%m%d}"<=d<=f"{end:%Y%m%d}"]
 
 
+def assert_holdout_access(cfg: dict, start: date, end: date, *, unlock: bool) -> bool:
+    research=cfg["research"]
+    blind_start=_date(research["blind_holdout_start"])
+    blind_end=_date(research["blind_holdout_end"])
+    touches=end>=blind_start and start<=blind_end
+    if touches and not unlock:
+        raise SystemExit(
+            f"blind holdout is locked: {blind_start}..{blind_end}; "
+            "freeze a candidate version first, then rerun with --unlock-holdout"
+        )
+    return touches
+
+
 def cmd_smoke(_: argparse.Namespace) -> int:
     r=classify_market_regime(
-        limit_up_count=72,limit_down_count=4,break_rate=.16,
-        max_height=7,prev_limit_median_return=.021,
+        limit_up_count=72,
+        limit_down_count=4,
+        break_rate=.16,
+        max_height=7,
+        prev_limit_median_return=.021,
     )
     print(json.dumps({"status":"ok","example_regime":r.value},ensure_ascii=False))
     return 0
@@ -58,7 +74,12 @@ def cmd_fetch_daily(args: argparse.Namespace) -> int:
     store=LocalParquetStore(args.data_root)
     ing=HistoricalIngestor(TushareProvider(),store)
     dates=ing.fetch_range(start,end,force=args.force)
-    print(json.dumps({"status":"ok","days":len(dates),"first":dates[0] if dates else None,"last":dates[-1] if dates else None},ensure_ascii=False))
+    print(json.dumps({
+        "status":"ok",
+        "days":len(dates),
+        "first":dates[0] if dates else None,
+        "last":dates[-1] if dates else None,
+    },ensure_ascii=False))
     return 0
 
 
@@ -71,20 +92,33 @@ def cmd_fetch_minutes(args: argparse.Namespace) -> int:
     for i in range(1,len(dates)):
         day=pd.to_datetime(dates[i]).date()
         prev=pd.to_datetime(dates[i-1]).date()
-        total+=len(ing.fetch_prev_limit_candidates_minutes(day,prev,force=args.force))
-    print(json.dumps({"status":"ok","trade_days":len(dates),"minute_symbol_days":total},ensure_ascii=False))
+        total+=len(
+            ing.fetch_prev_limit_candidates_minutes(day,prev,force=args.force)
+        )
+    print(json.dumps({
+        "status":"ok",
+        "trade_days":len(dates),
+        "minute_symbol_days":total,
+    },ensure_ascii=False))
     return 0
 
 
 def cmd_run_b0(args: argparse.Namespace) -> int:
     cfg=_config(args.config)
     start=_date(args.start); end=_date(args.end)
+    touches_holdout=assert_holdout_access(
+        cfg,start,end,unlock=args.unlock_holdout
+    )
+
     store=LocalParquetStore(args.data_root)
     dates=_calendar_dates(store,start,end)
 
     selected=[FillModel(args.fill)] if args.fill!="all" else [
-        FillModel.OPTIMISTIC,FillModel.REALISTIC,FillModel.CONSERVATIVE
+        FillModel.OPTIMISTIC,
+        FillModel.REALISTIC,
+        FillModel.CONSERVATIVE,
     ]
+
     outputs=[]
     for model in selected:
         runner=B0ReplayRunner(
@@ -93,10 +127,15 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             initial_cash=float(cfg["portfolio"].get("initial_cash",1_000_000)),
             fee_rate=float(cfg["execution"].get("commission_rate",0.0003)),
             stamp_rate=float(cfg["execution"].get("stamp_rate",0.0005)),
-            checkpoint=datetime.strptime(cfg["execution"].get("decision_checkpoint","09:35"),"%H:%M").time(),
+            checkpoint=datetime.strptime(
+                cfg["execution"].get("decision_checkpoint","09:35"),
+                "%H:%M",
+            ).time(),
         )
         result=runner.run(dates)
-        run_dir=Path(args.run_root)/f'{cfg["version"]}_{start:%Y%m%d}_{end:%Y%m%d}_{model.value}'
+        run_dir=Path(args.run_root)/(
+            f'{cfg["version"]}_{start:%Y%m%d}_{end:%Y%m%d}_{model.value}'
+        )
         write_run_artifacts(
             run_dir=run_dir,
             signals=result.signals,
@@ -105,10 +144,26 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             daily_equity=result.daily_equity,
             metrics=result.metrics,
             config=cfg,
-            metadata={"start":args.start,"end":args.end,"fill_model":model.value,"blind_holdout_touched":touches_holdout},
+            metadata={
+                "start":args.start,
+                "end":args.end,
+                "fill_model":model.value,
+                "blind_holdout_touched":touches_holdout,
+                "holdout_explicitly_unlocked":bool(args.unlock_holdout),
+            },
         )
-        outputs.append({"fill_model":model.value,"run_dir":str(run_dir),"metrics":result.metrics})
-    print(json.dumps({"status":"ok","runs":outputs},ensure_ascii=False,default=str,indent=2))
+        outputs.append({
+            "fill_model":model.value,
+            "run_dir":str(run_dir),
+            "metrics":result.metrics,
+        })
+
+    print(json.dumps(
+        {"status":"ok","runs":outputs},
+        ensure_ascii=False,
+        default=str,
+        indent=2,
+    ))
     return 0
 
 
@@ -116,10 +171,17 @@ def main() -> int:
     parser=argparse.ArgumentParser(prog="logic-b")
     sub=parser.add_subparsers(dest="cmd",required=True)
 
-    p=sub.add_parser("smoke"); p.set_defaults(func=cmd_smoke)
-    p=sub.add_parser("validate-config"); p.add_argument("path"); p.set_defaults(func=cmd_validate)
+    p=sub.add_parser("smoke")
+    p.set_defaults(func=cmd_smoke)
 
-    for name,func in [("fetch-daily",cmd_fetch_daily),("fetch-minutes",cmd_fetch_minutes)]:
+    p=sub.add_parser("validate-config")
+    p.add_argument("path")
+    p.set_defaults(func=cmd_validate)
+
+    for name,func in [
+        ("fetch-daily",cmd_fetch_daily),
+        ("fetch-minutes",cmd_fetch_minutes),
+    ]:
         p=sub.add_parser(name)
         p.add_argument("--start",required=True)
         p.add_argument("--end",required=True)
@@ -133,7 +195,16 @@ def main() -> int:
     p.add_argument("--data-root",default="data")
     p.add_argument("--run-root",default="runs")
     p.add_argument("--config",default="config/b0.yaml")
-    p.add_argument("--fill",choices=["optimistic","realistic","conservative","all"],default="all")
+    p.add_argument(
+        "--fill",
+        choices=["optimistic","realistic","conservative","all"],
+        default="all",
+    )
+    p.add_argument(
+        "--unlock-holdout",
+        action="store_true",
+        help="explicitly allow final blind-holdout evaluation",
+    )
     p.set_defaults(func=cmd_run_b0)
 
     args=parser.parse_args()
