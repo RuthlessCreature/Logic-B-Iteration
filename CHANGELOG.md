@@ -23,6 +23,17 @@
 - Universe 配置不再是文档声明，实际进入 replay candidate filter。
 - B0.0.3 完成后，开发阶段原则上只允许修数据/实现缺陷，不允许依据收益随意改 B0 规则。
 
+### Public fallback data path
+- 新增 Xuangubao 历史涨停/跌停/炸板/题材证据 provider。
+- 新增 Xuangubao 历史 1 分钟 provider 和 symbol-day market ingestor。
+- 新增 `preflight-xgb`、`preflight-xgb-market`、`fetch-xgb-evidence`、`fetch-xgb-market`。
+- 新增 XGB candidate-slice `xgb-readiness`，不再用全市场数据假设审计候选切片。
+- replay 支持按需补完整 symbol-day，覆盖连续跌停锁死等跨日持仓。
+- XGB fallback 只补缺失 canonical 数据，不静默覆盖已有高权威日线/涨跌停/ST 数据。
+- `is_new_stock=true` 在公共 fallback 下保守排除，避免虚构普通 10%/20% 涨跌停制度。
+- 历史 ST fallback 明确标注为 D-1 名称推断，不冒充官方逐日 ST 表。
+- 新增独立 public API 集成 workflow，验证 evidence→market→readiness→replay 短链路。
+
 ### Validation
 - 新增 provider→ingest 合同集成测试。
 - 新增 KPL/ST runner 集成测试。
