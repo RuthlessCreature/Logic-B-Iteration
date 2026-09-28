@@ -176,6 +176,27 @@ def test_materialize_range_uses_prior_limit_up_price_as_preclose(tmp_path):
         20.0,
     ) in provider.calls
 
+    daily=store.read_frame(
+        "daily",
+        "20260928",
+    )
+    limits=store.read_frame(
+        "limit_prices",
+        "20260928",
+    )
+    assert set(
+        daily["ts_code"].astype(str)
+    )=={
+        "600000.SH",
+        "000001.SZ",
+    }
+    assert set(
+        limits["ts_code"].astype(str)
+    )=={
+        "600000.SH",
+        "000001.SZ",
+    }
+
 
 def test_range_materializes_empty_suspend_and_prior_name_st_state(tmp_path):
     store=LocalParquetStore(tmp_path/"data")
