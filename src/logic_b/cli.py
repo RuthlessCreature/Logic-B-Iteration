@@ -9,7 +9,7 @@ import pandas as pd
 import yaml
 
 from .alignment import compare_human_proxy
-from .audit import audit_daily_bundle,summarize_issues
+from .audit import audit_auxiliary_bundle,audit_daily_bundle,summarize_issues
 from .diagnostics import preflight_provider
 from .features import classify_market_regime
 from .ingest import HistoricalIngestor
@@ -179,13 +179,21 @@ def cmd_audit_data(args: argparse.Namespace) -> int:
     total_warnings=0
     for key in dates:
         try:
+            limit_up=store.read_frame("limit_up",key)
             issues=audit_daily_bundle(
                 daily=store.read_frame("daily",key),
                 limit_prices=store.read_frame("limit_prices",key),
-                limit_up=store.read_frame("limit_up",key),
+                limit_up=limit_up,
                 limit_down=store.read_frame("limit_down",key),
                 limit_break=store.read_optional("limit_break",key),
             )
+            issues.extend(audit_auxiliary_bundle(
+                limit_up=limit_up,
+                kpl_limit_up=store.read_frame("kpl_limit_up",key),
+                stock_st=store.read_frame("stock_st",key),
+                suspend=store.read_frame("suspend",key),
+                auction=store.read_frame("auction",key),
+            ))
             summary=summarize_issues(issues)
         except FileNotFoundError as exc:
             summary={
