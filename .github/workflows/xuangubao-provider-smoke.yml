@@ -4,6 +4,9 @@ on:
   push:
     paths:
       - ".github/workflows/xuangubao-provider-smoke.yml"
+      - "src/logic_b/providers/xuangubao.py"
+      - "src/logic_b/xgb_ingest.py"
+      - "src/logic_b/cli.py"
   workflow_dispatch:
 
 permissions:
