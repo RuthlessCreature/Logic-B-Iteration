@@ -182,6 +182,20 @@ def assess_xgb_candidate_readiness(
                 .isin(excluded)
             ].copy()
 
+        if (
+            exclude_no_limit_ipo_days
+            and not candidates.empty
+            and "is_new_stock" in candidates.columns
+        ):
+            flags=(
+                candidates["is_new_stock"]
+                .fillna(False)
+                .astype(bool)
+            )
+            candidates=candidates[
+                ~flags
+            ].copy()
+
         daily=store.read_optional(
             "daily",
             day,
