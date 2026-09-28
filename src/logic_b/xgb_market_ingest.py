@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor,as_completed
 from datetime import date
+import threading
 import time as time_module
 from typing import Callable
 
@@ -24,6 +26,7 @@ class XuangubaoMarketIngestor:
         store: LocalParquetStore,
         *,
         inter_request_sleep: float=0.10,
+        max_workers: int=4,
         sleeper: Callable[[float],None]=time_module.sleep,
     ):
         self.provider=provider
@@ -32,7 +35,12 @@ class XuangubaoMarketIngestor:
             0.0,
             float(inter_request_sleep),
         )
+        self.max_workers=max(
+            1,
+            int(max_workers),
+        )
         self.sleeper=sleeper
+        self._write_lock=threading.Lock()
 
     def _pause(self) -> None:
         if self.inter_request_sleep>0:
@@ -220,66 +228,67 @@ class XuangubaoMarketIngestor:
                 minute_day
             )
 
-        if (
-            not daily_row.empty
-            and not self._day_has_code(
-                self.store,
-                "daily",
-                day_key,
-                ts_code,
-            )
-        ):
-            self._upsert_day(
-                self.store,
-                "daily",
-                day_key,
-                daily_row,
-                metadata={
-                    "source":
-                        "xuangubao_derived_from_1m",
-                    "trade_date":day_key,
-                },
-            )
+        with self._write_lock:
+            if (
+                not daily_row.empty
+                and not self._day_has_code(
+                    self.store,
+                    "daily",
+                    day_key,
+                    ts_code,
+                )
+            ):
+                self._upsert_day(
+                    self.store,
+                    "daily",
+                    day_key,
+                    daily_row,
+                    metadata={
+                        "source":
+                            "xuangubao_derived_from_1m",
+                        "trade_date":day_key,
+                    },
+                )
 
-        if (
-            not limit_row.empty
-            and not self._day_has_code(
-                self.store,
-                "limit_prices",
-                day_key,
-                ts_code,
-            )
-        ):
-            self._upsert_day(
-                self.store,
-                "limit_prices",
-                day_key,
-                limit_row,
-                metadata={
-                    "source":
-                        "xuangubao_derived",
-                    "trade_date":day_key,
-                },
-            )
+            if (
+                not limit_row.empty
+                and not self._day_has_code(
+                    self.store,
+                    "limit_prices",
+                    day_key,
+                    ts_code,
+                )
+            ):
+                self._upsert_day(
+                    self.store,
+                    "limit_prices",
+                    day_key,
+                    limit_row,
+                    metadata={
+                        "source":
+                            "xuangubao_derived",
+                        "trade_date":day_key,
+                    },
+                )
 
-        if bars.empty:
-            suspend_row=pd.DataFrame([{
-                "trade_date":day_key,
-                "ts_code":ts_code,
-                "suspend_type":"NO_BARS",
-                "source":"xuangubao_inferred",
-            }])
-            self._upsert_day(
-                self.store,
-                "suspend",
-                day_key,
-                suspend_row,
-                metadata={
-                    "source":
-                        "xuangubao_inferred",
+            if bars.empty:
+                suspend_row=pd.DataFrame([{
                     "trade_date":day_key,
-                },
-            )
+                    "ts_code":ts_code,
+                    "suspend_type":"NO_BARS",
+                    "source":"xuangubao_inferred",
+                }])
+                self._upsert_day(
+                    self.store,
+                    "suspend",
+                    day_key,
+                    suspend_row,
+                    metadata={
+                        "source":
+                            "xuangubao_inferred",
+                        "trade_date":day_key,
+                    },
+                )
 
         return {
             "minute_1m":bars,
@@ -314,7 +323,8 @@ class XuangubaoMarketIngestor:
         ):
             return []
 
-        done=[]
+        tasks=[]
+        seen=set()
         for _,row in prior_limit_up.iterrows():
             if bool(
                 row.get(
@@ -325,18 +335,57 @@ class XuangubaoMarketIngestor:
                 continue
 
             code=str(row["ts_code"])
-            pre_close=self.pre_close_from_prior_row(
-                row
-            )
-            self.materialize_symbol_day(
-                trade_date=trade_date,
-                ts_code=code,
-                pre_close=pre_close,
-                force=force,
-            )
-            done.append(code)
-            self._pause()
-        return done
+            if code in seen:
+                continue
+            seen.add(code)
+            tasks.append((
+                code,
+                self.pre_close_from_prior_row(
+                    row
+                ),
+            ))
+
+        if not tasks:
+            return []
+
+        if self.max_workers<=1:
+            for code,pre_close in tasks:
+                self.materialize_symbol_day(
+                    trade_date=trade_date,
+                    ts_code=code,
+                    pre_close=pre_close,
+                    force=force,
+                )
+                self._pause()
+            return [
+                code
+                for code,_ in tasks
+            ]
+
+        futures={}
+        with ThreadPoolExecutor(
+            max_workers=self.max_workers
+        ) as executor:
+            for code,pre_close in tasks:
+                future=executor.submit(
+                    self.materialize_symbol_day,
+                    trade_date=trade_date,
+                    ts_code=code,
+                    pre_close=pre_close,
+                    force=force,
+                )
+                futures[future]=code
+                self._pause()
+
+            for future in as_completed(
+                futures
+            ):
+                future.result()
+
+        return [
+            code
+            for code,_ in tasks
+        ]
 
     def _ensure_empty_market_partitions(
         self,
