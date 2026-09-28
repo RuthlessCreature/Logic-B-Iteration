@@ -4,6 +4,7 @@ from logic_b.replay.runner import ReplayResult
 from logic_b.walkforward import (
     build_expanding_folds,
     evaluate_walk_forward,
+    validation_fold_metrics,
 )
 
 
@@ -85,3 +86,48 @@ def test_walk_forward_evaluation_summarizes_fold_stability():
     assert summary["positive_return_fold_rate"]==1.0
     assert summary["positive_expectancy_fold_rate"]==1.0
     assert summary["closed_trades"]==3
+
+
+def test_warmup_profit_is_not_counted_as_validation_return():
+    fold=build_expanding_folds(
+        dates(10),
+        min_train_days=4,
+        validation_days=4,
+        step_days=4,
+        warmup_days=2,
+    )[0]
+
+    replay=[*fold.warmup_dates,*fold.validation_dates]
+    rows=[
+        {
+            "date":replay[0],
+            "equity":100000.0,
+            "holding":None,
+        },
+        {
+            "date":replay[1],
+            "equity":120000.0,
+            "holding":"A",
+        },
+    ]
+    rows.extend({
+        "date":day,
+        "equity":120000.0,
+        "holding":"A",
+    } for day in fold.validation_dates)
+
+    result=ReplayResult(
+        signals=[],
+        fills=[],
+        trades=[],
+        daily_equity=rows,
+        metrics={},
+    )
+    metrics=validation_fold_metrics(
+        result,
+        fold,
+        initial_cash=100000,
+    )
+
+    assert metrics["validation_baseline_equity"]==120000.0
+    assert metrics["total_return"]==0.0
