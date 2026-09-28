@@ -65,6 +65,14 @@ class MarketDataProvider(ABC):
         ...
 
     @abstractmethod
+    def suspensions(
+        self,
+        trade_date: date,
+    ) -> pd.DataFrame:
+        """Historical full-day/intraday suspension records for the date."""
+        ...
+
+    @abstractmethod
     def stock_minute(
         self,
         ts_code: str,
