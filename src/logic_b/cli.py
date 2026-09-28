@@ -18,6 +18,7 @@ from .providers.tushare import TushareProvider
 from .replay.runner import B0ReplayRunner
 from .reporting import write_run_artifacts
 from .storage import LocalParquetStore
+from .walkforward import evaluate_walk_forward
 
 
 def _date(v: str) -> date:
@@ -251,6 +252,103 @@ def cmd_align_b0(args: argparse.Namespace) -> int:
     return 0
 
 
+def _minute_loader_for_run(
+    *,
+    enabled: bool,
+    store: LocalParquetStore,
+):
+    if not enabled:
+        return None
+
+    ingestor=HistoricalIngestor(
+        TushareProvider(),
+        store,
+    )
+
+    def loader(day_key: str,code: str) -> pd.DataFrame:
+        day=pd.to_datetime(day_key).date()
+        ingestor.fetch_minutes(
+            day,
+            [code],
+            force=False,
+        )
+        return store.read_frame(
+            "minute_1m",
+            f"{day_key}/{code}",
+        )
+
+    return loader
+
+
+def _runner_from_config(
+    *,
+    cfg: dict,
+    store: LocalParquetStore,
+    model: FillModel,
+    minute_loader=None,
+) -> B0ReplayRunner:
+    return B0ReplayRunner(
+        store,
+        fill_model=model,
+        initial_cash=float(
+            cfg["portfolio"].get(
+                "initial_cash",
+                1_000_000,
+            )
+        ),
+        fee_rate=float(
+            cfg["execution"].get(
+                "commission_rate",
+                0.0003,
+            )
+        ),
+        minimum_commission=float(
+            cfg["execution"].get(
+                "minimum_commission",
+                5.0,
+            )
+        ),
+        transfer_fee_rate=float(
+            cfg["execution"].get(
+                "transfer_fee_rate",
+                0.00001,
+            )
+        ),
+        stamp_rate=float(
+            cfg["execution"].get(
+                "stamp_rate",
+                0.0005,
+            )
+        ),
+        checkpoint=datetime.strptime(
+            cfg["execution"].get(
+                "decision_checkpoint",
+                "09:35",
+            ),
+            "%H:%M",
+        ).time(),
+        minute_loader=minute_loader,
+        exclude_st=bool(
+            cfg["universe"].get(
+                "exclude_st",
+                True,
+            )
+        ),
+        include_boards=tuple(
+            cfg["universe"].get(
+                "include_boards",
+                [],
+            )
+        ),
+        exclude_no_limit_ipo_days=bool(
+            cfg["universe"].get(
+                "exclude_no_limit_ipo_days",
+                True,
+            )
+        ),
+    )
+
+
 def cmd_run_b0(args: argparse.Namespace) -> int:
     cfg=_config(args.config)
     start=_date(args.start)
@@ -262,20 +360,10 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
     store=LocalParquetStore(args.data_root)
     dates=_calendar_dates(store,start,end)
 
-    minute_loader=None
-    if args.fetch_missing_minutes:
-        ingestor=HistoricalIngestor(
-            TushareProvider(),
-            store,
-        )
-
-        def minute_loader(day_key: str,code: str) -> pd.DataFrame:
-            day=pd.to_datetime(day_key).date()
-            ingestor.fetch_minutes(day,[code],force=False)
-            return store.read_frame(
-                "minute_1m",
-                f"{day_key}/{code}",
-            )
+    minute_loader=_minute_loader_for_run(
+        enabled=args.fetch_missing_minutes,
+        store=store,
+    )
 
     selected=[FillModel(args.fill)] if args.fill!="all" else [
         FillModel.OPTIMISTIC,
@@ -285,47 +373,11 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
 
     outputs=[]
     for model in selected:
-        runner=B0ReplayRunner(
-            store,
-            fill_model=model,
-            initial_cash=float(
-                cfg["portfolio"].get("initial_cash",1_000_000)
-            ),
-            fee_rate=float(
-                cfg["execution"].get("commission_rate",0.0003)
-            ),
-            minimum_commission=float(
-                cfg["execution"].get("minimum_commission",5.0)
-            ),
-            transfer_fee_rate=float(
-                cfg["execution"].get("transfer_fee_rate",0.00001)
-            ),
-            stamp_rate=float(
-                cfg["execution"].get("stamp_rate",0.0005)
-            ),
-            checkpoint=datetime.strptime(
-                cfg["execution"].get("decision_checkpoint","09:35"),
-                "%H:%M",
-            ).time(),
+        runner=_runner_from_config(
+            cfg=cfg,
+            store=store,
+            model=model,
             minute_loader=minute_loader,
-            exclude_st=bool(
-                cfg["universe"].get(
-                    "exclude_st",
-                    True,
-                )
-            ),
-            include_boards=tuple(
-                cfg["universe"].get(
-                    "include_boards",
-                    [],
-                )
-            ),
-            exclude_no_limit_ipo_days=bool(
-                cfg["universe"].get(
-                    "exclude_no_limit_ipo_days",
-                    True,
-                )
-            ),
         )
         result=runner.run(dates)
         run_dir=Path(args.run_root)/(
@@ -362,6 +414,99 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
         default=str,
         indent=2,
     ))
+    return 0
+
+
+def cmd_walk_forward_b0(args: argparse.Namespace) -> int:
+    cfg=_config(args.config)
+    start=_date(args.start)
+    end=_date(args.end)
+
+    # Walk-forward is a development-set diagnostic, never a holdout tool.
+    assert_holdout_access(
+        cfg,
+        start,
+        end,
+        unlock=False,
+    )
+
+    store=LocalParquetStore(args.data_root)
+    dates=_calendar_dates(
+        store,
+        start,
+        end,
+    )
+    model=FillModel(args.fill)
+    minute_loader=_minute_loader_for_run(
+        enabled=args.fetch_missing_minutes,
+        store=store,
+    )
+
+    initial_cash=float(
+        cfg["portfolio"].get(
+            "initial_cash",
+            1_000_000,
+        )
+    )
+
+    fold_metrics,summary=evaluate_walk_forward(
+        trade_dates=dates,
+        runner_factory=lambda:_runner_from_config(
+            cfg=cfg,
+            store=store,
+            model=model,
+            minute_loader=minute_loader,
+        ),
+        initial_cash=initial_cash,
+        min_train_days=args.min_train_days,
+        validation_days=args.validation_days,
+        step_days=args.step_days,
+        warmup_days=args.warmup_days,
+    )
+
+    run_dir=Path(args.run_root)/(
+        f'walk_forward_{cfg["version"]}_'
+        f'{start:%Y%m%d}_{end:%Y%m%d}_'
+        f'{model.value}'
+    )
+    run_dir.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    pd.DataFrame(
+        fold_metrics
+    ).to_parquet(
+        run_dir/"fold_metrics.parquet",
+        index=False,
+    )
+    (run_dir/"summary.json").write_text(
+        json.dumps(
+            summary,
+            ensure_ascii=False,
+            indent=2,
+            allow_nan=True,
+        ),
+        encoding="utf-8",
+    )
+    (run_dir/"spec.json").write_text(
+        json.dumps({
+            "version":cfg["version"],
+            "start":args.start,
+            "end":args.end,
+            "fill_model":model.value,
+            "min_train_days":args.min_train_days,
+            "validation_days":args.validation_days,
+            "step_days":args.step_days,
+            "warmup_days":args.warmup_days,
+        },ensure_ascii=False,indent=2),
+        encoding="utf-8",
+    )
+
+    print(json.dumps({
+        "status":"ok",
+        "run_dir":str(run_dir),
+        "summary":summary,
+    },ensure_ascii=False,indent=2,allow_nan=True))
     return 0
 
 
@@ -410,6 +555,29 @@ def main() -> int:
     p.add_argument("--proxy",required=True)
     p.add_argument("--out")
     p.set_defaults(func=cmd_align_b0)
+
+    p=sub.add_parser("walk-forward-b0")
+    _add_range_args(p)
+    p.add_argument("--run-root",default="runs")
+    p.add_argument("--config",default="config/b0.yaml")
+    p.add_argument(
+        "--fill",
+        choices=[
+            "optimistic",
+            "realistic",
+            "conservative",
+        ],
+        default="realistic",
+    )
+    p.add_argument("--min-train-days",type=int,default=120)
+    p.add_argument("--validation-days",type=int,default=40)
+    p.add_argument("--step-days",type=int,default=40)
+    p.add_argument("--warmup-days",type=int,default=2)
+    p.add_argument(
+        "--fetch-missing-minutes",
+        action="store_true",
+    )
+    p.set_defaults(func=cmd_walk_forward_b0)
 
     p=sub.add_parser("run-b0")
     _add_range_args(p)
