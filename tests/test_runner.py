@@ -30,6 +30,7 @@ def test_b0_replay_enters_and_exits_t_plus_one(tmp_path):
         write(s,"limit_up",d,empty_limit())
         write(s,"limit_down",d,empty_limit())
         write(s,"limit_break",d,empty_limit())
+        write(s,"stock_st",d,pd.DataFrame(columns=["ts_code","trade_date","type"]))
 
     # D1's limit-up is used only to calculate D2's previous-limit premium.
     write(s,"limit_up","20260924",pd.DataFrame({
@@ -48,6 +49,13 @@ def test_b0_replay_enters_and_exits_t_plus_one(tmp_path):
         "turnover_rate":[15.0],
         "open_num":[1],
         "lu_limit_order":[8e7],
+    }))
+    write(s,"kpl_limit_up","20260925",pd.DataFrame({
+        "trade_date":["20260925"],
+        "ts_code":["A"],
+        "theme":["机器人"],
+        "status":["4连板"],
+        "amount":[1.2e9],
     }))
 
     write(s,"daily","20260928",pd.DataFrame({
@@ -96,3 +104,5 @@ def test_b0_replay_enters_and_exits_t_plus_one(tmp_path):
     assert result.trades[0]["exit_time"]==pd.Timestamp("2026-09-29 09:36:00")
     assert result.trades[0]["net_return"]>0
     assert result.metrics["closed_trades"]==1
+    assert result.signals[0].evidence["theme_data_available"]
+    assert result.signals[0].evidence["st_exclusion_enabled"]
