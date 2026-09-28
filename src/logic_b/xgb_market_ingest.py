@@ -294,6 +294,49 @@ class XuangubaoMarketIngestor:
             self._pause()
         return done
 
+    def _ensure_empty_market_partitions(
+        self,
+        day_key: str,
+    ) -> None:
+        empty_specs={
+            "daily":[
+                "trade_date","ts_code",
+                "open","high","low","close",
+                "vol","amount","pct_chg","source",
+            ],
+            "limit_prices":[
+                "trade_date","ts_code",
+                "pre_close","up_limit",
+                "down_limit","source",
+            ],
+            "suspend":[
+                "trade_date","ts_code",
+                "suspend_type","source",
+            ],
+            "stock_st":[
+                "trade_date","ts_code",
+                "name","source",
+            ],
+        }
+        for dataset,columns in empty_specs.items():
+            if not self.store.exists(
+                dataset,
+                day_key,
+            ):
+                self.store.write_frame(
+                    dataset,
+                    day_key,
+                    pd.DataFrame(
+                        columns=columns
+                    ),
+                    metadata={
+                        "source":"xuangubao_candidate_slice",
+                        "trade_date":day_key,
+                        "meaning":
+                            "empty canonical partition until symbol-day rows are materialized",
+                    },
+                )
+
     @staticmethod
     def _st_rows_from_prior_pool(
         prior_limit_up: pd.DataFrame,
@@ -389,6 +432,11 @@ class XuangubaoMarketIngestor:
         symbol_days=0
         days_with_candidates=0
 
+        for raw_day in trade_dates:
+            self._ensure_empty_market_partitions(
+                self._key(raw_day)
+            )
+
         for index in range(1,len(trade_dates)):
             day_key=self._key(
                 trade_dates[index]
@@ -404,6 +452,14 @@ class XuangubaoMarketIngestor:
                 prior is None
                 or prior.empty
             ):
+                self._ensure_day_state_partitions(
+                    day_key=day_key,
+                    prior_limit_up=(
+                        pd.DataFrame()
+                        if prior is None
+                        else prior
+                    ),
+                )
                 continue
 
             done=self.materialize_from_prior_pool(
