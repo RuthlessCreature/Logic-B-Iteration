@@ -1,4 +1,4 @@
-version: "B0.0.2"
+version: "B0.0.3"
 
 universe:
   market: "A-share"
@@ -58,6 +58,10 @@ research:
   blind_holdout_start: "2026-07-01"
   blind_holdout_end: "2026-09-28"
   walk_forward: true
+  walk_forward_min_train_days: 120
+  walk_forward_validation_days: 40
+  walk_forward_step_days: 40
+  walk_forward_warmup_days: 2
   blind_holdout: true
   random_shuffle: false
   inspect_blind_holdout_during_iteration: false
