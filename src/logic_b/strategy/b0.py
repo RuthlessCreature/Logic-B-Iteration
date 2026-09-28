@@ -179,7 +179,7 @@ class B0Proxy:
             ),
             "theme_name":winner.get("theme_name"),
             "theme_limit_up_count":int(winner.get("theme_limit_up_count",0) or 0),
-            "theme_strength":float(winner.get("theme_strength",0.0) or 0.0),
+            "theme_strength":float(winner.get("theme_strength",0.0) or 0.0),\n            "core_priority":int(winner["core_priority"]),
         }
 
         risk=float(
