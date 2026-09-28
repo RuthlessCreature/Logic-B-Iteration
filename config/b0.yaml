@@ -1,0 +1,56 @@
+version: "B0.0.0"
+
+universe:
+  market: "A-share"
+  candidate_source: "previous_day_limit_up"
+  include_boards:
+    - main
+    - chinext
+    - star
+  exclude_no_limit_ipo_days: true
+
+portfolio:
+  max_positions: 1
+  target_position_pct: 1.0
+  t_plus_one: true
+
+core_priority:
+  - total_market_leader
+  - sector_capacity_core
+  - strongest_turnover_front
+  - explicit_catchup_core
+
+market_gate:
+  blocked_regimes:
+    - RETREAT
+    - ICE
+
+decision_checkpoints:
+  - "09:25"
+  - "09:35"
+  - "10:00"
+  - "10:30"
+  - "14:30"
+
+execution:
+  primary_fill_model: "realistic"
+  report_fill_models:
+    - optimistic
+    - realistic
+    - conservative
+  forbid_same_day_sell: true
+  model_limit_up_unfillable: true
+  model_limit_down_lock: true
+
+research:
+  start_date: "2024-09-30"
+  end_date: "2026-09-28"
+  walk_forward: true
+  blind_holdout: true
+  random_shuffle: false
+
+promotion:
+  require_positive_expectancy_conservative_fill: true
+  require_multi_fold_stability: true
+  require_parameter_neighborhood_stability: true
+  complexity_penalty: true
