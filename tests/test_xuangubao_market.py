@@ -54,6 +54,7 @@ def test_historical_minute_normalization_and_limits():
     )
 
     assert result.pre_close==22.36
+    assert result.pre_close_source=="api"
     assert not result.bars.empty
     assert set([
         "trade_time","open","high","low","close","vol","amount"
@@ -67,12 +68,32 @@ def test_historical_minute_normalization_and_limits():
     assert limits.iloc[0]["down_limit"]==20.12
 
 
+def test_historical_pre_close_override_wins_when_api_is_zero():
+    class ZeroPreClose(FakeMarket):
+        def _json(self,path,params):
+            payload=super()._json(path,params)
+            payload["data"]["candle"]["603607.SS"]["pre_close_px"]=0
+            return payload
+
+    result=ZeroPreClose().historical_minute_day(
+        "603607.SH",
+        date(2026,6,30),
+        pre_close_override=22.36,
+    )
+    assert result.pre_close==22.36
+    assert result.pre_close_source=="override"
+    assert XuangubaoMarketProvider.limit_prices(
+        result
+    ).iloc[0]["up_limit"]==24.60
+
+
 def test_chinext_limit_is_twenty_percent():
     result=XuangubaoMinuteDay(
         ts_code="300001.SZ",
         trade_date="20260630",
         bars=pd.DataFrame(),
         pre_close=10.0,
+        pre_close_source="test",
         raw_lines=0,
     )
     limits=XuangubaoMarketProvider.limit_prices(result)
