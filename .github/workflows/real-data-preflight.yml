@@ -1,0 +1,86 @@
+name: Real Data Preflight
+
+on:
+  push:
+    paths:
+      - ".github/workflows/real-data-preflight.yml"
+  workflow_dispatch:
+    inputs:
+      trade_date:
+        description: "Completed A-share trading date (YYYY-MM-DD)"
+        required: false
+        default: "2026-06-30"
+      sample_code:
+        description: "Sample Tushare code for minute-data entitlement"
+        required: false
+        default: "600000.SH"
+
+permissions:
+  contents: read
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      TUSHARE_TOKEN: ${{ secrets.TUSHARE_TOKEN }}
+      DEFAULT_TRADE_DATE: "2026-06-30"
+      DEFAULT_SAMPLE_CODE: "600000.SH"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Resolve inputs
+        id: inputs
+        shell: bash
+        run: |
+          TRADE_DATE="${{ github.event.inputs.trade_date }}"
+          SAMPLE_CODE="${{ github.event.inputs.sample_code }}"
+          if [ -z "$TRADE_DATE" ]; then TRADE_DATE="$DEFAULT_TRADE_DATE"; fi
+          if [ -z "$SAMPLE_CODE" ]; then SAMPLE_CODE="$DEFAULT_SAMPLE_CODE"; fi
+          echo "trade_date=$TRADE_DATE" >> "$GITHUB_OUTPUT"
+          echo "sample_code=$SAMPLE_CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Check secret presence
+        shell: bash
+        run: |
+          if [ -z "$TUSHARE_TOKEN" ]; then
+            cat > preflight.json <<'JSON'
+          {
+            "ok": false,
+            "stage": "secret_check",
+            "error": "GitHub Actions secret TUSHARE_TOKEN is not configured for this repository."
+          }
+          JSON
+            echo "TUSHARE_TOKEN is not configured."
+            exit 2
+          fi
+          echo "TUSHARE_TOKEN is configured (value is not printed)."
+
+      - name: Run real provider preflight
+        shell: bash
+        run: |
+          set -o pipefail
+          logic-b preflight-data \
+            --date "${{ steps.inputs.outputs.trade_date }}" \
+            --code "${{ steps.inputs.outputs.sample_code }}" \
+            | tee preflight.json
+
+      - name: Upload preflight result
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: real-data-preflight
+          path: preflight.json
+          if-no-files-found: warn
+          retention-days: 14
