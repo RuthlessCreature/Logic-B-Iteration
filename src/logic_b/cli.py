@@ -105,7 +105,7 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             daily_equity=result.daily_equity,
             metrics=result.metrics,
             config=cfg,
-            metadata={"start":args.start,"end":args.end,"fill_model":model.value},
+            metadata={"start":args.start,"end":args.end,"fill_model":model.value,"blind_holdout_touched":touches_holdout},
         )
         outputs.append({"fill_model":model.value,"run_dir":str(run_dir),"metrics":result.metrics})
     print(json.dumps({"status":"ok","runs":outputs},ensure_ascii=False,default=str,indent=2))
