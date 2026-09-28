@@ -154,6 +154,78 @@ def audit_daily_bundle(
     return issues
 
 
+def audit_auxiliary_bundle(
+    *,
+    limit_up: pd.DataFrame,
+    kpl_limit_up: pd.DataFrame,
+    stock_st: pd.DataFrame,
+    suspend: pd.DataFrame,
+    auction: pd.DataFrame,
+) -> list[AuditIssue]:
+    """Audit point-in-time auxiliary datasets required by B0 replay."""
+
+    issues: list[AuditIssue]=[]
+
+    def require_columns(
+        frame: pd.DataFrame,
+        dataset: str,
+        required: set[str],
+    ) -> None:
+        if frame.empty:
+            return
+        missing=required-set(frame.columns)
+        if missing:
+            issues.append(AuditIssue(
+                "ERROR",
+                f"{dataset.upper()}_COLUMNS",
+                f"{dataset} missing columns: {sorted(missing)}",
+                len(missing),
+            ))
+
+    require_columns(
+        kpl_limit_up,
+        "kpl_limit_up",
+        {"ts_code","theme","status"},
+    )
+    require_columns(
+        stock_st,
+        "stock_st",
+        {"ts_code"},
+    )
+    require_columns(
+        suspend,
+        "suspend",
+        {"ts_code","suspend_type"},
+    )
+    require_columns(
+        auction,
+        "auction",
+        {"ts_code","close"},
+    )
+
+    ths_codes=_codes(limit_up)
+    kpl_codes=_codes(kpl_limit_up)
+
+    if ths_codes and not kpl_codes:
+        issues.append(AuditIssue(
+            "ERROR",
+            "KPL_THEME_DAY_MISSING",
+            "THS limit-up pool is non-empty but KPL theme list is empty",
+            len(ths_codes),
+        ))
+    elif ths_codes:
+        coverage=len(ths_codes&kpl_codes)/len(ths_codes)
+        if coverage<0.70:
+            issues.append(AuditIssue(
+                "WARN",
+                "KPL_LIMIT_UP_COVERAGE_LOW",
+                f"KPL/THS limit-up code coverage is only {coverage:.1%}",
+                len(ths_codes-(ths_codes&kpl_codes)),
+            ))
+
+    return issues
+
+
 def summarize_issues(issues: list[AuditIssue]) -> dict:
     return {
         "errors":sum(x.count for x in issues if x.severity=="ERROR"),
