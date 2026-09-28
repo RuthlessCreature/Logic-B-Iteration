@@ -8,7 +8,7 @@ import pandas as pd
 
 from ..execution import simulate_buy_fill,simulate_sell_fill
 from ..metrics import summarize_equity
-from ..models import Action,FillModel
+from ..models import Action,Fill,FillModel
 from ..portfolio import Portfolio
 from ..storage import LocalParquetStore
 from ..strategy.b0 import B0Proxy
@@ -30,16 +30,7 @@ class ReplayResult:
 
 
 class B0ReplayRunner:
-    """Event-style B0-P baseline replay.
-
-    Rules:
-    - D-1 limit-up pool defines candidates.
-    - D-1 KPL theme labels provide point-in-time theme evidence.
-    - Current-day ST list may remove candidates before the 09:35 decision.
-    - A signal built from the completed checkpoint bar can only fill later.
-    - E0 attempts full liquidation after the next eligible 09:35 checkpoint.
-    - Locked limit-down positions remain held and are retried on later sessions.
-    """
+    """Event-style B0-P baseline replay with execution constraints."""
 
     def __init__(
         self,
@@ -139,26 +130,32 @@ class B0ReplayRunner:
         )
 
     @staticmethod
-    def _filter_st(
-        prev_up: pd.DataFrame,
-        current_st: pd.DataFrame,
-    ) -> pd.DataFrame:
-        if prev_up.empty:
-            return prev_up.copy()
+    def _code_set(
+        frame: pd.DataFrame | None,
+    ) -> set[str]:
         if (
-            current_st is None
-            or current_st.empty
-            or "ts_code" not in current_st.columns
+            frame is None
+            or frame.empty
+            or "ts_code" not in frame.columns
         ):
-            return prev_up.copy()
-
-        st_codes=set(
-            current_st["ts_code"].astype(str)
+            return set()
+        return set(
+            frame["ts_code"].astype(str)
         )
-        return prev_up[
-            ~prev_up["ts_code"].astype(str).isin(
-                st_codes
-            )
+
+    @classmethod
+    def _exclude_codes(
+        cls,
+        candidates: pd.DataFrame,
+        excluded: set[str],
+    ) -> pd.DataFrame:
+        if candidates.empty or not excluded:
+            return candidates.copy()
+
+        return candidates[
+            ~candidates["ts_code"]
+            .astype(str)
+            .isin(excluded)
         ].copy()
 
     def run(
@@ -179,6 +176,7 @@ class B0ReplayRunner:
         fills=[]
         trades=[]
         equity=[]
+        last_mark_price: float | None=None
 
         for index,key in enumerate(keys):
             day=pd.to_datetime(key).date()
@@ -191,6 +189,13 @@ class B0ReplayRunner:
             limits=self._require(
                 "limit_prices",
                 key,
+            )
+            suspend=self._require(
+                "suspend",
+                key,
+            )
+            suspended_codes=self._code_set(
+                suspend
             )
             limits_idx=(
                 limits.set_index(
@@ -208,53 +213,72 @@ class B0ReplayRunner:
                 portfolio.position.entry_time.date()
             ):
                 code=portfolio.position.ts_code
-                if code not in limits_idx.index:
-                    raise MissingReplayDataError(
-                        f"no limit price for held "
-                        f"{code} on {key}"
-                    )
 
-                bars=self._minute(key,code)
-                down=float(
-                    limits_idx.loc[
+                if code in suspended_codes:
+                    fills.append(
+                        Fill(
+                            ts_code=code,
+                            side="SELL",
+                            signal_time=decision_time,
+                            fill_time=None,
+                            fill_price=None,
+                            filled=False,
+                            reason="suspended",
+                            model=self.fill_model,
+                        )
+                    )
+                else:
+                    if code not in limits_idx.index:
+                        raise MissingReplayDataError(
+                            f"no limit price for held "
+                            f"{code} on {key}"
+                        )
+
+                    bars=self._minute(
+                        key,
                         code,
-                        "down_limit",
-                    ]
-                )
-                fill=simulate_sell_fill(
-                    ts_code=code,
-                    signal_time=decision_time,
-                    minute_bars=bars,
-                    limit_down_price=down,
-                    model=self.fill_model,
-                )
-                fills.append(fill)
-
-                if fill.filled:
-                    position=portfolio.position
-                    net=portfolio.sell_all(
-                        fill.fill_time,
-                        fill.fill_price,
-                        self.fee_rate,
-                        self.stamp_rate,
                     )
-                    trades.append({
-                        "ts_code":code,
-                        "entry_time":
-                            position.entry_time,
-                        "entry_price":
-                            position.entry_price,
-                        "exit_time":
+                    down=float(
+                        limits_idx.loc[
+                            code,
+                            "down_limit",
+                        ]
+                    )
+                    fill=simulate_sell_fill(
+                        ts_code=code,
+                        signal_time=decision_time,
+                        minute_bars=bars,
+                        limit_down_price=down,
+                        model=self.fill_model,
+                    )
+                    fills.append(fill)
+
+                    if fill.filled:
+                        position=portfolio.position
+                        net=portfolio.sell_all(
                             fill.fill_time,
-                        "exit_price":
                             fill.fill_price,
-                        "shares":
-                            position.shares,
-                        "net_return":
-                            net/position.cash_used-1.0,
-                        "exit_rule":
-                            "E0_NEXT_DAY_0935",
-                    })
+                            self.fee_rate,
+                            self.stamp_rate,
+                        )
+                        trades.append({
+                            "ts_code":code,
+                            "entry_time":
+                                position.entry_time,
+                            "entry_price":
+                                position.entry_price,
+                            "exit_time":
+                                fill.fill_time,
+                            "exit_price":
+                                fill.fill_price,
+                            "shares":
+                                position.shares,
+                            "net_return":
+                                net/position.cash_used-1.0,
+                            "exit_rule":
+                                "E0_NEXT_DAY_0935",
+                        })
+                        last_mark_price=None
 
             if (
                 index>=2
@@ -288,17 +312,20 @@ class B0ReplayRunner:
                     prev,
                 )
 
+                excluded=set(suspended_codes)
                 if self.exclude_st:
                     current_st=self._require(
                         "stock_st",
                         key,
                     )
-                    candidates=self._filter_st(
-                        prev_up,
-                        current_st,
+                    excluded|=self._code_set(
+                        current_st
                     )
-                else:
-                    candidates=prev_up.copy()
+
+                candidates=self._exclude_codes(
+                    prev_up,
+                    excluded,
+                )
 
                 regime=build_completed_day_regime(
                     limit_up_df=prev_up,
@@ -317,9 +344,8 @@ class B0ReplayRunner:
                     else []
                 )
 
-                # If a prior position was sold after the checkpoint,
-                # the 09:35 entry decision is stale and cannot be replayed
-                # using capital that was unavailable then.
+                # If a sell only became possible after 09:35, the entry
+                # checkpoint happened while capital was still unavailable.
                 can_enter=not fills or not (
                     fills[-1].side=="SELL"
                     and
@@ -374,7 +400,13 @@ class B0ReplayRunner:
                     "st_exclusion_enabled"
                 ]=self.exclude_st
                 signal.evidence[
-                    "candidate_count_after_st_filter"
+                    "suspended_candidate_count"
+                ]=len(
+                    self._code_set(prev_up)
+                    &suspended_codes
+                )
+                signal.evidence[
+                    "candidate_count_after_filters"
                 ]=len(candidate_codes)
                 signals.append(signal)
 
@@ -413,6 +445,9 @@ class B0ReplayRunner:
                             fill.fill_price,
                             self.fee_rate,
                         )
+                        last_mark_price=(
+                            fill.fill_price
+                        )
 
             mark=None
             if portfolio.position is not None:
@@ -426,17 +461,27 @@ class B0ReplayRunner:
                     if "ts_code" in daily.columns
                     else pd.DataFrame()
                 )
+
                 if (
-                    row.empty
-                    or "close" not in row.columns
+                    not row.empty
+                    and "close" in row.columns
                 ):
+                    mark=float(
+                        row.iloc[0]["close"]
+                    )
+                    last_mark_price=mark
+                elif code in suspended_codes:
+                    if last_mark_price is None:
+                        last_mark_price=(
+                            portfolio.position.entry_price
+                        )
+                    mark=last_mark_price
+                else:
                     raise MissingReplayDataError(
                         f"missing close for held "
-                        f"{code} on {key}"
+                        f"{code} on {key}, but it is "
+                        "not marked suspended"
                     )
-                mark=float(
-                    row.iloc[0]["close"]
-                )
 
             equity.append({
                 "date":key,
@@ -451,6 +496,13 @@ class B0ReplayRunner:
                         else None
                     ),
                 "mark_price":mark,
+                "holding_suspended":
+                    (
+                        portfolio.position is not None
+                        and
+                        portfolio.position.ts_code
+                        in suspended_codes
+                    ),
             })
 
         metrics=summarize_equity(
@@ -478,6 +530,12 @@ class B0ReplayRunner:
                 ),
             "exclude_st":
                 self.exclude_st,
+            "suspension_blocks":
+                sum(
+                    1
+                    for fill in fills
+                    if fill.reason=="suspended"
+                ),
         })
 
         return ReplayResult(
