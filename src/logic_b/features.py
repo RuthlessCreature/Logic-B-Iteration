@@ -58,6 +58,8 @@ def build_prev_day_candidate_features(limit_df: pd.DataFrame) -> pd.DataFrame:
 
     if "turnover" in x.columns:
         amount = _series(x, "turnover", 0.0)
+    elif "turnover_estimated" in x.columns:
+        amount = _series(x, "turnover_estimated", 0.0)
     elif "amount" in x.columns:
         amount = _series(x, "amount", 0.0)
     else:
@@ -74,6 +76,8 @@ def build_prev_day_candidate_features(limit_df: pd.DataFrame) -> pd.DataFrame:
 
     if "lu_limit_order" in x.columns:
         seal_amount = _series(x, "lu_limit_order", 0.0)
+    elif "buy_lock_volume_ratio" in x.columns:
+        seal_amount = _series(x, "buy_lock_volume_ratio", 0.0)
     elif "limit_amount" in x.columns:
         seal_amount = _series(x, "limit_amount", 0.0)
     elif "limit_order" in x.columns:
