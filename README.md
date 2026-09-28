@@ -760,3 +760,112 @@ Xuangubao 公共 fallback 当前有以下明确限制：
 - fallback 生成的 `daily / limit_prices` 不会静默覆盖已有更高权威数据；
 - 推荐单独使用 `data-xgb`，避免不同源的历史口径混杂；
 - XGB 路线的收益结果必须单独标明数据源，不得与 Tushare 路线静默拼接成同一结论。
+
+
+---
+
+## 23. 参数邻域稳定性
+
+B0-P 的当前闸门参数已经显式冻结：
+
+```yaml
+strategy:
+  min_confirmation: 0.58
+  min_tradability: 0.45
+```
+
+邻域稳定性不是参数寻优。
+
+固定检查：
+
+```text
+confirmation: 0.58 ± 0.03
+tradability:  0.45 ± 0.05
+
+3 × 3 网格
+减去中心点
+= 8 个邻点
+```
+
+运行：
+
+```bash
+logic-b parameter-neighborhood-b0 \
+  --start 2024-09-30 \
+  --end 2026-06-30 \
+  --data-root data-xgb \
+  --fill conservative \
+  --fetch-missing-minutes \
+  --missing-minute-source xuangubao
+```
+
+输出：
+
+```text
+runs/neighborhood_<...>/
+  neighbors.parquet
+  neighborhood.json
+  spec.json
+```
+
+工具不会返回“最佳参数”，只回答当前策略对小幅参数扰动是否稳定。
+
+默认稳定门槛：
+
+- 8 个邻点全部完成；
+- 至少 75% 邻点 expectancy > 0；
+- 至少 75% 邻点 total return > 0；
+- 任一邻点最大回撤绝对值不得超过 30%；
+- 每个邻点至少 20 笔闭合交易；
+- 非有限指标视为不具备稳定性证据。
+
+---
+
+## 24. Promotion Gate
+
+版本升级采用非补偿式硬门，不计算“综合总分”。
+
+完整规则：
+
+```text
+docs/08_PROMOTION_GATE.md
+research/decisions/20260928-promotion-thresholds.md
+```
+
+### 24.1 输出 B0-H 对齐指标
+
+```bash
+logic-b align-b0 \
+  --human research/human_labels.csv \
+  --proxy runs/<baseline>/signals.parquet \
+  --out runs/<baseline>/human_alignment.csv \
+  --metrics-out runs/<baseline>/human_alignment_metrics.json
+```
+
+### 24.2 运行 Promotion Gate
+
+```bash
+logic-b promotion-check \
+  --conservative runs/<conservative>/metrics.json \
+  --walk-forward runs/walk_forward_<...>/summary.json \
+  --alignment runs/<baseline>/human_alignment_metrics.json \
+  --stability runs/neighborhood_<...>/neighborhood.json \
+  --candidate-meta research/experiments/<id>/candidate_meta.json \
+  --out research/experiments/<id>/promotion.json
+```
+
+结果只有三种：
+
+- `PASS`：所有硬门都有充分证据并通过；
+- `FAIL`：至少一个已完成硬门失败；
+- `BLOCKED`：必需证据缺失、样本不足或指标不可计算。
+
+强收益不能抵消：
+
+- B0-H 对齐缺失；
+- 参数邻域不稳定；
+- 样本量不足；
+- 回撤超限；
+- 版本复杂度超预算。
+
+Promotion 阈值已经在查看完整 development baseline 之前冻结进 `config/b0.yaml`。不得在看完对应评估结果后为了得到 PASS 再移动门槛。
