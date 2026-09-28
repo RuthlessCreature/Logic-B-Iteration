@@ -1,0 +1,33 @@
+schema_version: 1
+
+fields:
+  trade_date: date
+  decision_time: datetime
+  ts_code: string
+  strategy_version: string
+
+  candidate_from_prev_limit_up: bool
+
+  market_regime:
+    enum: [ATTACK, TRIAL, NEUTRAL, RETREAT, ICE]
+
+  core_type:
+    enum:
+      - TOTAL_MARKET_LEADER
+      - SECTOR_CAPACITY_CORE
+      - TURNOVER_FRONT
+      - CATCHUP_CORE
+      - NONE
+
+  candidate_score: float
+  confirmation_score: float
+  tradability_score: float
+  risk_score: float
+
+  action:
+    enum: [BUY_CORE, HOLD, SELL, CASH]
+
+  available_features_hash: string
+  evidence_snapshot_id: string
+
+  generated_at: datetime
