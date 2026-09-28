@@ -8,6 +8,7 @@ universe:
     - chinext
     - star
   exclude_no_limit_ipo_days: true
+  exclude_st: true
 
 portfolio:
   max_positions: 1
