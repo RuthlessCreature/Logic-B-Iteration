@@ -336,9 +336,14 @@ class B0ReplayRunner:
                     prevprev,
                 )
                 prev_theme=self.store.read_optional(
-                    "kpl_limit_up",
+                    "theme_limit_up",
                     prev,
                 )
+                if prev_theme is None:
+                    prev_theme=self.store.read_optional(
+                        "kpl_limit_up",
+                        prev,
+                    )
 
                 candidates=prev_up.copy()
                 if self.include_boards is not None:
