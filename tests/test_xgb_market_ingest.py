@@ -175,3 +175,53 @@ def test_materialize_range_uses_prior_limit_up_price_as_preclose(tmp_path):
         date(2026,9,28),
         20.0,
     ) in provider.calls
+
+
+def test_range_materializes_empty_suspend_and_prior_name_st_state(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+    provider=FakeMarketProvider()
+    ingestor=XuangubaoMarketIngestor(
+        provider,
+        store,
+    )
+
+    store.write_frame(
+        "limit_up",
+        "20260925",
+        pd.DataFrame({
+            "ts_code":[
+                "600000.SH",
+                "000001.SZ",
+            ],
+            "name":[
+                "普通股份",
+                "*ST示例",
+            ],
+            "price":[10.0,20.0],
+        }),
+    )
+
+    ingestor.materialize_range(
+        trade_dates=[
+            "20260925",
+            "20260928",
+        ]
+    )
+
+    suspend=store.read_frame(
+        "suspend",
+        "20260928",
+    )
+    stock_st=store.read_frame(
+        "stock_st",
+        "20260928",
+    )
+
+    assert suspend.empty
+    assert stock_st["ts_code"].tolist()==[
+        "000001.SZ"
+    ]
+    assert (
+        stock_st.iloc[0]["source"]
+        =="xuangubao_prior_name_inference"
+    )
