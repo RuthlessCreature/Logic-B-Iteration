@@ -1,0 +1,60 @@
+schema_version: 1
+
+description: >
+  Human-reference label for Logic A / B0-H. The label must be made from
+  information available at the stated decision_time. Outcome fields are
+  deliberately excluded from the label schema.
+
+required:
+  - trade_date
+  - decision_time
+  - market_regime
+  - action
+  - core_type
+  - labeler
+  - rationale
+
+fields:
+  trade_date:
+    type: date
+  decision_time:
+    type: datetime
+  market_regime:
+    enum: [ATTACK, TRIAL, NEUTRAL, RETREAT, ICE]
+  action:
+    enum: [BUY_CORE, CASH]
+  selected_code:
+    type: string_or_null
+    rule: required_when_action_is_BUY_CORE
+  core_type:
+    enum:
+      - TOTAL_MARKET_LEADER
+      - SECTOR_CAPACITY_CORE
+      - TURNOVER_FRONT
+      - CATCHUP_CORE
+      - NONE
+  candidate_codes:
+    type: list_string
+  rejected_candidates:
+    type: list_object
+  primary_theme:
+    type: string_or_null
+  evidence:
+    type: object
+  rationale:
+    type: string
+  confidence:
+    type: number
+    min: 0
+    max: 1
+  labeler:
+    type: string
+  created_at:
+    type: datetime
+
+forbidden_fields:
+  - next_day_return
+  - future_high
+  - future_low
+  - realized_pnl
+  - winner_after_the_fact
