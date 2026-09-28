@@ -273,7 +273,12 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
             stamp_rate=float(
                 cfg["execution"].get("stamp_rate",0.0005)
             ),
-            checkpoint=datetime.strptime(\n                cfg["execution"].get("decision_checkpoint","09:35"),\n                "%H:%M",\n            ).time(),\n            minute_loader=minute_loader,\n        )
+            checkpoint=datetime.strptime(
+                cfg["execution"].get("decision_checkpoint","09:35"),
+                "%H:%M",
+            ).time(),
+            minute_loader=minute_loader,
+        )
         result=runner.run(dates)
         run_dir=Path(args.run_root)/(
             f'{cfg["version"]}_{start:%Y%m%d}_'
