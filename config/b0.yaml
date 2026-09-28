@@ -67,7 +67,27 @@ research:
   inspect_blind_holdout_during_iteration: false
 
 promotion:
+  # Frozen before the development baseline is inspected.
   require_positive_expectancy_conservative_fill: true
+  min_conservative_expectancy: 0.0
+  min_conservative_closed_trades: 30
+  max_conservative_drawdown_abs: 0.25
+
   require_multi_fold_stability: true
+  min_walk_forward_folds: 4
+  min_positive_return_fold_rate: 0.60
+  min_positive_expectancy_fold_rate: 0.60
+  min_walk_forward_closed_trades: 20
+
+  require_human_alignment: true
+  min_human_labels: 80
+  min_action_agreement: 0.80
+  min_selection_agreement: 0.70
+  min_core_type_agreement: 0.75
+
   require_parameter_neighborhood_stability: true
+  min_tested_parameter_neighbors: 8
+
   complexity_penalty: true
+  max_primary_rule_changes: 1
+  max_new_free_parameters: 2
