@@ -160,6 +160,16 @@ class TushareProvider(MarketDataProvider):
             )
         )
 
+    def st_status(
+        self,
+        trade_date: date,
+    ) -> pd.DataFrame:
+        return self._call(
+            lambda:self.pro.stock_st(
+                trade_date=_d(trade_date)
+            )
+        )
+
     def stock_minute(
         self,
         ts_code: str,
