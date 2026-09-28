@@ -31,6 +31,7 @@ def test_b0_replay_enters_and_exits_t_plus_one(tmp_path):
         write(s,"limit_down",d,empty_limit())
         write(s,"limit_break",d,empty_limit())
         write(s,"stock_st",d,pd.DataFrame(columns=["ts_code","trade_date","type"]))
+        write(s,"suspend",d,pd.DataFrame(columns=["ts_code","trade_date","suspend_type"]))
 
     # D1's limit-up is used only to calculate D2's previous-limit premium.
     write(s,"limit_up","20260924",pd.DataFrame({
