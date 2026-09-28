@@ -1,6 +1,6 @@
 import pandas as pd
 
-from logic_b.audit import audit_daily_bundle,summarize_issues
+from logic_b.audit import audit_auxiliary_bundle,audit_daily_bundle,summarize_issues
 
 
 def fixtures():
@@ -61,3 +61,49 @@ def test_invalid_ohlc_is_error():
         limit_break=broken,
     )
     assert any(x.code=="INVALID_OHLC" for x in issues)
+
+
+def test_auxiliary_audit_requires_kpl_when_ths_has_limit_up():
+    issues=audit_auxiliary_bundle(
+        limit_up=pd.DataFrame({"ts_code":["A","B"]}),
+        kpl_limit_up=pd.DataFrame(columns=[
+            "ts_code","theme","status"
+        ]),
+        stock_st=pd.DataFrame(columns=["ts_code"]),
+        suspend=pd.DataFrame(columns=[
+            "ts_code","suspend_type"
+        ]),
+        auction=pd.DataFrame(columns=[
+            "ts_code","close"
+        ]),
+    )
+    assert any(
+        issue.code=="KPL_THEME_DAY_MISSING"
+        and issue.severity=="ERROR"
+        for issue in issues
+    )
+
+
+def test_auxiliary_audit_warns_on_low_kpl_code_coverage():
+    issues=audit_auxiliary_bundle(
+        limit_up=pd.DataFrame({
+            "ts_code":["A","B","C","D"]
+        }),
+        kpl_limit_up=pd.DataFrame({
+            "ts_code":["A"],
+            "theme":["机器人"],
+            "status":["首板"],
+        }),
+        stock_st=pd.DataFrame(columns=["ts_code"]),
+        suspend=pd.DataFrame(columns=[
+            "ts_code","suspend_type"
+        ]),
+        auction=pd.DataFrame(columns=[
+            "ts_code","close"
+        ]),
+    )
+    assert any(
+        issue.code=="KPL_LIMIT_UP_COVERAGE_LOW"
+        and issue.severity=="WARN"
+        for issue in issues
+    )
