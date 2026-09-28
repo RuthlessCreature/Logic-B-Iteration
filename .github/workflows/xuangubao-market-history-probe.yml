@@ -1,0 +1,94 @@
+name: Xuangubao Market History Probe
+
+on:
+  push:
+    paths:
+      - ".github/workflows/xuangubao-market-history-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe trend and kline
+        shell: bash
+        run: |
+          set -euo pipefail
+          UA="Mozilla/5.0"
+          BASE="https://api-ddc-wscn.xuangubao.com.cn/market"
+          CODE="603607.SS"
+          FIELDS="tick_at,open_px,close_px,high_px,low_px,turnover_volume,turnover_value,avg_px,px_change,px_change_rate"
+
+          curl --fail --silent --show-error --location -A "$UA" \
+            "$BASE/trend?fields=$FIELDS&prod_code=$CODE&period=1m" \
+            -o trend.json
+
+          curl --fail --silent --show-error --location -A "$UA" \
+            "$BASE/kline?prod_code=$CODE&tick_count=20&period_type=60&fields=$FIELDS" \
+            -o kline_recent.json
+
+          # 2026-06-30 15:00 Asia/Shanghai ~= 1782802800
+          curl --fail --silent --show-error --location -A "$UA" \
+            "$BASE/kline?prod_code=$CODE&tick_count=20&period_type=60&end_time=1782802800&fields=$FIELDS" \
+            -o kline_end_time.json
+
+          python - <<'PY'
+          import json,datetime,os
+
+          def summarize(path):
+              p=json.load(open(path,encoding="utf-8"))
+              print("\nFILE",path)
+              print("root",type(p).__name__, sorted(p.keys()) if isinstance(p,dict) else None)
+              if isinstance(p,dict):
+                  print("code",p.get("code"),"message",p.get("message"))
+                  d=p.get("data")
+                  print("data type",type(d).__name__)
+                  if isinstance(d,dict):
+                      print("data keys",list(d.keys())[:20])
+                      candle=d.get("candle")
+                      if isinstance(candle,dict):
+                          print("candle keys",list(candle.keys())[:10])
+                          for code,obj in candle.items():
+                              if isinstance(obj,dict):
+                                  print("obj keys",list(obj.keys()))
+                                  lines=obj.get("lines") or []
+                                  print("lines",len(lines))
+                                  if lines:
+                                      print("first",lines[0])
+                                      print("last",lines[-1])
+                                      for label,row in [("first",lines[0]),("last",lines[-1])]:
+                                          try:
+                                              ts=int(row[0])
+                                              print(label,"utc",datetime.datetime.fromtimestamp(ts,datetime.timezone.utc).isoformat())
+                                          except Exception as e:
+                                              print("ts parse",e)
+                              break
+              return p
+
+          a=summarize("trend.json")
+          b=summarize("kline_recent.json")
+          c=summarize("kline_end_time.json")
+
+          open("summary.json","w",encoding="utf-8").write(json.dumps({
+              "trend_code":a.get("code") if isinstance(a,dict) else None,
+              "recent_code":b.get("code") if isinstance(b,dict) else None,
+              "end_code":c.get("code") if isinstance(c,dict) else None,
+          },ensure_ascii=False,indent=2))
+          PY
+
+      - name: Upload probe
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xuangubao-market-history-probe
+          path: |
+            trend.json
+            kline_recent.json
+            kline_end_time.json
+            summary.json
+          if-no-files-found: warn
+          retention-days: 7
