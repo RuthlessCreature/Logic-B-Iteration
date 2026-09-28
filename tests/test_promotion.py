@@ -121,3 +121,47 @@ def test_complexity_cannot_be_compensated_by_good_returns():
     )
     assert result["status"]=="FAIL"
     assert result["fail_count"]>=2
+
+
+def test_zero_expectancy_does_not_pass_positive_expectancy_gate():
+    metrics=dict(GOOD_CONSERVATIVE)
+    metrics["expectancy"]=0.0
+    result=evaluate_promotion(
+        promotion_config=CFG,
+        conservative_metrics=metrics,
+        walk_forward_summary=GOOD_WF,
+        alignment_metrics=GOOD_ALIGNMENT,
+        neighborhood_stability=GOOD_STABILITY,
+        candidate_meta=GOOD_META,
+    )
+    gates={
+        item["name"]:item
+        for item in result["gates"]
+    }
+    assert result["status"]=="FAIL"
+    assert (
+        gates["conservative_expectancy"]["status"]
+        =="FAIL"
+    )
+
+
+def test_nan_expectancy_blocks_instead_of_false_failure():
+    metrics=dict(GOOD_CONSERVATIVE)
+    metrics["expectancy"]=float("nan")
+    result=evaluate_promotion(
+        promotion_config=CFG,
+        conservative_metrics=metrics,
+        walk_forward_summary=GOOD_WF,
+        alignment_metrics=GOOD_ALIGNMENT,
+        neighborhood_stability=GOOD_STABILITY,
+        candidate_meta=GOOD_META,
+    )
+    gates={
+        item["name"]:item
+        for item in result["gates"]
+    }
+    assert result["status"]=="BLOCKED"
+    assert (
+        gates["conservative_expectancy"]["status"]
+        =="BLOCKED"
+    )
