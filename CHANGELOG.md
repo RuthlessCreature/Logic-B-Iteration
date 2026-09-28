@@ -1,5 +1,36 @@
 # Changelog
 
+## B0.0.3 - 2026-09-28
+
+### Added
+- 数据源 `preflight-data`：运行长周期下载前验证全部关键接口和历史分钟权限。
+- `stock_st` 历史风险警示状态进入 point-in-time universe。
+- `suspend_d` 历史停牌数据进入 ingest、preflight 和 replay。
+- 持仓停牌锁定、上一可交易价格估值和复牌后继续卖出。
+- 主板 / 创业板 / 科创板硬 universe 过滤。
+- 无合法每日涨跌停价格的新股日过滤。
+- 明确的佣金、最低佣金、过户费和印花税成本模型。
+- 每笔交易记录 entry_cost / exit_cost。
+- 辅助数据审计：KPL / ST / suspend / auction。
+- 缓存数据 `data-readiness` 门，检查日级分区、manifest/hash 和候选分钟数据覆盖。
+- 缺失分钟按需补全并持久化。
+- chronological expanding-window walk-forward 引擎与 CLI。
+- walk-forward warmup 收益隔离，验证结果从 warmup 最后实际净值重新计量。
+
+### Changed
+- Walk-forward 窗口参数正式冻结到 `config/b0.yaml`。
+- B0 runner、provider、ingest、strategy 的 KPL/ST/suspend 数据契约完成端到端收敛。
+- Universe 配置不再是文档声明，实际进入 replay candidate filter。
+- B0.0.3 完成后，开发阶段原则上只允许修数据/实现缺陷，不允许依据收益随意改 B0 规则。
+
+### Validation
+- 新增 provider→ingest 合同集成测试。
+- 新增 KPL/ST runner 集成测试。
+- 新增停牌持仓复牌退出测试。
+- 新增 universe、交易成本、readiness、walk-forward 回归测试。
+- Blind holdout 继续默认锁定。
+- 仍未发布真实两年收益结论。
+
 ## B0.0.2 - 2026-09-28
 
 ### Added
