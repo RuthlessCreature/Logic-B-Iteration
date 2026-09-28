@@ -179,7 +179,7 @@ class XuangubaoEvidenceProvider:
                     raise RuntimeError(
                         "Xuangubao returned non-object JSON"
                     )
-                if payload.get("code") not in (None,0,200):
+                if payload.get("code") not in (None,0,200,20000):
                     raise RuntimeError(
                         f"Xuangubao API code={payload.get('code')} "
                         f"message={payload.get('message')}"
