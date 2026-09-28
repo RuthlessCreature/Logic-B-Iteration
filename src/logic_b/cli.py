@@ -32,10 +32,19 @@ def _config(path: str) -> dict:
 
 def _calendar_dates(store: LocalParquetStore, start: date, end: date) -> list[str]:
     key=f"{start:%Y%m%d}_{end:%Y%m%d}"
-    cal=store.read_frame("calendar",key)
+    cal=store.read_optional("calendar",key)
+    if cal is None:
+        cal=store.read_all_parts("calendar")
+    if cal.empty:
+        raise SystemExit(
+            "no cached trade calendar covers the requested range; run fetch-daily first"
+        )
     col="cal_date" if "cal_date" in cal.columns else "trade_date"
-    dates=sorted(pd.to_datetime(cal[col]).dt.strftime("%Y%m%d").tolist())
-    return [d for d in dates if f"{start:%Y%m%d}"<=d<=f"{end:%Y%m%d}"]
+    dates=sorted(set(pd.to_datetime(cal[col]).dt.strftime("%Y%m%d").tolist()))
+    selected=[d for d in dates if f"{start:%Y%m%d}"<=d<=f"{end:%Y%m%d}"]
+    if not selected:
+        raise SystemExit("cached calendar has no trading days in requested range")
+    return selected
 
 
 def assert_holdout_access(cfg: dict, start: date, end: date, *, unlock: bool) -> bool:
