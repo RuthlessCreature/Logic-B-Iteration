@@ -8,7 +8,7 @@ import pandas as pd
 
 from ..execution import simulate_buy_fill, simulate_sell_fill
 from ..metrics import summarize_equity
-from ..models import Action, FillModel, Position
+from ..models import Action, FillModel
 from ..portfolio import Portfolio
 from ..storage import LocalParquetStore
 from ..strategy.b0 import B0Proxy
