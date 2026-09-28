@@ -277,6 +277,84 @@ class XuangubaoMarketIngestor:
             done.append(code)
         return done
 
+    @staticmethod
+    def _st_rows_from_prior_pool(
+        prior_limit_up: pd.DataFrame,
+        *,
+        trade_date: str,
+    ) -> pd.DataFrame:
+        columns=[
+            "trade_date",
+            "ts_code",
+            "name",
+            "source",
+        ]
+        if (
+            prior_limit_up is None
+            or prior_limit_up.empty
+            or "ts_code" not in prior_limit_up.columns
+        ):
+            return pd.DataFrame(columns=columns)
+
+        if "name" not in prior_limit_up.columns:
+            return pd.DataFrame(columns=columns)
+
+        names=prior_limit_up["name"].fillna("").astype(str)
+        mask=names.str.upper().str.contains("ST",regex=False)
+        if not mask.any():
+            return pd.DataFrame(columns=columns)
+
+        rows=prior_limit_up.loc[
+            mask,
+            ["ts_code","name"],
+        ].copy()
+        rows.insert(0,"trade_date",trade_date)
+        rows["source"]="xuangubao_prior_name_inference"
+        return rows[columns]
+
+    def _ensure_day_state_partitions(
+        self,
+        *,
+        day_key: str,
+        prior_limit_up: pd.DataFrame,
+    ) -> None:
+        if not self.store.exists(
+            "suspend",
+            day_key,
+        ):
+            self.store.write_frame(
+                "suspend",
+                day_key,
+                pd.DataFrame(columns=[
+                    "trade_date",
+                    "ts_code",
+                    "suspend_type",
+                    "source",
+                ]),
+                metadata={
+                    "source":"xuangubao_inferred",
+                    "trade_date":day_key,
+                    "meaning":
+                        "empty unless candidate minute bars are absent",
+                },
+            )
+
+        st_rows=self._st_rows_from_prior_pool(
+            prior_limit_up,
+            trade_date=day_key,
+        )
+        self.store.write_frame(
+            "stock_st",
+            day_key,
+            st_rows,
+            metadata={
+                "source":"xuangubao_prior_name_inference",
+                "trade_date":day_key,
+                "limitation":
+                    "does not detect an overnight ST-name change absent from D-1 pool evidence",
+            },
+        )
+
     def materialize_range(
         self,
         *,
@@ -318,6 +396,10 @@ class XuangubaoMarketIngestor:
                     ).date(),
                 prior_limit_up=prior,
                 force=force,
+            )
+            self._ensure_day_state_partitions(
+                day_key=day_key,
+                prior_limit_up=prior,
             )
             if done:
                 days_with_candidates+=1
