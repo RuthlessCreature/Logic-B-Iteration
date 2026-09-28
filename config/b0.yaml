@@ -1,4 +1,4 @@
-version: "B0.0.0"
+version: "B0.0.1"
 
 universe:
   market: "A-share"
@@ -12,6 +12,7 @@ universe:
 portfolio:
   max_positions: 1
   target_position_pct: 1.0
+  initial_cash: 1000000
   t_plus_one: true
 
 core_priority:
@@ -33,21 +34,30 @@ decision_checkpoints:
   - "14:30"
 
 execution:
+  decision_checkpoint: "09:35"
+  exit_rule: "E0_NEXT_DAY_0935"
   primary_fill_model: "realistic"
   report_fill_models:
     - optimistic
     - realistic
     - conservative
+  commission_rate: 0.0003
+  stamp_rate: 0.0005
   forbid_same_day_sell: true
+  forbid_same_bar_fill_after_signal: true
   model_limit_up_unfillable: true
   model_limit_down_lock: true
 
 research:
   start_date: "2024-09-30"
   end_date: "2026-09-28"
+  development_end: "2026-06-30"
+  blind_holdout_start: "2026-07-01"
+  blind_holdout_end: "2026-09-28"
   walk_forward: true
   blind_holdout: true
   random_shuffle: false
+  inspect_blind_holdout_during_iteration: false
 
 promotion:
   require_positive_expectancy_conservative_fill: true
