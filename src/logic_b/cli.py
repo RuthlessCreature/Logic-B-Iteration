@@ -308,6 +308,18 @@ def cmd_run_b0(args: argparse.Namespace) -> int:
                     True,
                 )
             ),
+            include_boards=tuple(
+                cfg["universe"].get(
+                    "include_boards",
+                    [],
+                )
+            ),
+            exclude_no_limit_ipo_days=bool(
+                cfg["universe"].get(
+                    "exclude_no_limit_ipo_days",
+                    True,
+                )
+            ),
         )
         result=runner.run(dates)
         run_dir=Path(args.run_root)/(
