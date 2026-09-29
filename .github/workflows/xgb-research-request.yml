@@ -28,14 +28,21 @@ jobs:
         run: pip install -e ".[dev]"
 
       - name: Unit tests
+        id: tests
+        continue-on-error: true
         run: pytest
 
       - name: Public endpoint preflight
+        id: preflight
+        continue-on-error: true
         run: |
           logic-b preflight-xgb --date 2025-01-27
           logic-b preflight-xgb-market --date 2025-01-27
 
       - name: Fetch evidence
+        id: evidence
+        if: steps.tests.outcome == 'success' && steps.preflight.outcome == 'success'
+        continue-on-error: true
         run: |
           set -o pipefail
           time logic-b fetch-xgb-evidence \
@@ -45,6 +52,9 @@ jobs:
             --sleep 0.05 | tee /tmp/fetch-evidence.log
 
       - name: Fetch candidate market slices
+        id: market
+        if: steps.evidence.outcome == 'success'
+        continue-on-error: true
         run: |
           set -o pipefail
           time logic-b fetch-xgb-market \
@@ -54,6 +64,9 @@ jobs:
             --sleep 0.05 | tee /tmp/fetch-market.log
 
       - name: Candidate readiness
+        id: readiness
+        if: steps.market.outcome == 'success'
+        continue-on-error: true
         run: |
           set -o pipefail
           logic-b xgb-readiness \
@@ -62,6 +75,9 @@ jobs:
             --data-root "$DATA_ROOT" | tee /tmp/readiness.json
 
       - name: B0 three-fill replay
+        id: replay
+        if: steps.readiness.outcome == 'success'
+        continue-on-error: true
         run: |
           set -o pipefail
           logic-b run-b0 \
@@ -117,3 +133,54 @@ jobs:
             /tmp/b0-run.json
             /tmp/fetch-evidence.log
             /tmp/fetch-market.log
+
+      - name: Classify pilot result
+        if: always()
+        env:
+          TESTS: ${{ steps.tests.outcome }}
+          PREFLIGHT: ${{ steps.preflight.outcome }}
+          EVIDENCE: ${{ steps.evidence.outcome }}
+          MARKET: ${{ steps.market.outcome }}
+          READINESS: ${{ steps.readiness.outcome }}
+          REPLAY: ${{ steps.replay.outcome }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+
+          stages={
+              "tests":os.environ.get("TESTS","skipped"),
+              "preflight":os.environ.get("PREFLIGHT","skipped"),
+              "evidence":os.environ.get("EVIDENCE","skipped"),
+              "market":os.environ.get("MARKET","skipped"),
+              "readiness":os.environ.get("READINESS","skipped"),
+              "replay":os.environ.get("REPLAY","skipped"),
+          }
+
+          if stages["tests"]!="success":
+              classification="CODE_FAIL"
+          elif stages["preflight"]!="success":
+              classification="DATA_SOURCE_FAIL"
+          elif stages["evidence"]!="success" or stages["market"]!="success":
+              classification="MATERIALIZATION_FAIL"
+          elif stages["readiness"]!="success":
+              classification="READINESS_FAIL"
+          elif stages["replay"]!="success":
+              classification="REPLAY_FAIL"
+          else:
+              classification="INFRA_PASS"
+
+          payload={
+              "classification":classification,
+              "stages":stages,
+          }
+          print(json.dumps(payload,indent=2))
+          Path("/tmp/pilot-status.json").write_text(
+              json.dumps(payload,indent=2),
+              encoding="utf-8",
+          )
+
+          if classification!="INFRA_PASS":
+              raise SystemExit(2)
+          PY
