@@ -8,7 +8,7 @@ from typing import Callable
 
 import pandas as pd
 
-from .providers.xuangubao_market import XuangubaoMarketProvider
+from .providers.xuangubao_market import XuangubaoMarketProvider,XuangubaoMinuteDay
 from .storage import LocalParquetStore
 
 
@@ -216,11 +216,25 @@ class XuangubaoMarketIngestor:
             minute_day is None
             and (need_daily or need_limits)
         ):
-            minute_day=self.provider.historical_minute_day(
-                ts_code,
-                trade_date,
-                pre_close_override=pre_close,
-            )
+            if (
+                pre_close is not None
+                and float(pre_close)>0
+            ):
+                minute_day=XuangubaoMinuteDay(
+                    ts_code=ts_code,
+                    trade_date=day_key,
+                    bars=bars,
+                    pre_close=float(pre_close),
+                    pre_close_source=
+                        "cached_minute_with_override",
+                    raw_lines=len(bars),
+                )
+            else:
+                minute_day=self.provider.historical_minute_day(
+                    ts_code,
+                    trade_date,
+                    pre_close_override=pre_close,
+                )
 
         daily_row=pd.DataFrame()
         limit_row=pd.DataFrame()
