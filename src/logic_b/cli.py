@@ -16,6 +16,7 @@ from .ingest import HistoricalIngestor
 from .models import FillModel
 from .neighborhood import build_threshold_neighborhood,evaluate_threshold_neighborhood
 from .promotion import evaluate_promotion
+from .postrun import analyze_run_dir
 from .research_request import append_github_env,load_research_request
 from .providers.tushare import TushareProvider
 from .providers.xuangubao import XuangubaoEvidenceProvider
@@ -110,6 +111,56 @@ def assert_holdout_access(
             "--unlock-holdout"
         )
     return touches
+
+
+def cmd_analyze_run(args: argparse.Namespace) -> int:
+    summary,attribution=analyze_run_dir(
+        args.run_dir
+    )
+    root=Path(args.run_dir)
+    out_json=(
+        Path(args.out_json)
+        if args.out_json
+        else root/"diagnostics.json"
+    )
+    out_table=(
+        Path(args.out_table)
+        if args.out_table
+        else root/"trade_attribution.parquet"
+    )
+    out_json.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    out_table.parent.mkdir(
+        parents=True,
+        exist_ok=True,
+    )
+    out_json.write_text(
+        json.dumps(
+            summary,
+            ensure_ascii=False,
+            indent=2,
+            allow_nan=True,
+        ),
+        encoding="utf-8",
+    )
+    attribution.to_parquet(
+        out_table,
+        index=False,
+    )
+    print(json.dumps(
+        {
+            "status":"ok",
+            "diagnostics":str(out_json),
+            "trade_attribution":str(out_table),
+            "summary":summary,
+        },
+        ensure_ascii=False,
+        indent=2,
+        allow_nan=True,
+    ))
+    return 0
 
 
 def cmd_validate_request(args: argparse.Namespace) -> int:
@@ -1260,6 +1311,12 @@ def main() -> int:
     p.add_argument("--config",default="config/b0.yaml")
     p.add_argument("--github-env")
     p.set_defaults(func=cmd_validate_request)
+
+    p=sub.add_parser("analyze-run")
+    p.add_argument("--run-dir",required=True)
+    p.add_argument("--out-json")
+    p.add_argument("--out-table")
+    p.set_defaults(func=cmd_analyze_run)
 
     p=sub.add_parser("preflight-data")
     p.add_argument("--date",required=True)
