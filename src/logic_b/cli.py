@@ -394,9 +394,22 @@ def cmd_fetch_xgb_market(args: argparse.Namespace) -> int:
         store,
         inter_request_sleep=args.sleep,
     )
+    def progress(event: dict) -> None:
+        print(
+            json.dumps(
+                {
+                    "event":"xgb_market_progress",
+                    **event,
+                },
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
+
     summary=ingestor.materialize_range(
         trade_dates=dates,
         force=args.force,
+        progress_callback=progress,
     )
     print(json.dumps({
         "status":"ok",
