@@ -526,12 +526,7 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-    def materialize_range(
-        self,
-        *,
-        trade_dates: list[str],
-        force: bool=False,
-    ) -> dict[str,int]:
+    def materialize_range(\n        self,\n        *,\n        trade_dates: list[str],\n        force: bool=False,\n        progress_callback: Callable[[dict],None] | None=None,\n    ) -> dict[str,int]:
         """Materialize D market data for every D-1 limit-up candidate."""
         if len(trade_dates)<2:
             return {
@@ -596,6 +591,16 @@ class XuangubaoMarketIngestor:
             if done:
                 days_with_candidates+=1
                 symbol_days+=len(done)
+
+            if progress_callback is not None:
+                progress_callback({
+                    "trade_date":day_key,
+                    "index":index,
+                    "trade_days":len(trade_dates),
+                    "candidate_symbol_days":symbol_days,
+                    "days_with_candidates":days_with_candidates,
+                    "day_candidates":len(done),
+                })
 
         return {
             "trade_days":len(trade_dates),
