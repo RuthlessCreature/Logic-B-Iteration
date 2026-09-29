@@ -342,3 +342,83 @@ def test_xgb_market_ingestor_skips_flagged_new_stock(tmp_path):
         "minute_1m",
         "20260928/001999.SZ",
     )
+
+
+def test_cached_minute_repairs_missing_symbol_in_existing_day_partitions(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+    provider=FakeMarketProvider()
+    ingestor=XuangubaoMarketIngestor(
+        provider,
+        store,
+        inter_request_sleep=0,
+    )
+
+    cached=pd.DataFrame({
+        "trade_time":[
+            pd.Timestamp("2026-09-28 09:31:00"),
+            pd.Timestamp("2026-09-28 09:36:00"),
+        ],
+        "open":[10.0,10.2],
+        "high":[10.3,10.4],
+        "low":[9.9,10.1],
+        "close":[10.2,10.3],
+        "vol":[1000,1200],
+        "amount":[10000,12360],
+        "avg_price":[10.1,10.25],
+    })
+    store.write_frame(
+        "minute_1m",
+        "20260928/600000.SH",
+        cached,
+    )
+
+    # Existing day partitions are valid files but do not yet contain this code.
+    store.write_frame(
+        "daily",
+        "20260928",
+        pd.DataFrame([{
+            "trade_date":"20260928",
+            "ts_code":"000001.SZ",
+            "open":20.0,
+            "high":20.1,
+            "low":19.9,
+            "close":20.0,
+            "vol":1.0,
+            "amount":20.0,
+            "pct_chg":0.0,
+            "source":"existing",
+        }]),
+    )
+    store.write_frame(
+        "limit_prices",
+        "20260928",
+        pd.DataFrame([{
+            "trade_date":"20260928",
+            "ts_code":"000001.SZ",
+            "pre_close":20.0,
+            "up_limit":22.0,
+            "down_limit":18.0,
+            "source":"existing",
+        }]),
+    )
+
+    ingestor.materialize_symbol_day(
+        trade_date=date(2026,9,28),
+        ts_code="600000.SH",
+        pre_close=10.0,
+    )
+
+    daily=store.read_frame("daily","20260928")
+    limits=store.read_frame("limit_prices","20260928")
+
+    assert set(daily["ts_code"].astype(str))=={
+        "000001.SZ","600000.SH"
+    }
+    assert set(limits["ts_code"].astype(str))=={
+        "000001.SZ","600000.SH"
+    }
+    # One provider call is required to reconstruct derived day rows from cached
+    # minute data; the minute partition itself is not re-downloaded/overwritten.
+    assert provider.calls==[
+        ("600000.SH",date(2026,9,28),10.0)
+    ]
