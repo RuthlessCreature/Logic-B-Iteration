@@ -109,6 +109,15 @@ jobs:
           },indent=2))
           PY
 
+      - name: Restore accumulated XGB development cache
+        id: data-cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/logic-b-xgb
+          key: xgb-development-v1-${{ github.run_id }}
+          restore-keys: |
+            xgb-development-v1-
+
       - name: Unit tests
         id: tests
         continue-on-error: true
