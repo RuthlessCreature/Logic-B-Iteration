@@ -9,5 +9,7 @@
   },
   "promotion_relevance": "pilot_only",
   "blind_holdout": false,
-  "strategy_changes": false
+  "strategy_changes": false,
+  "preflight_date": "2025-01-27",
+  "fill": "all"
 }
