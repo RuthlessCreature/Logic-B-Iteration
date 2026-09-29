@@ -5,19 +5,24 @@ on:
     paths:
       - "research/run_requests/**"
   workflow_dispatch:
+    inputs:
+      request_file:
+        description: "Path to research/run_requests/*.json"
+        required: true
+        type: string
 
 jobs:
-  xgb-pilot:
+  xgb-research:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     env:
       DATA_ROOT: /tmp/logic-b-xgb
       RUN_ROOT: /tmp/logic-b-runs
-      PILOT_START: "2024-12-27"
-      PILOT_END: "2025-01-27"
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
 
       - uses: actions/setup-python@v5
         with:
@@ -26,6 +31,82 @@ jobs:
 
       - name: Install
         run: pip install -e ".[dev]"
+
+      - name: Resolve research request
+        id: request
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          DISPATCH_FILE: ${{ inputs.request_file }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            REQUEST_FILE="$DISPATCH_FILE"
+          else
+            REQUEST_FILE="$(
+              git diff --name-only HEAD^ HEAD \
+                | grep '^research/run_requests/.*\.json$' \
+                | tail -n 1
+            )"
+          fi
+
+          if [ -z "${REQUEST_FILE:-}" ] || [ ! -f "$REQUEST_FILE" ]; then
+            echo "No valid research request file found"
+            exit 2
+          fi
+
+          echo "REQUEST_FILE=$REQUEST_FILE" >> "$GITHUB_ENV"
+
+          python - <<'PY'
+          import json
+          import os
+          from datetime import date
+          from pathlib import Path
+
+          import yaml
+
+          request_path=Path(os.environ["REQUEST_FILE"])
+          req=json.loads(request_path.read_text(encoding="utf-8"))
+          cfg=yaml.safe_load(Path("config/b0.yaml").read_text(encoding="utf-8"))
+
+          request_id=str(req.get("request_id") or request_path.stem)
+          window=req.get("window") or {}
+          start=str(window.get("start") or "")
+          end=str(window.get("end") or "")
+          preflight=str(req.get("preflight_date") or end)
+          fill=str(req.get("fill") or "all")
+
+          if not start or not end:
+              raise SystemExit("request.window.start/end are required")
+          if fill not in {"optimistic","realistic","conservative","all"}:
+              raise SystemExit(f"unsupported fill={fill}")
+
+          development_end=str(cfg["research"]["development_end"])
+          if end > development_end:
+              raise SystemExit(
+                  f"request end {end} exceeds frozen development_end "
+                  f"{development_end}; request workflow never unlocks holdout"
+              )
+
+          for name,value in {
+              "REQUEST_ID":request_id,
+              "RUN_START":start,
+              "RUN_END":end,
+              "PREFLIGHT_DATE":preflight,
+              "FILL_MODEL":fill,
+          }.items():
+              with open(os.environ["GITHUB_ENV"],"a",encoding="utf-8") as fh:
+                  fh.write(f"{name}={value}\n")
+
+          print(json.dumps({
+              "request_file":str(request_path),
+              "request_id":request_id,
+              "start":start,
+              "end":end,
+              "preflight_date":preflight,
+              "fill":fill,
+              "development_end":development_end,
+          },indent=2))
+          PY
 
       - name: Unit tests
         id: tests
@@ -36,8 +117,8 @@ jobs:
         id: preflight
         continue-on-error: true
         run: |
-          logic-b preflight-xgb --date 2025-01-27
-          logic-b preflight-xgb-market --date 2025-01-27
+          logic-b preflight-xgb --date "$PREFLIGHT_DATE"
+          logic-b preflight-xgb-market --date "$PREFLIGHT_DATE"
 
       - name: Fetch evidence
         id: evidence
@@ -46,8 +127,8 @@ jobs:
         run: |
           set -o pipefail
           time logic-b fetch-xgb-evidence \
-            --start "$PILOT_START" \
-            --end "$PILOT_END" \
+            --start "$RUN_START" \
+            --end "$RUN_END" \
             --data-root "$DATA_ROOT" \
             --sleep 0.05 | tee /tmp/fetch-evidence.log
 
@@ -58,8 +139,8 @@ jobs:
         run: |
           set -o pipefail
           time logic-b fetch-xgb-market \
-            --start "$PILOT_START" \
-            --end "$PILOT_END" \
+            --start "$RUN_START" \
+            --end "$RUN_END" \
             --data-root "$DATA_ROOT" \
             --sleep 0.05 | tee /tmp/fetch-market.log
 
@@ -70,22 +151,22 @@ jobs:
         run: |
           set -o pipefail
           logic-b xgb-readiness \
-            --start "$PILOT_START" \
-            --end "$PILOT_END" \
+            --start "$RUN_START" \
+            --end "$RUN_END" \
             --data-root "$DATA_ROOT" | tee /tmp/readiness.json
 
-      - name: B0 three-fill replay
+      - name: B0 replay
         id: replay
         if: steps.readiness.outcome == 'success'
         continue-on-error: true
         run: |
           set -o pipefail
           logic-b run-b0 \
-            --start "$PILOT_START" \
-            --end "$PILOT_END" \
+            --start "$RUN_START" \
+            --end "$RUN_END" \
             --data-root "$DATA_ROOT" \
             --run-root "$RUN_ROOT" \
-            --fill all \
+            --fill "$FILL_MODEL" \
             --fetch-missing-minutes \
             --missing-minute-source xuangubao | tee /tmp/b0-run.json
 
@@ -98,9 +179,13 @@ jobs:
           import os
 
           root=Path(os.environ["RUN_ROOT"])
-          summary=["# XGB pilot research run", ""]
-          summary.append(f"- window: {os.environ['PILOT_START']} .. {os.environ['PILOT_END']}")
-          summary.append("")
+          summary=[
+              f"# XGB research request: {os.environ.get('REQUEST_ID','unknown')}",
+              "",
+              f"- window: {os.environ.get('RUN_START')} .. {os.environ.get('RUN_END')}",
+              f"- request: {os.environ.get('REQUEST_FILE')}",
+              "",
+          ]
 
           for path in sorted(root.glob("*/metrics.json")):
               data=json.loads(path.read_text(encoding="utf-8"))
@@ -120,22 +205,10 @@ jobs:
               fh.write(text+"\n")
           PY
 
-      - name: Upload pilot artifacts
+      - name: Classify research result
+        id: classification
         if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: xgb-pilot-2024-12-27_2025-01-27
-          retention-days: 14
-          if-no-files-found: warn
-          path: |
-            /tmp/logic-b-runs/
-            /tmp/readiness.json
-            /tmp/b0-run.json
-            /tmp/fetch-evidence.log
-            /tmp/fetch-market.log
-
-      - name: Classify pilot result
-        if: always()
+        continue-on-error: true
         env:
           TESTS: ${{ steps.tests.outcome }}
           PREFLIGHT: ${{ steps.preflight.outcome }}
@@ -173,14 +246,40 @@ jobs:
 
           payload={
               "classification":classification,
+              "request_id":os.environ.get("REQUEST_ID"),
+              "start":os.environ.get("RUN_START"),
+              "end":os.environ.get("RUN_END"),
               "stages":stages,
           }
           print(json.dumps(payload,indent=2))
-          Path("/tmp/pilot-status.json").write_text(
+          Path("/tmp/research-status.json").write_text(
               json.dumps(payload,indent=2),
               encoding="utf-8",
           )
 
-          if classification!="INFRA_PASS":
-              raise SystemExit(2)
+          with open(os.environ["GITHUB_OUTPUT"],"a",encoding="utf-8") as fh:
+              fh.write(f"classification={classification}\n")
           PY
+
+      - name: Upload research artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.REQUEST_ID }}-${{ env.RUN_START }}_${{ env.RUN_END }}
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            /tmp/logic-b-runs/
+            /tmp/readiness.json
+            /tmp/b0-run.json
+            /tmp/fetch-evidence.log
+            /tmp/fetch-market.log
+            /tmp/research-status.json
+
+      - name: Enforce result
+        if: always()
+        env:
+          CLASSIFICATION: ${{ steps.classification.outputs.classification }}
+        run: |
+          echo "classification=$CLASSIFICATION"
+          test "$CLASSIFICATION" = "INFRA_PASS"
