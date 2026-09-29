@@ -14,7 +14,7 @@ jobs:
       DATA_ROOT: /tmp/logic-b-xgb
       RUN_ROOT: /tmp/logic-b-runs
       PILOT_START: "2024-12-27"
-      PILOT_END: "2025-01-31"
+      PILOT_END: "2025-01-27"
 
     steps:
       - uses: actions/checkout@v4
@@ -32,8 +32,8 @@ jobs:
 
       - name: Public endpoint preflight
         run: |
-          logic-b preflight-xgb --date 2025-01-31
-          logic-b preflight-xgb-market --date 2025-01-31
+          logic-b preflight-xgb --date 2025-01-27
+          logic-b preflight-xgb-market --date 2025-01-27
 
       - name: Fetch evidence
         run: |
@@ -108,7 +108,7 @@ jobs:
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: xgb-pilot-2024-12-27_2025-01-31
+          name: xgb-pilot-2024-12-27_2025-01-27
           retention-days: 14
           if-no-files-found: warn
           path: |
