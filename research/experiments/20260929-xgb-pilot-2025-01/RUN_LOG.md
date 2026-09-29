@@ -149,3 +149,14 @@ Status:
 ```text
 IN PROGRESS
 ```
+
+
+## Throughput caveat
+
+Attempt 3 overlapped with a deprecated diagnostic run that was hitting the same
+public Xuangubao endpoints at the same time. Its observed market-materialization
+runtime must therefore **not** be linearly extrapolated to the full development
+window.
+
+Future development requests are serialized by workflow concurrency and reuse an
+incremental cache. Scale decisions should use single-run segment timings only.
