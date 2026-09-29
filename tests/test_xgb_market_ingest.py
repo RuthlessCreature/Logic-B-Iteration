@@ -417,8 +417,6 @@ def test_cached_minute_repairs_missing_symbol_in_existing_day_partitions(tmp_pat
     assert set(limits["ts_code"].astype(str))=={
         "000001.SZ","600000.SH"
     }
-    # One provider call is required to reconstruct derived day rows from cached
-    # minute data; the minute partition itself is not re-downloaded/overwritten.
-    assert provider.calls==[
-        ("600000.SH",date(2026,9,28),10.0)
-    ]
+    # Cached minute bars plus the known prior close are sufficient to repair
+    # derived day rows without another public API request.
+    assert provider.calls==[]
