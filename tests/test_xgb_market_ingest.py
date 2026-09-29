@@ -420,3 +420,37 @@ def test_cached_minute_repairs_missing_symbol_in_existing_day_partitions(tmp_pat
     # Cached minute bars plus the known prior close are sufficient to repair
     # derived day rows without another public API request.
     assert provider.calls==[]
+
+
+def test_materialize_range_reports_structured_progress(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+    provider=FakeMarketProvider()
+    ingestor=XuangubaoMarketIngestor(
+        provider,
+        store,
+        inter_request_sleep=0,
+    )
+
+    store.write_frame(
+        "limit_up",
+        "20260925",
+        pd.DataFrame({
+            "ts_code":["600000.SH"],
+            "price":[10.0],
+        }),
+    )
+
+    events=[]
+    summary=ingestor.materialize_range(
+        trade_dates=[
+            "20260925",
+            "20260928",
+        ],
+        progress_callback=events.append,
+    )
+
+    assert summary["candidate_symbol_days"]==1
+    assert len(events)==1
+    assert events[0]["trade_date"]=="20260928"
+    assert events[0]["day_candidates"]==1
+    assert events[0]["candidate_symbol_days"]==1
