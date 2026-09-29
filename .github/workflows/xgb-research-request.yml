@@ -65,7 +65,7 @@ jobs:
 
       - name: Restore accumulated XGB development cache
         id: data-cache
-        uses: actions/cache@v4
+        uses: actions/cache/restore@v4
         with:
           path: /tmp/logic-b-xgb
           key: xgb-development-v1-${{ github.run_id }}
@@ -107,6 +107,13 @@ jobs:
             --end "$RUN_END" \
             --data-root "$DATA_ROOT" \
             --sleep 0.05 | tee /tmp/fetch-market.log
+
+      - name: Save accumulated XGB development cache
+        if: steps.market.outcome == 'success'
+        uses: actions/cache/save@v4
+        with:
+          path: /tmp/logic-b-xgb
+          key: xgb-development-v1-${{ github.run_id }}
 
       - name: Candidate readiness
         id: readiness
