@@ -130,6 +130,18 @@ jobs:
             --fetch-missing-minutes \
             --missing-minute-source xuangubao | tee /tmp/b0-run.json
 
+      - name: Post-run attribution
+        id: attribution
+        if: steps.replay.outcome == 'success'
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          for run_dir in "$RUN_ROOT"/*; do
+            if [ -d "$run_dir" ] && [ -f "$run_dir/metrics.json" ]; then
+              logic-b analyze-run --run-dir "$run_dir"
+            fi
+          done
+
       - name: Emit research summary
         if: always()
         run: |
