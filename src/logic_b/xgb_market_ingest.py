@@ -526,7 +526,13 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-    def materialize_range(\n        self,\n        *,\n        trade_dates: list[str],\n        force: bool=False,\n        progress_callback: Callable[[dict],None] | None=None,\n    ) -> dict[str,int]:
+    def materialize_range(
+        self,
+        *,
+        trade_dates: list[str],
+        force: bool=False,
+        progress_callback: Callable[[dict],None] | None=None,
+    ) -> dict[str,int]:
         """Materialize D market data for every D-1 limit-up candidate."""
         if len(trade_dates)<2:
             return {
