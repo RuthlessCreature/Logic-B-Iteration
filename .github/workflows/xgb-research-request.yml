@@ -1,0 +1,119 @@
+name: xgb-research-request
+
+on:
+  push:
+    paths:
+      - "research/run_requests/**"
+  workflow_dispatch:
+
+jobs:
+  xgb-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      DATA_ROOT: /tmp/logic-b-xgb
+      RUN_ROOT: /tmp/logic-b-runs
+      PILOT_START: "2024-12-27"
+      PILOT_END: "2025-01-31"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -e ".[dev]"
+
+      - name: Unit tests
+        run: pytest
+
+      - name: Public endpoint preflight
+        run: |
+          logic-b preflight-xgb --date 2025-01-31
+          logic-b preflight-xgb-market --date 2025-01-31
+
+      - name: Fetch evidence
+        run: |
+          set -o pipefail
+          time logic-b fetch-xgb-evidence \
+            --start "$PILOT_START" \
+            --end "$PILOT_END" \
+            --data-root "$DATA_ROOT" \
+            --sleep 0.05 | tee /tmp/fetch-evidence.log
+
+      - name: Fetch candidate market slices
+        run: |
+          set -o pipefail
+          time logic-b fetch-xgb-market \
+            --start "$PILOT_START" \
+            --end "$PILOT_END" \
+            --data-root "$DATA_ROOT" \
+            --sleep 0.05 | tee /tmp/fetch-market.log
+
+      - name: Candidate readiness
+        run: |
+          set -o pipefail
+          logic-b xgb-readiness \
+            --start "$PILOT_START" \
+            --end "$PILOT_END" \
+            --data-root "$DATA_ROOT" | tee /tmp/readiness.json
+
+      - name: B0 three-fill replay
+        run: |
+          set -o pipefail
+          logic-b run-b0 \
+            --start "$PILOT_START" \
+            --end "$PILOT_END" \
+            --data-root "$DATA_ROOT" \
+            --run-root "$RUN_ROOT" \
+            --fill all \
+            --fetch-missing-minutes \
+            --missing-minute-source xuangubao | tee /tmp/b0-run.json
+
+      - name: Emit research summary
+        if: always()
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          import os
+
+          root=Path(os.environ["RUN_ROOT"])
+          summary=["# XGB pilot research run", ""]
+          summary.append(f"- window: {os.environ['PILOT_START']} .. {os.environ['PILOT_END']}")
+          summary.append("")
+
+          for path in sorted(root.glob("*/metrics.json")):
+              data=json.loads(path.read_text(encoding="utf-8"))
+              summary.append(f"## {path.parent.name}")
+              for key in [
+                  "total_return","cagr","max_drawdown","calmar",
+                  "closed_trades","win_rate","expectancy",
+                  "profit_factor","signals","ending_position",
+              ]:
+                  if key in data:
+                      summary.append(f"- {key}: {data[key]}")
+              summary.append("")
+
+          text="\n".join(summary)
+          print(text)
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as fh:
+              fh.write(text+"\n")
+          PY
+
+      - name: Upload pilot artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: xgb-pilot-2024-12-27_2025-01-31
+          retention-days: 14
+          if-no-files-found: warn
+          path: |
+            /tmp/logic-b-runs/
+            /tmp/readiness.json
+            /tmp/b0-run.json
+            /tmp/fetch-evidence.log
+            /tmp/fetch-market.log
