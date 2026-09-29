@@ -54,6 +54,7 @@ jobs:
             exit 2
           fi
 
+          export REQUEST_FILE
           echo "REQUEST_FILE=$REQUEST_FILE" >> "$GITHUB_ENV"
 
           python - <<'PY'
