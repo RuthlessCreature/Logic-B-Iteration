@@ -12,5 +12,6 @@
   "strategy_changes": false,
   "preflight_date": "2025-01-27",
   "fill": "all",
-  "workflow_revision": 3
+  "workflow_revision": 4,
+  "retry_reason": "Replay state-machine regression fixed: held symbol-day now materializes before next-day exit state lookup."
 }
