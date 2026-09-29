@@ -9,7 +9,7 @@ research/run_requests/20260929-xgb-pilot-2025-01.json
 Window:
 
 ```text
-2024-12-27 ~ 2025-01-31
+2024-12-27 ~ 2025-01-27
 ```
 
 ## Purpose
@@ -110,3 +110,12 @@ followed by the frozen full development interval:
 ```
 
 The blind holdout remains locked.
+
+
+## Fixture correction
+
+The first workflow attempt used 2025-01-31 as the preflight date. That date is
+inside the official 2025 Spring Festival market closure. The pilot fixture was
+therefore corrected to 2025-01-27, the last Monday before the closure.
+
+This correction changes neither B0 strategy rules nor acceptance thresholds.
