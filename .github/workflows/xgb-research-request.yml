@@ -11,6 +11,10 @@ on:
         required: true
         type: string
 
+concurrency:
+  group: xgb-development-materialization
+  cancel-in-progress: false
+
 jobs:
   xgb-research:
     runs-on: ubuntu-latest
