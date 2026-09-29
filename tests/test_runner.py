@@ -105,5 +105,9 @@ def test_b0_replay_enters_and_exits_t_plus_one(tmp_path):
     assert result.trades[0]["exit_time"]==pd.Timestamp("2026-09-29 09:36:00")
     assert result.trades[0]["net_return"]>0
     assert result.metrics["closed_trades"]==1
+    assert result.metrics["buy_attempts"]==1
+    assert result.metrics["sell_attempts"]==1
+    assert result.metrics["unfilled_buy_rate"]==0.0
+    assert result.metrics["unfilled_sell_rate"]==0.0
     assert result.signals[0].evidence["theme_data_available"]
     assert result.signals[0].evidence["st_exclusion_enabled"]
