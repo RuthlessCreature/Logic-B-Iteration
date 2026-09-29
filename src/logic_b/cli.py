@@ -16,6 +16,7 @@ from .ingest import HistoricalIngestor
 from .models import FillModel
 from .neighborhood import build_threshold_neighborhood,evaluate_threshold_neighborhood
 from .promotion import evaluate_promotion
+from .research_request import append_github_env,load_research_request
 from .providers.tushare import TushareProvider
 from .providers.xuangubao import XuangubaoEvidenceProvider
 from .providers.xuangubao_market import XuangubaoMarketProvider
@@ -109,6 +110,40 @@ def assert_holdout_access(
             "--unlock-holdout"
         )
     return touches
+
+
+def cmd_validate_request(args: argparse.Namespace) -> int:
+    cfg=_config(args.config)
+    try:
+        spec=load_research_request(
+            args.request,
+            config=cfg,
+        )
+        if args.github_env:
+            append_github_env(
+                spec,
+                args.github_env,
+            )
+    except (ValueError,KeyError,json.JSONDecodeError) as exc:
+        print(json.dumps(
+            {
+                "status":"failed",
+                "error":str(exc),
+            },
+            ensure_ascii=False,
+            indent=2,
+        ))
+        return 2
+
+    print(json.dumps(
+        {
+            "status":"ok",
+            **spec.as_dict(),
+        },
+        ensure_ascii=False,
+        indent=2,
+    ))
+    return 0
 
 
 def cmd_smoke(_: argparse.Namespace) -> int:
@@ -1219,6 +1254,12 @@ def main() -> int:
     p=sub.add_parser("validate-config")
     p.add_argument("path")
     p.set_defaults(func=cmd_validate)
+
+    p=sub.add_parser("validate-request")
+    p.add_argument("--request",required=True)
+    p.add_argument("--config",default="config/b0.yaml")
+    p.add_argument("--github-env")
+    p.set_defaults(func=cmd_validate_request)
 
     p=sub.add_parser("preflight-data")
     p.add_argument("--date",required=True)
