@@ -704,6 +704,27 @@ class B0ReplayRunner:
                 }
             ),
         )
+        buy_fills=[
+            fill
+            for fill in fills
+            if fill.side=="BUY"
+        ]
+        sell_fills=[
+            fill
+            for fill in fills
+            if fill.side=="SELL"
+        ]
+        unfilled_buys=[
+            fill
+            for fill in buy_fills
+            if not fill.filled
+        ]
+        unfilled_sells=[
+            fill
+            for fill in sell_fills
+            if not fill.filled
+        ]
+
         metrics.update({
             "fill_model":
                 self.fill_model.value,
@@ -742,6 +763,46 @@ class B0ReplayRunner:
                     1
                     for fill in fills
                     if fill.reason=="suspended"
+                ),
+            "buy_attempts":
+                len(buy_fills),
+            "unfilled_buy_attempts":
+                len(unfilled_buys),
+            "unfilled_buy_rate":
+                (
+                    len(unfilled_buys)
+                    /len(buy_fills)
+                    if buy_fills
+                    else 0.0
+                ),
+            "sell_attempts":
+                len(sell_fills),
+            "unfilled_sell_attempts":
+                len(unfilled_sells),
+            "unfilled_sell_rate":
+                (
+                    len(unfilled_sells)
+                    /len(sell_fills)
+                    if sell_fills
+                    else 0.0
+                ),
+            "sealed_limit_buy_blocks":
+                sum(
+                    1
+                    for fill in unfilled_buys
+                    if fill.reason in {
+                        "sealed_limit_no_open",
+                        "no_two_consecutive_openable_bars",
+                    }
+                ),
+            "locked_limit_down_sell_blocks":
+                sum(
+                    1
+                    for fill in unfilled_sells
+                    if fill.reason in {
+                        "locked_limit_down",
+                        "no_two_consecutive_openable_bars",
+                    }
                 ),
         })
 
