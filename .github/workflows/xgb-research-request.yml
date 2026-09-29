@@ -54,60 +54,10 @@ jobs:
             exit 2
           fi
 
-          export REQUEST_FILE
-          echo "REQUEST_FILE=$REQUEST_FILE" >> "$GITHUB_ENV"
-
-          python - <<'PY'
-          import json
-          import os
-          from datetime import date
-          from pathlib import Path
-
-          import yaml
-
-          request_path=Path(os.environ["REQUEST_FILE"])
-          req=json.loads(request_path.read_text(encoding="utf-8"))
-          cfg=yaml.safe_load(Path("config/b0.yaml").read_text(encoding="utf-8"))
-
-          request_id=str(req.get("request_id") or request_path.stem)
-          window=req.get("window") or {}
-          start=str(window.get("start") or "")
-          end=str(window.get("end") or "")
-          preflight=str(req.get("preflight_date") or end)
-          fill=str(req.get("fill") or "all")
-
-          if not start or not end:
-              raise SystemExit("request.window.start/end are required")
-          if fill not in {"optimistic","realistic","conservative","all"}:
-              raise SystemExit(f"unsupported fill={fill}")
-
-          development_end=str(cfg["research"]["development_end"])
-          if end > development_end:
-              raise SystemExit(
-                  f"request end {end} exceeds frozen development_end "
-                  f"{development_end}; request workflow never unlocks holdout"
-              )
-
-          for name,value in {
-              "REQUEST_ID":request_id,
-              "RUN_START":start,
-              "RUN_END":end,
-              "PREFLIGHT_DATE":preflight,
-              "FILL_MODEL":fill,
-          }.items():
-              with open(os.environ["GITHUB_ENV"],"a",encoding="utf-8") as fh:
-                  fh.write(f"{name}={value}\n")
-
-          print(json.dumps({
-              "request_file":str(request_path),
-              "request_id":request_id,
-              "start":start,
-              "end":end,
-              "preflight_date":preflight,
-              "fill":fill,
-              "development_end":development_end,
-          },indent=2))
-          PY
+          logic-b validate-request \
+            --request "$REQUEST_FILE" \
+            --config config/b0.yaml \
+            --github-env "$GITHUB_ENV"
 
       - name: Restore accumulated XGB development cache
         id: data-cache
