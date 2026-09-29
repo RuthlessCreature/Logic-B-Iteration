@@ -199,13 +199,17 @@ class XuangubaoMarketIngestor:
                 },
             )
 
-        need_daily=not self.store.exists(
+        need_daily=not self._day_has_code(
+            self.store,
             "daily",
             day_key,
+            ts_code,
         )
-        need_limits=not self.store.exists(
+        need_limits=not self._day_has_code(
+            self.store,
             "limit_prices",
             day_key,
+            ts_code,
         )
 
         if (
