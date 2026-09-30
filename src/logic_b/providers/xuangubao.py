@@ -289,15 +289,24 @@ class XuangubaoEvidenceProvider:
                 "Xuangubao indicator data is not a list"
             )
         frame=pd.DataFrame(data)
+        if not frame.empty and "timestamp" in frame.columns:
+            frame["event_time"]=pd.to_datetime(
+                frame["timestamp"],
+                unit="s",
+                utc=True,
+            ).dt.tz_convert("Asia/Shanghai")
+            same_day=(
+                frame["event_time"]
+                .dt.date
+                ==trade_date
+            )
+            frame=frame.loc[
+                same_day
+            ].copy()
+
         if not frame.empty:
             frame["trade_date"]=trade_date.strftime("%Y%m%d")
             frame["source"]="xuangubao"
-            if "timestamp" in frame.columns:
-                frame["event_time"]=pd.to_datetime(
-                    frame["timestamp"],
-                    unit="s",
-                    utc=True,
-                ).dt.tz_convert("Asia/Shanghai")
         return frame
 
     def market_close_snapshot(
