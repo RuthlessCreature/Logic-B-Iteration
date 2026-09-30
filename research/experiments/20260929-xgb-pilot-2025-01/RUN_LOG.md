@@ -160,3 +160,45 @@ window.
 
 Future development requests are serialized by workflow concurrency and reuse an
 incremental cache. Scale decisions should use single-run segment timings only.
+
+
+## Attempt 5
+
+Workflow run:
+
+```text
+36655033818
+```
+
+Data/cache result:
+
+- request validation: PASS
+- cache restore: PASS
+- evidence: PASS
+- candidate market: PASS
+- cache save: PASS
+- candidate readiness: PASS
+
+Replay advanced beyond the prior held-symbol limit-price failure.
+
+New failure:
+
+```text
+KeyError: 'ts_code'
+at replay candidate filtering
+```
+
+Root cause:
+
+A valid no-candidate day can arrive as a zero-column DataFrame. The replay
+runner treated an empty pool as normal in some branches but later indexed
+`candidates["ts_code"]` unconditionally when applying valid-price-limit
+filters.
+
+Fix:
+
+Candidate frames are now normalized to include an empty `ts_code` column
+before any filtering. A dedicated regression test verifies that a zero-column
+empty candidate partition produces a normal CASH day rather than an exception.
+
+No strategy threshold or core-selection rule changed.
