@@ -199,6 +199,7 @@ class XuangubaoEvidenceIngestor:
         end: date,
         *,
         force: bool=False,
+        progress_callback: Callable[[dict],None] | None=None,
     ) -> list[str]:
         trade_dates=[]
         for day in self._calendar_days(
@@ -213,6 +214,14 @@ class XuangubaoEvidenceIngestor:
                 trade_dates.append(
                     self.key(day)
                 )
+            if progress_callback is not None:
+                progress_callback({
+                    "calendar_date":self.key(day),
+                    "trading_day":
+                        result is not None,
+                    "trade_days_found":
+                        len(trade_dates),
+                })
             self._pause()
 
         calendar=pd.DataFrame({
