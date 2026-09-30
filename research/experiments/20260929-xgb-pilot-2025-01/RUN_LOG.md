@@ -202,3 +202,63 @@ before any filtering. A dedicated regression test verifies that a zero-column
 empty candidate partition produces a normal CASH day rather than an exception.
 
 No strategy threshold or core-selection rule changed.
+
+
+## Attempt 6 — PASS
+
+Workflow run:
+
+```text
+36655350711
+```
+
+Final classification:
+
+```text
+INFRA_PASS
+```
+
+Hard-gate result:
+
+- request validation: PASS
+- deterministic tests: PASS (104 tests)
+- public endpoint preflight: PASS
+- evidence materialization: PASS
+- candidate market materialization: PASS
+- development cache restore/save: PASS
+- candidate readiness: PASS
+- B0 optimistic replay: PASS
+- B0 realistic replay: PASS
+- B0 conservative replay: PASS
+- post-run attribution: PASS
+- final enforce gate: PASS
+
+Cache-resume observation:
+
+- restored XGB cache: ~8 MB;
+- evidence materialization: ~1.8 s;
+- candidate market resume: ~3.4 s;
+- candidate symbol-days represented: 1426.
+
+This confirms that the incremental development-cache path is operational.
+
+Pilot-only replay observations:
+
+| Fill | Total return | MDD | Closed trades | Win rate | Expectancy | Buy unfilled | Sell unfilled |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| optimistic | 23.52% | -10.05% | 5 | 60% | 4.55% | 0% | 16.67% |
+| realistic | 24.50% | -10.05% | 4 | 75% | 5.88% | 20% | 20% |
+| conservative | 21.29% | -12.96% | 4 | 75% | 5.33% | 20% | 33.33% |
+
+These returns are **not** strategy-validation evidence. The pilot contains only a
+small number of closed trades and exists to validate the infrastructure and
+execution model.
+
+Conservative execution diagnostics include:
+
+- one suspended sell attempt;
+- one sealed-limit buy block;
+- one additional conservative sell block;
+- one tail loss <= -5%.
+
+No B0 threshold or core-selection rule was changed from these results.
