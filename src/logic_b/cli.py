@@ -732,9 +732,13 @@ def _xgb_pre_close_for_symbol_day(
     except ValueError:
         index=-1
 
-    if index>0:
-        prev=normalized[index-1]
+    if index<=0:
+        return None
 
+    # Walk backward until the most recent observable close is found.
+    # This is required for held positions that survive a suspension or a
+    # partial historical partition and are no longer in the limit-up pool.
+    for prev in reversed(normalized[:index]):
         daily=store.read_optional(
             "daily",
             prev,
@@ -760,6 +764,34 @@ def _xgb_pre_close_for_symbol_day(
                 ):
                     return float(value)
 
+        minute=store.read_optional(
+            "minute_1m",
+            f"{prev}/{code}",
+        )
+        if (
+            minute is not None
+            and not minute.empty
+            and "close" in minute.columns
+        ):
+            work=minute.copy()
+            if "trade_time" in work.columns:
+                work["trade_time"]=pd.to_datetime(
+                    work["trade_time"],
+                    errors="coerce",
+                )
+                work=work.sort_values(
+                    "trade_time"
+                )
+            value=pd.to_numeric(
+                work.iloc[-1]["close"],
+                errors="coerce",
+            )
+            if (
+                pd.notna(value)
+                and float(value)>0
+            ):
+                return float(value)
+
         prior_pool=store.read_optional(
             "limit_up",
             prev,
@@ -774,12 +806,16 @@ def _xgb_pre_close_for_symbol_day(
                 ==str(code)
             ]
             if not row.empty:
-                return XuangubaoMarketIngestor.pre_close_from_prior_row(
-                    row.iloc[0]
+                value=(
+                    XuangubaoMarketIngestor
+                    .pre_close_from_prior_row(
+                        row.iloc[0]
+                    )
                 )
+                if value is not None and value>0:
+                    return float(value)
 
     return None
-
 
 def _loaders_for_run(
     *,
