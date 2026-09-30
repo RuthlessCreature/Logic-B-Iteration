@@ -410,6 +410,11 @@ class B0ReplayRunner:
                     )
 
                 candidates=prev_up.copy()
+                if "ts_code" not in candidates.columns:
+                    candidates["ts_code"]=pd.Series(
+                        dtype=str
+                    )
+
                 if self.include_boards is not None:
                     candidates=filter_boards(
                         candidates,
