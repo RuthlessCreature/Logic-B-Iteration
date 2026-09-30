@@ -362,10 +362,23 @@ def cmd_fetch_xgb_evidence(args: argparse.Namespace) -> int:
         store,
         inter_request_sleep=args.sleep,
     )
+    def progress(event: dict) -> None:
+        print(
+            json.dumps(
+                {
+                    "event":"xgb_evidence_progress",
+                    **event,
+                },
+                ensure_ascii=False,
+            ),
+            flush=True,
+        )
+
     dates=ingestor.fetch_range(
         start,
         end,
         force=args.force,
+        progress_callback=progress,
     )
     print(json.dumps({
         "status":"ok",
