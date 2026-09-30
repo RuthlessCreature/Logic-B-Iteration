@@ -262,3 +262,33 @@ Conservative execution diagnostics include:
 - one tail loss <= -5%.
 
 No B0 threshold or core-selection rule was changed from these results.
+
+
+## Calendar integrity invalidation
+
+A post-pilot audit found that the Xuangubao market-indicator endpoint can return
+stale rows from the previous trading day when queried on a market holiday.
+
+The provider previously overwrote those rows with the requested date without
+checking the returned timestamp. This caused 2025-01-01 to appear in the pilot
+trade calendar.
+
+Impact:
+
+- Attempt 6 remains useful as an infrastructure/replay-path test.
+- Attempt 6 P&L, trade counts, regime sequence and strategy statistics are
+  **INVALIDATED** as research evidence.
+- Any development segment built from cache version `xgb-development-v1` is
+  invalidated.
+- The blind holdout was not touched.
+
+Corrective action:
+
+1. XGB indicator rows are now filtered by Shanghai-local event date.
+2. Non-empty indicator payloads without timestamps are rejected.
+3. Development cache namespace is bumped from
+   `xgb-development-v1` to `xgb-development-v2`.
+4. The pilot must be rerun from a clean v2 cache before development expansion
+   resumes.
+
+No B0 strategy threshold was changed.
