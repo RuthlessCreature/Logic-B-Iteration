@@ -71,3 +71,35 @@ def test_xgb_evidence_ingestor_builds_calendar_and_theme(tmp_path):
         "20260626_20260630",
     )
     assert calendar["cal_date"].tolist()==dates
+
+
+def test_xgb_evidence_range_reports_progress(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+
+    class Provider:
+        def market_indicator_line(self,day):
+            if day.strftime("%Y%m%d")=="20260928":
+                return pd.DataFrame({"trade_date":["20260928"]})
+            return pd.DataFrame()
+
+        def limit_list(self,day,pool_type):
+            return pd.DataFrame(columns=["trade_date","ts_code"])
+
+    ingestor=XuangubaoEvidenceIngestor(
+        Provider(),
+        store,
+        inter_request_sleep=0,
+    )
+    events=[]
+    dates=ingestor.fetch_range(
+        date(2026,9,28),
+        date(2026,9,29),
+        progress_callback=events.append,
+    )
+
+    assert dates==["20260928"]
+    assert len(events)==2
+    assert events[0]["calendar_date"]=="20260928"
+    assert events[0]["trading_day"] is True
+    assert events[1]["calendar_date"]=="20260929"
+    assert events[1]["trading_day"] is False
