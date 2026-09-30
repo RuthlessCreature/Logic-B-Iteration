@@ -12,8 +12,8 @@
   "strategy_changes": false,
   "preflight_date": "2025-01-27",
   "fill": "all",
-  "workflow_revision": 8,
-  "retry_reason": "Final clean v2 rerun includes provider event-date filtering, cache-v2 invalidation, and readiness event-date integrity gate.",
+  "workflow_revision": 9,
+  "retry_reason": "Preempt invalid cache-v1 S01 and run final clean v2 pilot with dual calendar-integrity gates.",
   "notes": [
     "Do not tune B0 thresholds from this pilot.",
     "Use clean xgb-development-v2 cache only.",
