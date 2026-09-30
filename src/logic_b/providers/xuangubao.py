@@ -289,7 +289,12 @@ class XuangubaoEvidenceProvider:
                 "Xuangubao indicator data is not a list"
             )
         frame=pd.DataFrame(data)
-        if not frame.empty and "timestamp" in frame.columns:
+        if not frame.empty:
+            if "timestamp" not in frame.columns:
+                raise RuntimeError(
+                    "Xuangubao indicator rows missing timestamp; "
+                    "cannot verify trading date"
+                )
             frame["event_time"]=pd.to_datetime(
                 frame["timestamp"],
                 unit="s",
