@@ -341,7 +341,25 @@ class XuangubaoMarketIngestor:
         ):
             return []
 
+        day_key=self._key(trade_date)
+
+        daily=self.store.read_optional(
+            "daily",
+            day_key,
+        )
+        limits=self.store.read_optional(
+            "limit_prices",
+            day_key,
+        )
+        daily_codes=self._code_set(
+            daily
+        )
+        limit_codes=self._code_set(
+            limits
+        )
+
         tasks=[]
+        all_codes=[]
         seen=set()
         for _,row in prior_limit_up.iterrows():
             if bool(
@@ -356,6 +374,19 @@ class XuangubaoMarketIngestor:
             if code in seen:
                 continue
             seen.add(code)
+            all_codes.append(code)
+
+            if (
+                not force
+                and code in daily_codes
+                and code in limit_codes
+                and self.store.exists(
+                    "minute_1m",
+                    f"{day_key}/{code}",
+                )
+            ):
+                continue
+
             tasks.append((
                 code,
                 self.pre_close_from_prior_row(
@@ -364,7 +395,7 @@ class XuangubaoMarketIngestor:
             ))
 
         if not tasks:
-            return []
+            return all_codes
 
         if self.max_workers<=1:
             for code,pre_close in tasks:
@@ -375,10 +406,7 @@ class XuangubaoMarketIngestor:
                     force=force,
                 )
                 self._pause()
-            return [
-                code
-                for code,_ in tasks
-            ]
+            return all_codes
 
         futures={}
         with ThreadPoolExecutor(
@@ -400,10 +428,7 @@ class XuangubaoMarketIngestor:
             ):
                 future.result()
 
-        return [
-            code
-            for code,_ in tasks
-        ]
+        return all_codes
 
     def _ensure_empty_market_partitions(
         self,
