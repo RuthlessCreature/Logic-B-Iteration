@@ -164,3 +164,29 @@ may be used.
 
 A known-holiday live smoke test uses 2025-01-01 and requires the provider to
 return `ok=false`.
+
+
+## Segment-boundary context
+
+Segment request windows remain non-overlapping for research accounting.
+
+Market materialization and XGB readiness automatically prepend the most recent
+cached trading day before the requested start date when one exists. This
+context day is used only to resolve the first requested day's D-1 limit-up
+candidate dependency.
+
+Example:
+
+```text
+S01 ends: 2024-12-31
+S02 starts: 2025-01-02
+
+materialization/readiness context:
+2024-12-31, 2025-01-02, ...
+```
+
+This prevents the first trading day of each segment from losing its candidate
+slice while avoiding duplicate strategy-performance accounting across segments.
+
+The final full-development replay remains the authoritative performance run.
+Segment P&L is diagnostic only.
