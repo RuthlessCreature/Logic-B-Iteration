@@ -37,12 +37,14 @@ class XgbReadinessReport:
     candidate_daily_missing: int
     candidate_limit_missing: int
     minute_partitions_missing: int
+    indicator_date_failures: int
     missing_evidence: list[str]
     missing_market: list[str]
     bad_manifests: list[str]
     missing_candidate_daily: list[str]
     missing_candidate_limits: list[str]
     missing_minutes: list[str]
+    bad_indicator_dates: list[str]
 
     @property
     def ready(self) -> bool:
@@ -53,6 +55,7 @@ class XgbReadinessReport:
             and self.candidate_daily_missing==0
             and self.candidate_limit_missing==0
             and self.minute_partitions_missing==0
+            and self.indicator_date_failures==0
         )
 
     def as_dict(self) -> dict:
@@ -98,6 +101,7 @@ def assess_xgb_candidate_readiness(
     missing_evidence=[]
     missing_market=[]
     bad_manifests=[]
+    bad_indicator_dates=[]
 
     for day in dates:
         for dataset in EVIDENCE_DATASETS:
@@ -115,6 +119,47 @@ def assess_xgb_candidate_readiness(
             ):
                 bad_manifests.append(
                     token
+                )
+
+        indicator=store.read_optional(
+            "market_indicator",
+            day,
+        )
+        if (
+            indicator is not None
+            and not indicator.empty
+        ):
+            if "event_time" in indicator.columns:
+                event_dates=(
+                    pd.to_datetime(
+                        indicator["event_time"],
+                        errors="coerce",
+                    )
+                    .dt.strftime("%Y%m%d")
+                )
+            elif "timestamp" in indicator.columns:
+                event_dates=(
+                    pd.to_datetime(
+                        indicator["timestamp"],
+                        unit="s",
+                        utc=True,
+                        errors="coerce",
+                    )
+                    .dt.tz_convert("Asia/Shanghai")
+                    .dt.strftime("%Y%m%d")
+                )
+            else:
+                event_dates=pd.Series(
+                    [None]*len(indicator)
+                )
+
+            mismatched=(
+                event_dates.isna()
+                |(event_dates!=day)
+            )
+            if bool(mismatched.any()):
+                bad_indicator_dates.append(
+                    day
                 )
 
         for dataset in MARKET_DAY_DATASETS:
@@ -278,6 +323,8 @@ def assess_xgb_candidate_readiness(
             len(missing_limits),
         minute_partitions_missing=
             len(missing_minutes),
+        indicator_date_failures=
+            len(bad_indicator_dates),
         missing_evidence=
             missing_evidence,
         missing_market=
@@ -290,4 +337,6 @@ def assess_xgb_candidate_readiness(
             missing_limits,
         missing_minutes=
             missing_minutes,
+        bad_indicator_dates=
+            bad_indicator_dates,
     )
