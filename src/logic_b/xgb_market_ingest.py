@@ -69,6 +69,20 @@ class XuangubaoMarketIngestor:
         )
 
     @staticmethod
+    def _frame_codes(
+        frame: pd.DataFrame | None,
+    ) -> set[str]:
+        if (
+            frame is None
+            or frame.empty
+            or "ts_code" not in frame.columns
+        ):
+            return set()
+        return set(
+            frame["ts_code"].astype(str)
+        )
+
+    @staticmethod
     def _day_has_code(
         store: LocalParquetStore,
         dataset: str,
@@ -351,10 +365,10 @@ class XuangubaoMarketIngestor:
             "limit_prices",
             day_key,
         )
-        daily_codes=self._code_set(
+        daily_codes=self._frame_codes(
             daily
         )
-        limit_codes=self._code_set(
+        limit_codes=self._frame_codes(
             limits
         )
 
