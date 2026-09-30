@@ -12,12 +12,13 @@
   "strategy_changes": false,
   "preflight_date": "2025-01-27",
   "fill": "all",
-  "workflow_revision": 7,
-  "retry_reason": "Clean rerun after trading-calendar integrity fix and cache namespace bump to xgb-development-v2.",
+  "workflow_revision": 8,
+  "retry_reason": "Final clean v2 rerun includes provider event-date filtering, cache-v2 invalidation, and readiness event-date integrity gate.",
   "notes": [
     "Do not tune B0 thresholds from this pilot.",
-    "Use clean v2 cache only.",
-    "Verify 2025-01-01 is excluded from the trading calendar.",
-    "Use the run only to validate data completeness, runtime, and execution plumbing."
+    "Use clean xgb-development-v2 cache only.",
+    "Verify 2025-01-01 is absent from the trade calendar.",
+    "Require indicator_date_failures=0 in readiness.",
+    "Use this run only to validate data completeness and execution plumbing."
   ]
 }
