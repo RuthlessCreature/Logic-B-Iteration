@@ -68,9 +68,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: /tmp/logic-b-xgb
-          key: xgb-development-v1-${{ github.run_id }}
+          key: xgb-development-v2-${{ github.run_id }}
           restore-keys: |
-            xgb-development-v1-
+            xgb-development-v2-
 
       - name: Unit tests
         id: tests
@@ -113,7 +113,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: /tmp/logic-b-xgb
-          key: xgb-development-v1-${{ github.run_id }}
+          key: xgb-development-v2-${{ github.run_id }}
 
       - name: Candidate readiness
         id: readiness
