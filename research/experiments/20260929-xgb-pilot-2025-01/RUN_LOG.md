@@ -292,3 +292,44 @@ Corrective action:
    resumes.
 
 No B0 strategy threshold was changed.
+
+
+## Live calendar-fix verification
+
+Workflow:
+
+```text
+Xuangubao Provider Smoke
+run 36656484189
+```
+
+Result: PASS.
+
+The live provider check queried the known A-share market holiday 2025-01-01
+and returned:
+
+```text
+ok=false
+trade_date=20250101
+indicator_rows=0
+limit_up_count=0
+limit_down_count=0
+```
+
+The same smoke run also cross-checked normal trading sessions and confirmed that
+limit-up, broken-board and limit-down pool counts matched the close
+market-indicator counts.
+
+## Invalid S01 cancellation
+
+The first S01 development run:
+
+```text
+36655583632
+```
+
+was launched before the calendar-integrity defect was found and used the
+invalid v1 cache/data contract. It was explicitly preempted and ended as
+`cancelled`.
+
+Its outputs must not be used for research or promotion decisions.
