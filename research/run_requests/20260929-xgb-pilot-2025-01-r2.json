@@ -12,6 +12,6 @@
   "strategy_changes": false,
   "preflight_date": "2025-01-27",
   "fill": "all",
-  "workflow_revision": 5,
-  "retry_reason": "Held-symbol pre-close recovery now walks backward to latest observable daily/minute close; acceptance gate unchanged."
+  "workflow_revision": 6,
+  "retry_reason": "Replay now normalizes zero-column empty candidate pools; cache resume skips fully materialized symbol-days; acceptance gate unchanged."
 }
