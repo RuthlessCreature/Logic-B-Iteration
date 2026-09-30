@@ -1,0 +1,19 @@
+{
+  "request_id": "xgb-development-s01-2024q4",
+  "created_at": "2026-09-30T09:33:00+08:00",
+  "purpose": "Materialize and replay the first frozen XGB development segment after infrastructure pilot pass.",
+  "window": {
+    "start": "2024-09-30",
+    "end": "2024-12-31"
+  },
+  "preflight_date": "2024-12-31",
+  "fill": "conservative",
+  "promotion_relevance": "development_segment",
+  "blind_holdout": false,
+  "strategy_changes": false,
+  "notes": [
+    "Do not tune B0 thresholds from this segment.",
+    "Segment P&L is diagnostic only.",
+    "Primary acceptance is data readiness plus complete conservative replay."
+  ]
+}
