@@ -26,7 +26,7 @@ the evidence layer alone.
 The request workflow now restores and updates an Actions cache:
 
 ```text
-xgb-development-v1-*
+xgb-development-v2-*
 ```
 
 Existing partitions are reused. New requests should extend the cached
@@ -58,7 +58,7 @@ Each segment request must pass:
 3. public evidence/minute preflight on a known trading day;
 4. evidence materialization;
 5. candidate market materialization;
-6. candidate-slice readiness.
+6. candidate-slice readiness, including zero indicator event-date failures.
 
 Intermediate segment P&L is diagnostic only.
 
@@ -142,3 +142,25 @@ research artifact.
 
 Only run outputs, metrics, manifests, and research decisions may be retained as
 normal experiment artifacts.
+
+
+## Calendar integrity gate
+
+The public Xuangubao endpoints may return stale prior-session rows when queried
+for a market holiday. Research data must therefore pass two independent date
+checks:
+
+1. the evidence provider retains market-indicator rows only when their
+   Shanghai-local event date equals the requested date;
+2. XGB readiness rejects any stored market-indicator partition whose event date
+   does not equal its partition date.
+
+A non-empty indicator payload without a timestamp is rejected because the date
+cannot be verified.
+
+The old cache namespace `xgb-development-v1-*` is permanently invalid for
+research. Only `xgb-development-v2-*` or a later explicitly audited namespace
+may be used.
+
+A known-holiday live smoke test uses 2025-01-01 and requires the provider to
+return `ok=false`.
