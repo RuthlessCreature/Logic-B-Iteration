@@ -31,6 +31,23 @@ jobs:
         run: |
           logic-b preflight-xgb --date 2026-06-30 | tee xgb_preflight.json
 
+      - name: Verify known holiday is rejected
+        run: |
+          python - <<'PY'
+          from datetime import date
+          from logic_b.providers.xuangubao import XuangubaoEvidenceProvider
+
+          result=XuangubaoEvidenceProvider().preflight(
+              date(2025,1,1)
+          )
+          print(result)
+          assert result["trade_date"]=="20250101"
+          assert result["ok"] is False, (
+              "2025-01-01 is a known A-share market holiday; "
+              "stale prior-session rows must not be relabeled as trading data"
+          )
+          PY
+
       - name: Fetch three-session evidence
         run: |
           logic-b fetch-xgb-evidence \
