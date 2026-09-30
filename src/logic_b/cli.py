@@ -93,6 +93,55 @@ def _calendar_dates(
     return selected
 
 
+def _calendar_dates_with_prior(
+    store: LocalParquetStore,
+    start: date,
+    end: date,
+    *,
+    prior_days: int=1,
+) -> list[str]:
+    selected=_calendar_dates(
+        store,
+        start,
+        end,
+    )
+    if prior_days<=0:
+        return selected
+
+    cal=store.read_all_parts(
+        "calendar"
+    )
+    if cal.empty:
+        return selected
+
+    col=(
+        "cal_date"
+        if "cal_date" in cal.columns
+        else "trade_date"
+    )
+    all_dates=sorted(
+        set(
+            pd.to_datetime(
+                cal[col]
+            )
+            .dt.strftime("%Y%m%d")
+            .tolist()
+        )
+    )
+    start_key=f"{start:%Y%m%d}"
+    prior=[
+        day
+        for day in all_dates
+        if day<start_key
+    ][-prior_days:]
+
+    return prior+[
+        day
+        for day in selected
+        if day not in set(prior)
+    ]
+
+
 def assert_holdout_access(
     cfg: dict,
     start: date,
@@ -397,10 +446,11 @@ def cmd_fetch_xgb_market(args: argparse.Namespace) -> int:
     start=_date(args.start)
     end=_date(args.end)
     store=LocalParquetStore(args.data_root)
-    dates=_calendar_dates(
+    dates=_calendar_dates_with_prior(
         store,
         start,
         end,
+        prior_days=1,
     )
     ingestor=XuangubaoMarketIngestor(
         XuangubaoMarketProvider(),
@@ -479,10 +529,11 @@ def cmd_xgb_readiness(args: argparse.Namespace) -> int:
     store=LocalParquetStore(
         args.data_root
     )
-    dates=_calendar_dates(
+    dates=_calendar_dates_with_prior(
         store,
         start,
         end,
+        prior_days=1,
     )
     report=assess_xgb_candidate_readiness(
         store=store,
