@@ -190,3 +190,41 @@ def test_xgb_readiness_names_missing_candidate_minute(tmp_path):
     assert report.missing_minutes==[
         "20260928/600000.SH"
     ]
+
+
+def test_xgb_readiness_rejects_indicator_partition_with_wrong_event_date(tmp_path):
+    store=_build_store(
+        tmp_path,
+        with_minute=True,
+    )
+    store.write_frame(
+        "market_indicator",
+        "20260928",
+        pd.DataFrame({
+            "trade_date":["20260928"],
+            "event_time":[
+                pd.Timestamp(
+                    "2026-09-25 15:00:00",
+                    tz="Asia/Shanghai",
+                )
+            ],
+        }),
+    )
+
+    report=assess_xgb_candidate_readiness(
+        store=store,
+        trade_dates=DATES,
+        include_boards=(
+            "main",
+            "chinext",
+            "star",
+        ),
+        exclude_st=True,
+        exclude_no_limit_ipo_days=True,
+    )
+
+    assert not report.ready
+    assert report.indicator_date_failures==1
+    assert report.bad_indicator_dates==[
+        "20260928"
+    ]
