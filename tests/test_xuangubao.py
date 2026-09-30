@@ -107,3 +107,37 @@ def test_xgb_preflight_and_theme_projection():
     themes=client.theme_limit_list(date(2026,6,30))
     assert themes.iloc[0]["theme"]=="包装印刷、激光"
     assert themes.iloc[0]["status"]=="首板"
+
+
+class FakeStaleIndicator(XuangubaoEvidenceProvider):
+    def __init__(self):
+        pass
+
+    def _json(self,path,params):
+        if path!="/market_indicator/line":
+            return {"code":200,"message":"ok","data":[]}
+        ts=int(
+            pd.Timestamp(
+                "2024-12-31 15:00:00",
+                tz="Asia/Shanghai",
+            )
+            .tz_convert("UTC")
+            .timestamp()
+        )
+        return {
+            "code":200,
+            "message":"ok",
+            "data":[{
+                "rise_count":1000,
+                "fall_count":4000,
+                "timestamp":ts,
+            }],
+        }
+
+
+def test_xgb_indicator_rejects_stale_previous_day_rows():
+    client=FakeStaleIndicator()
+    frame=client.market_indicator_line(
+        date(2025,1,1)
+    )
+    assert frame.empty
