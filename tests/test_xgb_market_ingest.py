@@ -454,3 +454,44 @@ def test_materialize_range_reports_structured_progress(tmp_path):
     assert events[0]["trade_date"]=="20260928"
     assert events[0]["day_candidates"]==1
     assert events[0]["candidate_symbol_days"]==1
+
+
+def test_second_materialize_range_skips_fully_cached_symbol_days(tmp_path):
+    store=LocalParquetStore(tmp_path/"data")
+    provider=FakeMarketProvider()
+    ingestor=XuangubaoMarketIngestor(
+        provider,
+        store,
+        inter_request_sleep=0,
+    )
+
+    store.write_frame(
+        "limit_up",
+        "20260925",
+        pd.DataFrame({
+            "ts_code":[
+                "600000.SH",
+                "000001.SZ",
+            ],
+            "price":[10.0,20.0],
+        }),
+    )
+
+    first=ingestor.materialize_range(
+        trade_dates=[
+            "20260925",
+            "20260928",
+        ]
+    )
+    first_calls=list(provider.calls)
+
+    second=ingestor.materialize_range(
+        trade_dates=[
+            "20260925",
+            "20260928",
+        ]
+    )
+
+    assert first["candidate_symbol_days"]==2
+    assert second["candidate_symbol_days"]==2
+    assert provider.calls==first_calls
