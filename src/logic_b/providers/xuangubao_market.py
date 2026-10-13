@@ -400,9 +400,13 @@ class XuangubaoMarketProvider:
         board=board_of(
             minute_day.ts_code
         )
+        # These are only NORMAL-ISSUE indicative bands, not exchange-official
+        # date-specific limits. B0/H02 must independently check ST, IPO/no-limit,
+        # delisting and special situations before declaring orders executable.
+        # Existing ChiNext shares were 10% before the 2020-08-24 reform.
         ratio={
             "main":0.10,
-            "chinext":0.20,
+            "chinext":0.10 if minute_day.trade_date < "20200824" else 0.20,
             "star":0.20,
         }.get(board)
         if ratio is None:
@@ -430,5 +434,5 @@ class XuangubaoMarketProvider:
                     pre*(1-ratio)
                 ),
             "source":
-                "xuangubao_derived",
+                "xuangubao_derived_not_official",
         }])
