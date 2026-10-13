@@ -64,3 +64,11 @@ The 16:00 Shanghai market-observation timestamp is a conservative explicit assum
 ## Project decision
 
 Psychology remains the theoretical foundation. Observable market data are imperfect measurement instruments. Net-equity growth is the objective, but all claims are BLOCKED until there is evidence.
+
+## Added data cross-check (market summary count)
+
+Where the source stores both the closing market-wide summary indicator and historical limit-up list, use the stricter command:
+
+    python -m logic_b.h01_cli --data-root data-xgb --start 2024-09-30 --end 2026-06-30 --audit-market-summary --out runs/h01-a-audited
+
+The command writes h01_source_count_audit.parquet and h01_source_count_audit.json. If the vendor's closing count differs from the fetched list, the result is BLOCKED, not silently labeled complete. **The two endpoints come from the same vendor**: agreement is an internal consistency check, not independent population confirmation. Source-specific definitions may differ; investigate and document disagreements before enabling H01 inference.
