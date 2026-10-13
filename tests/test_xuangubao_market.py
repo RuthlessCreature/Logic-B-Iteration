@@ -99,3 +99,20 @@ def test_chinext_limit_is_twenty_percent():
     limits=XuangubaoMarketProvider.limit_prices(result)
     assert limits.iloc[0]["up_limit"]==12.0
     assert limits.iloc[0]["down_limit"]==8.0
+
+
+@pytest.mark.parametrize("trade_date,up,down",[
+    ("20200821",11.0,9.0),
+    ("20200824",12.0,8.0),
+    ("20200103",11.0,9.0),
+    ("20260630",12.0,8.0),
+])
+def test_chinext_reform_historical_price_band_is_explicitly_inferred(trade_date,up,down):
+    m=XuangubaoMinuteDay(
+        ts_code="300001.SZ",trade_date=trade_date,bars=pd.DataFrame(),
+        pre_close=10.0,pre_close_source="test",raw_lines=0,
+    )
+    t=XuangubaoMarketProvider.limit_prices(m).iloc[0]
+    assert float(t["up_limit"]) == up
+    assert float(t["down_limit"]) == down
+    assert t["source"] == "xuangubao_derived_not_official"
