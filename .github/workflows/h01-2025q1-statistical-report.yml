@@ -1,0 +1,73 @@
+name: h01-2025q1-statistical-report
+on:
+  push:
+    paths: [".github/workflows/h01-2025q1-statistical-report.yml"]
+  workflow_dispatch:
+jobs:
+  audit-statistics:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: pip install -e ".[dev]"
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-activity-2025q1
+          run-id: 38357161904
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h01-q1
+      - name: Compute paired error uncertainty and export CSV
+        run: |
+          mkdir -p /tmp/h01-stat-report
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import numpy as np
+          import pandas as pd
+          inp=Path("/tmp/h01-q1/h01-vendor-probe")
+          out=Path("/tmp/h01-stat-report")
+          pred=pd.read_parquet(inp/"h01_predictions.parquet")
+          pred.to_csv(out/"h01_predictions_2025q1.csv",index=False)
+          diff=(pred.baseline_abs_error-pred.h01_abs_error).to_numpy()
+          n=len(diff)
+          assert n==34,n
+          rng=np.random.default_rng(20261013)
+          B=10000
+          # Circular moving-block bootstrap; five consecutive trading days per block.
+          boot=np.empty(B)
+          for j in range(B):
+            idx=[]
+            while len(idx)<n:
+              start=int(rng.integers(n))
+              idx.extend((start+k)%n for k in range(5))
+            boot[j]=diff[np.array(idx[:n])].mean()
+          low,high=np.quantile(boot,[.025,.975])
+          stats={
+              "n":n,
+              "baseline_mae":float(pred.baseline_abs_error.mean()),
+              "h01_mae":float(pred.h01_abs_error.mean()),
+              "mean_mae_improvement":float(diff.mean()),
+              "mae_relative_improvement_pct":float(
+                100*diff.mean()/pred.baseline_abs_error.mean()),
+              "h01_lower_error_days":int((diff>0).sum()),
+              "paired_block_bootstrap_95_interval":[float(low),float(high)],
+              "probability_of_improvement_under_resampling":float((boot>0).mean()),
+              "bootstrap_method":"circular moving blocks of 5 trading days, 10000 resamples, seeded 20261013",
+              "nonindependent_observations":True,
+              "not_a_causal_claim":True,
+              "not_a_net_equity_backtest":True
+          }
+          (out/"statistical_audit.json").write_text(json.dumps(stats,ensure_ascii=False,indent=2))
+          print(json.dumps(stats,ensure_ascii=False,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: h01-2025q1-paired-statistics
+          path: /tmp/h01-stat-report
+          retention-days: 30
