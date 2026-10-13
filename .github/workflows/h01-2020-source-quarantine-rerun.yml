@@ -1,4 +1,5 @@
 name: h01-2020-source-quarantine-rerun
+# Re-run after confirming test fixture has >=160 unquarantined observations.
 
 on:
   push:
