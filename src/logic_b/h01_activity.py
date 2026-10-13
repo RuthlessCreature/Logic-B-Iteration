@@ -82,10 +82,10 @@ def join_feedback_activity(
     'repeat_rate' on date D is a label NOT a D 09:35 trading input.
     Previous day's repeat rate is allowed, with label_observed_at audit.
     """
-    required_f = {
-        "cohort_id", "trade_date", "asof_at", "status",
-        "lagged_compound_return",
-    }
+    required_f = {"cohort_id", "trade_date", "asof_at", "status"}
+    if ("lagged_compound_return" not in feedback and
+            "h01_experience_proxy" not in feedback):
+        raise H01DataBlocked("missing explicitly named H01 experience feature")
     required_a = {
         "trade_date", "limitup_count", "prior_limitup_count",
         "repeat_rate", "label_observed_at",
@@ -93,6 +93,8 @@ def join_feedback_activity(
     if required_f - set(feedback) or required_a - set(activity):
         raise H01DataBlocked("required feature/activity fields missing")
     f = feedback[feedback["cohort_id"] == cohort_id].copy()
+    if "h01_experience_proxy" not in f:
+        f["h01_experience_proxy"] = f["lagged_compound_return"]
     if f.empty:
         raise H01DataBlocked(f"cohort not found: {cohort_id}")
     a = activity.copy().sort_values("trade_date")
@@ -119,7 +121,7 @@ def join_feedback_activity(
         merged["repeat_rate"].notna() &
         merged["prior_repeat_rate"].notna() &
         merged["prior_day_limitup_count"].notna() &
-        merged["lagged_compound_return"].notna()
+        merged["h01_experience_proxy"].notna()
     )
     return merged
 
@@ -157,7 +159,7 @@ def expanding_window_h01(
         x["prior_day_limitup_count"], errors="coerce"
     ))
     bcols = ["prior_repeat_rate", "log_prior_count"]
-    hcols = bcols + ["lagged_compound_return"]
+    hcols = bcols + ["h01_experience_proxy"]
     usable = x.loc[x["evaluation_ready"]].copy()
     for col in ["repeat_rate", *hcols]:
         if not np.isfinite(pd.to_numeric(usable[col], errors="coerce")).all():
