@@ -17,6 +17,7 @@ from pathlib import Path
 import pandas as pd
 
 from .behavioral import build_feedback_features
+from .b0_feedback import b0_equity_to_feedback_ledger
 from .h01_activity import (
     H01DataBlocked, expanding_window_h01, join_feedback_activity,
     limitup_continuation, write_h01_report,
@@ -50,6 +51,8 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--end", required=True)
     parser.add_argument("--out", default="runs/h01-a")
     parser.add_argument("--cohort-equity", help="Versioned, executable cohort daily ledger (.csv/.parquet)")
+    parser.add_argument("--b0-daily-equity", help="B0 daily_equity.parquet as limited follower proxy")
+    parser.add_argument("--initial-cash", type=float, help="Original B0 starting cash; mandatory with --b0-daily-equity")
     parser.add_argument("--cohort-id", default="momentum_proxy")
     parser.add_argument("--lookback", type=int, default=3)
     parser.add_argument("--min-train", type=int, default=120)
@@ -69,7 +72,7 @@ def main(argv: list[str] | None = None) -> int:
         days = _calendar(store, args.start, args.end)
         activity = limitup_continuation(store, days)
         activity.to_parquet(root / "h01_market_activity.parquet", index=False)
-        if not args.cohort_equity:
+        if not args.cohort_equity and not args.b0_daily_equity:
             status = {
                 "status": "BLOCKED_MISSING_EXECUTABLE_COHORT_LEDGER",
                 "audited_limitup_days": len(days),
@@ -87,23 +90,37 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(status, ensure_ascii=False, indent=2))
             return 2
 
-        ledger_path = Path(args.cohort_equity)
-        ledger = (pd.read_parquet(ledger_path)
-                  if ledger_path.suffix.lower() == ".parquet"
-                  else pd.read_csv(ledger_path))
+        if args.cohort_equity and args.b0_daily_equity:
+            raise H01DataBlocked("choose one cohort ledger source")
+        if args.b0_daily_equity:
+            if args.initial_cash is None:
+                raise H01DataBlocked("B0 conversion requires explicit --initial-cash")
+            ledger_path = Path(args.b0_daily_equity)
+            daily_equity = pd.read_parquet(ledger_path)
+            cohort_id = "B0_SIMULATED_FOLLOWERS"
+            ledger = b0_equity_to_feedback_ledger(
+                daily_equity, initial_cash=args.initial_cash, cohort_id=cohort_id
+            )
+        else:
+            ledger_path = Path(args.cohort_equity)
+            cohort_id = args.cohort_id
+            ledger = (pd.read_parquet(ledger_path)
+                      if ledger_path.suffix.lower() == ".parquet"
+                      else pd.read_csv(ledger_path))
         iso = pd.to_datetime(days, format="%Y%m%d").strftime("%Y-%m-%d").tolist()
         ledger = ledger.loc[
-            ledger["cohort_id"].eq(args.cohort_id)
+            ledger["cohort_id"].eq(cohort_id)
             & pd.to_datetime(ledger["trade_date"]).dt.strftime("%Y-%m-%d").isin(iso)
         ].copy()
         features = build_feedback_features(ledger, iso, lookback=args.lookback)
-        joined = join_feedback_activity(features, activity, args.cohort_id)
+        joined = join_feedback_activity(features, activity, cohort_id)
         metrics, predictions = expanding_window_h01(
             joined, min_train_days=args.min_train, min_test_days=args.min_test
         )
         metrics["data_root"] = args.data_root
         metrics["cohort_source"] = str(ledger_path)
-        metrics["cohort_id"] = args.cohort_id
+        metrics["cohort_id"] = cohort_id
+        metrics["cohort_is_actual_investor_pnl"] = False
         write_h01_report(root, joined, metrics, predictions)
         print(json.dumps(metrics, ensure_ascii=False, indent=2))
         return 2 if metrics["status"].startswith("BLOCKED") else 0
