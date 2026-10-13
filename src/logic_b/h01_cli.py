@@ -18,6 +18,7 @@ import pandas as pd
 
 from .behavioral import build_feedback_features
 from .b0_feedback import b0_equity_to_feedback_ledger
+from .h01_data_audit import audit_xgb_limit_up_counts
 from .h01_activity import (
     H01DataBlocked, expanding_window_h01, join_feedback_activity,
     limitup_continuation, write_h01_report,
@@ -50,6 +51,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--start", required=True)
     parser.add_argument("--end", required=True)
     parser.add_argument("--out", default="runs/h01-a")
+    parser.add_argument("--audit-market-summary", action="store_true", help="check pool counts against vendor closing indicator; block mismatches")
     parser.add_argument("--cohort-equity", help="Versioned, executable cohort daily ledger (.csv/.parquet)")
     parser.add_argument("--b0-daily-equity", help="B0 daily_equity.parquet as limited follower proxy")
     parser.add_argument("--initial-cash", type=float, help="Original B0 starting cash; mandatory with --b0-daily-equity")
@@ -72,6 +74,16 @@ def main(argv: list[str] | None = None) -> int:
         days = _calendar(store, args.start, args.end)
         activity = limitup_continuation(store, days)
         activity.to_parquet(root / "h01_market_activity.parquet", index=False)
+        if args.audit_market_summary:
+            scope_report, scope_table = audit_xgb_limit_up_counts(store, days)
+            scope_table.to_parquet(root / "h01_source_count_audit.parquet", index=False)
+            (root / "h01_source_count_audit.json").write_text(
+                json.dumps(scope_report, ensure_ascii=False, indent=2), encoding="utf-8"
+            )
+            if scope_report["status"] != "COUNT_CONSISTENT":
+                raise H01DataBlocked(
+                    "market scope count audit failed: " + scope_report["status"]
+                )
         if not args.cohort_equity and not args.b0_daily_equity:
             status = {
                 "status": "BLOCKED_MISSING_EXECUTABLE_COHORT_LEDGER",
