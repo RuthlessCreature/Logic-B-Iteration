@@ -72,3 +72,13 @@ Where the source stores both the closing market-wide summary indicator and histo
     python -m logic_b.h01_cli --data-root data-xgb --start 2024-09-30 --end 2026-06-30 --audit-market-summary --out runs/h01-a-audited
 
 The command writes h01_source_count_audit.parquet and h01_source_count_audit.json. If the vendor's closing count differs from the fetched list, the result is BLOCKED, not silently labeled complete. **The two endpoints come from the same vendor**: agreement is an internal consistency check, not independent population confirmation. Source-specific definitions may differ; investigate and document disagreements before enabling H01 inference.
+
+## Market-level experience proxy (does not need executable cohort equity)
+
+A psychologically closer but **non-tradable** observable is the vendor's end-of-day `yesterday_limit_up_avg_pcp`: it describes average performance of the prior day's limit-up basket; it is NOT the realized return of accounts or an executable investable strategy. The original vendor units are preserved. An arithmetic mean of previously completed sessions is used, not a fictitious compounded portfolio return.
+
+    python -m logic_b.h01_cli --data-root data-xgb --start 2024-09-30 --end 2026-06-30 --vendor-market-experience --audit-market-summary --out runs/h01-a-market
+
+Baseline: prior repeat rate and limit-up count. Enhanced: plus lagged 3-day mean prior-day-limit-up-basket performance at the vendor's close. Model time-gating remains 09:35; the current day's basket performance is forbidden as a current-day feature.
+
+This pathway directly tests the market-observable **reward history** premise before attempting the stronger and costlier claim of actual investor imitation. An accuracy gain DOES NOT establish either imitation causality or net-profitability. The separately cost-accounted B0-follower ledger remains an independent alternative experience proxy.
