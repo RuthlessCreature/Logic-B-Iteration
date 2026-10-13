@@ -12,6 +12,7 @@ from pathlib import Path
 import pandas as pd
 
 from .storage import LocalParquetStore
+from .h02_minute_audit import audit_h02_minute_execution
 
 
 APPROVED_STATUS_PROVIDER = "TushareProvider"
@@ -40,6 +41,7 @@ def inspect_h02_executable_provenance(
     reasons = []
     candidate_days = 0
     checked_minutes = 0
+    structurally_executable_minutes = 0
     unmatched_limits = 0
 
     for i, day in enumerate(trade_dates):
@@ -90,6 +92,15 @@ def inspect_h02_executable_provenance(
                 reasons.append({"date": day, "symbol": code, "dataset": "minute_1m", "issue": "wrong_or_duplicate_timestamps"})
                 continue
             checked_minutes += 1
+            audit = audit_h02_minute_execution(b, day)
+            if audit["status"] != "STRUCTURALLY_VALID":
+                reasons.append({
+                    "date": day, "symbol": code, "dataset": "minute_1m",
+                    "issue": "execution_minute_structural_audit_failed",
+                    "detail": audit["reason"],
+                })
+                continue
+            structurally_executable_minutes += 1
 
     if unmatched_limits:
         reasons.append({"dataset": "limit_prices", "issue": "candidate_official_limit_rows_missing",
@@ -99,6 +110,8 @@ def inspect_h02_executable_provenance(
         "trade_days": len(trade_dates),
         "candidate_symbol_days": candidate_days,
         "minute_date_verified_symbol_days": checked_minutes,
+        "minute_execution_structurally_valid_symbol_days": structurally_executable_minutes,
+        "minute_publication_certified": False,
         "candidate_official_limit_rows_missing": unmatched_limits,
         "failed_evidence_items": len(reasons),
         "first_blockers": reasons[:30],
