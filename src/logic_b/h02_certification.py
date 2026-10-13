@@ -102,7 +102,8 @@ def inspect_h02_executable_provenance(
         "candidate_official_limit_rows_missing": unmatched_limits,
         "failed_evidence_items": len(reasons),
         "first_blockers": reasons[:30],
-        "ready_for_net_equity": not reasons,
+        "source_provenance_gate_passed": not reasons,
+        "net_equity_validated": False,
         "caution": "Provenance readiness only; do not mistake it for complete simulated trading proof.",
         "source_allowlist": {
             "stk_limit": APPROVED_LIMIT_PROVIDER, "stock_st": APPROVED_STATUS_PROVIDER,
