@@ -54,3 +54,22 @@ As of this report: publicly archived historical XGB sample has *only inferred* p
 4. Score H02-R, H02-C and H02-X separately against lagged market/volatility baselines. If no robust gain, stop without promoting.
 
 **No 2020-2026 executable net-equity claim exists. No actual investor identity or psychology is observed in these feeds.**
+
+## Independent 2020 daily-state acquisition and cross-provider check
+
+Independent BaoStock unadjusted daily history successfully retrieved in GitHub Actions, including `tradestatus`, `isST`, `preclose`, OHLC, volume and amount:
+https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38384622637
+
+An explicit research-only normalizer and fail-closed OHLC consistency checker have been implemented in `src/logic_b/h02_independent_daily.py` with regression tests. The source data are marked **historical daily, NOT confirmed 09:35 publication**.
+
+Real cross-provider test on 2020-01-03:
+https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38384941333
+
+- 000998.SZ: independent BaoStock daily OHLC and XGB 1m aggregated OHLC agree to under one tick; ST=false, 245 minute rows; prior-day candidate close matches independent unadjusted preclose.
+- 000716.SZ: same close and high; first-minute open and min low differ from BaoStock by **RMB 0.02** each. This is a meaningful source discrepancy, possibly auction/session bar conventions, NOT resolved. ST=false, 245 rows. Do not quietly force agreement or use an inferred 09:30 open in 09:35 decisions.
+- 600421.SH: ST=true historically (confirmed independently). All day OHLC values match XGB even with only **148** 1m bars; such reduced row counts are therefore NOT proof of corruption. The ~5% ST price-limit convention also invalidates treating this symbol as ordinary main-board 10%.
+- All 3 independent previous-close values match the prior-day limit-up list close.
+- 2/3 full OHLC match to RMB0.011; 3/3 daily CLOSE match exactly; 1 ST correctly flagged.
+- Official per-stock upper/lower price limits and pre-open ST publication remain unverified. **No equity replay has passed promotion gates.**
+
+This check is deliberately sensitive to source divergence. If a later historical cohort uses `open` in the decision, the 000716.SZ mismatch must trigger a review or a documented, source-specific auction convention. Do not tune the tolerance to erase the difference.
