@@ -1,0 +1,83 @@
+name: h02-2020-january-reference-backfill
+on:
+  push:
+    paths: [".github/workflows/h02-2020-january-reference-backfill.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  jan-2020:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]" baostock
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-jan-lake
+      - name: Build chronological 2020 January historical ST/trading reference
+        run: |
+          mkdir -p /tmp/h02-jan-report
+          timeout 1200s python -u - <<'PY'
+          import json
+          from pathlib import Path
+          import pandas as pd
+          import baostock as bs
+          from logic_b.storage import LocalParquetStore
+          from logic_b.h02_baostock_ingest import collect_h02_reference_daily,expected_previous_limitup_candidates
+
+          lake=LocalParquetStore("/tmp/h02-jan-lake")
+          cal=lake.read_all_parts("calendar")
+          days=sorted(set(pd.to_datetime(cal.cal_date).dt.strftime("%Y%m%d")))
+          days=[x for x in days if "20200101"<=x<="20200131"]
+          assert len(days)>=14,days
+          expected=expected_previous_limitup_candidates(lake,days)
+          lg=bs.login()
+          assert lg.error_code=="0",f"BaoStock login: {lg.error_msg}"
+          try:
+              coverage=collect_h02_reference_daily(lake,bs,days)
+          finally:
+              bs.logout()
+          per_day=[]
+          for day in days[1:]:
+              x=lake.read_frame("h02_reference_daily",day)
+              per_day.append({
+                  "date":day,
+                  "expected_candidates":len(expected[day]),
+                  "independent_status_rows":len(x),
+                  "reference_st":int(x.is_st.sum()) if len(x) else 0,
+                  "reference_nontrading":int((~x.is_trading).sum()) if len(x) else 0,
+                  "sha256_verified":lake.verify("h02_reference_daily",day),
+              })
+          result={
+              "scope":"2020 January, D-1 limit-up candidate independent daily state",
+              "first_session":days[0], "last_session":days[-1],
+              "dataset_is_historical_EOD_only":True,
+              "future_2026_holdout_accessed":False,
+              "coverage":coverage.as_dict(),
+              "per_trade_day":per_day,
+              "all_manifests_verified":all(z["sha256_verified"] for z in per_day),
+              "official_price_limits_missing":True,
+              "not_09_35_signal_certified":True,
+              "not_net_equity_replay_ready":True
+          }
+          Path("/tmp/h02-jan-report/report.json").write_text(
+              json.dumps(result,ensure_ascii=False,indent=2,allow_nan=False))
+          print(json.dumps(result,ensure_ascii=False,indent=2))
+          assert result["all_manifests_verified"]
+          assert coverage.expected_symbol_days >= 500
+          assert coverage.observed_symbol_days > 0
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-jan-independent-status-coverage
+          path: /tmp/h02-jan-report
+          retention-days: 30
+          if-no-files-found: warn
