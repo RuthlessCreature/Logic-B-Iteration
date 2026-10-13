@@ -41,3 +41,17 @@ Stage 3: prospectively quarantined validation after freezing all parameters; DO 
 - Backtest Stage 1 then Stage 2; preserve source-gate blocks and disclose missing years.
 
 **Acceptance principle**: psychology explains possible demand; only after-cost executable NAV answers the business question.
+
+## Empirical Stage-0 readiness: 2020 H1 (2026-10-13)
+
+Audited the original archive `h01-raw-2020h1` (117 trading dates), not an assumed replacement data service:
+
+- Five historical market evidence datasets complete; evidence manifest failures = 0.
+- Four replay-critical market-wide daily datasets (daily, limit_prices, suspend, stock_st): 468/468 trading-date partitions missing in this **event-only archive**.
+- Candidate symbol/days expected from prior-day closing limit-up lists: 9,637.
+- Daily bars missing: 9,637; limit-price rows missing: 9,637; 1-minute symbol/day partitions missing: 9,637.
+- **H02 EXECUTION GATE = BLOCKED_MISSING_EXECUTABLE_MARKET_DATA** for this sample archive. This does NOT demonstrate that such data are unavailable from other providers or in unrelated runner caches; the 2024/25 short B0 pilot indeed included replay-specific slices.
+
+Independent reproducible run: https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38383052897
+
+Do not imply that collecting all years' XGB **evidence lists** has completed a six-year trading-backtest dataset. Next decision is sourcing, costing and checksum-auditing true daily-limit-minute OHLC with legitimate point-in-time market availability.
