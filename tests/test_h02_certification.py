@@ -16,7 +16,18 @@ def fixture_store(tmp_path, *, status_source="TushareProvider", limit_source="Tu
         store.write_frame("stock_st",day,pd.DataFrame(columns=["ts_code"]),metadata={"source":status_source})
         store.write_frame("suspend",day,pd.DataFrame(columns=["ts_code"]),metadata={"source":status_source})
     store.write_frame("minute_1m","20200103/000998.SZ",
-        pd.DataFrame({"trade_time":[pd.Timestamp("2020-01-03 09:34"),pd.Timestamp("2020-01-03 09:35")]})
+        pd.DataFrame({
+            "trade_time": [
+                pd.Timestamp("2020-01-03 09:34"),
+                pd.Timestamp("2020-01-03 09:35"),
+                pd.Timestamp("2020-01-03 09:36"),
+            ],
+            "open": [10.00, 10.02, 10.04],
+            "high": [10.04, 10.06, 10.08],
+            "low": [9.99, 10.01, 10.03],
+            "close": [10.02, 10.04, 10.06],
+            "vol": [200, 300, 400],
+        })
         ,metadata={"source":"xuangubao"})
     return store
 
