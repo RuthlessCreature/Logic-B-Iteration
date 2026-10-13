@@ -38,7 +38,7 @@ def test_one_anomaly_quarantined_including_3_following_days():
 
 def test_quality_threshold_breach_blocks_promotion_even_if_forecast_runs():
     x,a=make_samples()
-    a.loc[[10,20,30,40],"status"]="SOURCE_DEFINITION_REVIEW"
+    a.loc[[10,20,30,40,50],"status"]="SOURCE_DEFINITION_REVIEW"
     r,_,_,_=analyze(x,a)
     assert r["status"]=="BLOCKED_PROMOTION_SOURCE_COUNT_MISMATCH"
     assert r["source_mismatch_fraction"]>0.02
