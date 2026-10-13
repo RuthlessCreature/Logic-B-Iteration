@@ -1,0 +1,74 @@
+name: h01-2020-source-quarantine-rerun
+
+on:
+  push:
+    paths: [".github/workflows/h01-2020-source-quarantine-rerun.yml"]
+  workflow_dispatch:
+
+jobs:
+  frozen-sensitivity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Source audit and anti-leak regression tests
+        run: pytest -q tests/test_h01_sensitivity.py tests/test_h01_activity.py tests/test_h01_data_audit.py
+      - name: Retrieve VERIFIED original 2020-2026 study artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: h01-2020-2026-research-reports
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h01-original
+      - name: Rerun fixed model after anomaly quarantine
+        run: |
+          set -euo pipefail
+          python -m logic_b.h01_sensitivity \
+            --joined /tmp/h01-original/forecast/h01_joined.parquet \
+            --audit /tmp/h01-original/source_count_days.csv \
+            --out /tmp/h01-rerun
+          python - <<'PY'
+          import json
+          import os
+          from pathlib import Path
+          original=json.loads(Path("/tmp/h01-original/forecast/h01_metrics.json").read_text())
+          new=json.loads(Path("/tmp/h01-rerun/h01_robustness_report.json").read_text())
+          assert new["status"]=="BLOCKED_PROMOTION_SOURCE_COUNT_MISMATCH"
+          assert new["source_count_mismatch_days"]==38
+          assert new["audited_dates"]==1571
+          evidence={
+             "original": original,
+             "quarantined": new,
+             "protected_blind_holdout_used": False,
+             "net_equity_backtest_performed": False,
+             "source_quality_gate_passed": False,
+          }
+          Path("/tmp/h01-rerun/original_vs_quarantined.json").write_text(
+              json.dumps(evidence,ensure_ascii=False,indent=2)
+          )
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as fh:
+              fh.write("# H01-A Source-Quarantine Sensitivity\n\n")
+              fh.write("**Research quality gate: BLOCKED (38/1571 > frozen 2% cap).**\n\n")
+              for title,item in [("Original",original),("Quarantined",new["forecast"])]:
+                  fh.write(f"## {title}\n")
+                  for name in ["test_days","baseline_mae","h01_mae","paired_mae_improvement"]:
+                      fh.write(f"- {name}: {item.get(name)}\n")
+              fh.write("\nThis is a prediction test, NOT a net-equity strategy backtest.\n")
+          print(json.dumps(evidence,ensure_ascii=False,indent=2))
+          PY
+      - name: Archive reproducible comparison
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: h01-2020-2026-quarantined-forecast
+          retention-days: 30
+          path: /tmp/h01-rerun
+          if-no-files-found: warn
