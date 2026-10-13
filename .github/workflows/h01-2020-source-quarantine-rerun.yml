@@ -1,5 +1,5 @@
 name: h01-2020-source-quarantine-rerun
-# Re-run after confirming test fixture has >=160 unquarantined observations.
+# Quarantine CI confirmed by commit 902d77d; run locked real-history diagnostic.
 
 on:
   push:
