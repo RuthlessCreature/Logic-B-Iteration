@@ -27,7 +27,8 @@ def test_attested_h02_data_gate_can_pass_source_readiness(tmp_path):
     assert r["status"]=="READY_FOR_FURTHER_EXECUTION_AUDIT"
     assert r["candidate_symbol_days"]==1
     assert r["minute_date_verified_symbol_days"]==1
-    assert r["ready_for_net_equity"] is True
+    assert r["source_provenance_gate_passed"] is True
+    assert r["net_equity_validated"] is False
 
 
 def test_inferred_price_st_and_halt_block_promotion_even_if_minute_data_present(tmp_path):
@@ -36,7 +37,7 @@ def test_inferred_price_st_and_halt_block_promotion_even_if_minute_data_present(
     r=inspect_h02_executable_provenance(store,["20200102","20200103"])
     assert r["status"]=="BLOCKED_UNCERTIFIED_EXECUTION_INPUTS"
     assert r["candidate_official_limit_rows_missing"]==1
-    assert r["ready_for_net_equity"] is False
+    assert r["source_provenance_gate_passed"] is False
 
 
 def test_missing_one_minute_partition_blocks_replay(tmp_path):
