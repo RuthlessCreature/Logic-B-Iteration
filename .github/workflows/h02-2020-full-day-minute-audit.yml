@@ -1,0 +1,94 @@
+name: h02-2020-full-day-minute-audit
+on:
+  push:
+    paths: [".github/workflows/h02-2020-full-day-minute-audit.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  full-day:
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]"
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-full-day
+      - name: Audit every D-1 limit-up candidate in one 2020 trading day
+        run: |
+          mkdir -p /tmp/h02-full-day-report
+          python - <<'PY'
+          import json
+          import time
+          from pathlib import Path
+          from datetime import date
+          from concurrent.futures import ThreadPoolExecutor,as_completed
+          import pandas as pd
+          from logic_b.storage import LocalParquetStore
+          from logic_b.providers.xuangubao_market import XuangubaoMarketProvider
+          from logic_b.xgb_market_ingest import XuangubaoMarketIngestor
+
+          s=LocalParquetStore("/tmp/h02-full-day")
+          d="20200103"
+          prev=s.read_frame("limit_up","20200102")
+          pool=prev.drop_duplicates("ts_code")
+          tasks=[(str(row.ts_code),XuangubaoMarketIngestor.pre_close_from_prior_row(row)) for _,row in pool.iterrows()]
+          prov=XuangubaoMarketProvider(timeout=10,max_attempts=2,retry_base_seconds=0.2)
+          ing=XuangubaoMarketIngestor(prov,s,max_workers=1,inter_request_sleep=0)
+          def fetch(code,pre):
+              try:
+                  ret=ing.materialize_symbol_day(trade_date=date(2020,1,3),ts_code=code,pre_close=pre)
+                  b=ret["minute_1m"]
+                  t=pd.to_datetime(b["trade_time"]) if len(b) else pd.Series([],dtype="datetime64[ns]")
+                  correct_date=bool((t.dt.strftime("%Y%m%d")==d).all()) if len(t) else False
+                  ckpt=bool((t.dt.strftime("%H:%M")=="09:35").any()) if len(t) else False
+                  valid=bool(((b.high>=b[["open","close","low"]].max(axis=1)) & (b.low<=b[["open","close","high"]].min(axis=1))).all()) if len(b) else False
+                  passed=bool(len(b)>=180 and correct_date and ckpt and valid and t.is_unique and s.verify("minute_1m",f"{d}/{code}"))
+                  return {"symbol":code,"bars":len(b),"valid":passed,"same_date":correct_date,
+                          "checkpoint_0935":ckpt,"ohlc_valid":valid,"sha256_verified":s.verify("minute_1m",f"{d}/{code}")}
+              except Exception as e:
+                  return {"symbol":code,"valid":False,"failure_type":type(e).__name__,"error":str(e)[:200]}
+          results=[]
+          with ThreadPoolExecutor(max_workers=3) as ex:
+              futures=[]
+              for code,pre in tasks:
+                  futures.append(ex.submit(fetch,code,pre))
+                  time.sleep(.08)
+              for fut in as_completed(futures):
+                  results.append(fut.result())
+          results=sorted(results,key=lambda x:x["symbol"])
+          passed=sum(bool(z["valid"]) for z in results)
+          good=[z for z in results if z["valid"]]
+          report={
+              "scope":"ALL prior-day (2020-01-02) historical limitup candidates scored on 2020-01-03",
+              "candidate_symbol_days":len(tasks),
+              "valid_2020_minute_slices":passed,
+              "failed_or_unverifiable_slices":len(tasks)-passed,
+              "minute_completeness_fraction":passed/len(tasks) if tasks else 0,
+              "min_bars_valid":min((z["bars"] for z in good),default=None),
+              "max_bars_valid":max((z["bars"] for z in good),default=None),
+              "failed_cases":[z for z in results if not z["valid"]][:25],
+              "no_official_price_limit_validation":True,
+              "no_st_or_suspension_validation":True,
+              "not_full_2020_2026_coverage":True,
+              "strategy_net_equity_not_computed":True,
+              "research_gate":"MINUTE_FEASIBLE_BUT_EXECUTION_UNCERTIFIED" if passed/len(tasks)>=.9 else "BLOCKED_MINUTE_COVERAGE"
+          }
+          Path("/tmp/h02-full-day-report/report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report["minute_completeness_fraction"] >= 0.90
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-jan-full-day-minute-audit
+          retention-days: 30
+          path: /tmp/h02-full-day-report
+          if-no-files-found: warn
