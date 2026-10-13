@@ -18,6 +18,7 @@ import pandas as pd
 
 from .behavioral import build_feedback_features
 from .b0_feedback import b0_equity_to_feedback_ledger
+from .h01_experience import build_vendor_limitup_experience
 from .h01_data_audit import audit_xgb_limit_up_counts
 from .h01_activity import (
     H01DataBlocked, expanding_window_h01, join_feedback_activity,
@@ -53,6 +54,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="runs/h01-a")
     parser.add_argument("--audit-market-summary", action="store_true", help="check pool counts against vendor closing indicator; block mismatches")
     parser.add_argument("--cohort-equity", help="Versioned, executable cohort daily ledger (.csv/.parquet)")
+    parser.add_argument("--vendor-market-experience", action="store_true", help="lagged historical yesterday-limitup mean performance (market proxy, NOT real investor P&L)")
     parser.add_argument("--b0-daily-equity", help="B0 daily_equity.parquet as limited follower proxy")
     parser.add_argument("--initial-cash", type=float, help="Original B0 starting cash; mandatory with --b0-daily-equity")
     parser.add_argument("--cohort-id", default="momentum_proxy")
@@ -84,7 +86,7 @@ def main(argv: list[str] | None = None) -> int:
                 raise H01DataBlocked(
                     "market scope count audit failed: " + scope_report["status"]
                 )
-        if not args.cohort_equity and not args.b0_daily_equity:
+        if not args.cohort_equity and not args.b0_daily_equity and not args.vendor_market_experience:
             status = {
                 "status": "BLOCKED_MISSING_EXECUTABLE_COHORT_LEDGER",
                 "audited_limitup_days": len(days),
@@ -102,9 +104,17 @@ def main(argv: list[str] | None = None) -> int:
             print(json.dumps(status, ensure_ascii=False, indent=2))
             return 2
 
-        if args.cohort_equity and args.b0_daily_equity:
-            raise H01DataBlocked("choose one cohort ledger source")
-        if args.b0_daily_equity:
+        if sum(bool(x) for x in (
+            args.cohort_equity, args.b0_daily_equity, args.vendor_market_experience
+        )) != 1:
+            raise H01DataBlocked("choose exactly one experience source")
+        if args.vendor_market_experience:
+            cohort_id = "VENDOR_PRIOR_LIMITUP_MARKET_PROXY"
+            ledger_path = None
+            features = build_vendor_limitup_experience(
+                store, days, lookback=args.lookback
+            )
+        elif args.b0_daily_equity:
             if args.initial_cash is None:
                 raise H01DataBlocked("B0 conversion requires explicit --initial-cash")
             ledger_path = Path(args.b0_daily_equity)
@@ -119,20 +129,28 @@ def main(argv: list[str] | None = None) -> int:
             ledger = (pd.read_parquet(ledger_path)
                       if ledger_path.suffix.lower() == ".parquet"
                       else pd.read_csv(ledger_path))
-        iso = pd.to_datetime(days, format="%Y%m%d").strftime("%Y-%m-%d").tolist()
-        ledger = ledger.loc[
-            ledger["cohort_id"].eq(cohort_id)
-            & pd.to_datetime(ledger["trade_date"]).dt.strftime("%Y-%m-%d").isin(iso)
-        ].copy()
-        features = build_feedback_features(ledger, iso, lookback=args.lookback)
+        if not args.vendor_market_experience:
+            iso = pd.to_datetime(days, format="%Y%m%d").strftime("%Y-%m-%d").tolist()
+            ledger = ledger.loc[
+                ledger["cohort_id"].eq(cohort_id)
+                & pd.to_datetime(ledger["trade_date"]).dt.strftime("%Y-%m-%d").isin(iso)
+            ].copy()
+            features = build_feedback_features(ledger, iso, lookback=args.lookback)
         joined = join_feedback_activity(features, activity, cohort_id)
         metrics, predictions = expanding_window_h01(
             joined, min_train_days=args.min_train, min_test_days=args.min_test
         )
         metrics["data_root"] = args.data_root
-        metrics["cohort_source"] = str(ledger_path)
+        metrics["cohort_source"] = (
+            "xuangubao_historical_market_indicator" if args.vendor_market_experience
+            else str(ledger_path)
+        )
         metrics["cohort_id"] = cohort_id
         metrics["cohort_is_actual_investor_pnl"] = False
+        metrics["experience_proxy_type"] = (
+            "market_yesterday_limitup_performance_raw" if args.vendor_market_experience
+            else "synthetic_trading_portfolio_return"
+        )
         write_h01_report(root, joined, metrics, predictions)
         print(json.dumps(metrics, ensure_ascii=False, indent=2))
         return 2 if metrics["status"].startswith("BLOCKED") else 0
