@@ -87,11 +87,54 @@ jobs:
               for k,v in summary.items():
                   fh.write(f"- {k}: {v}\n")
           PY
+      - name: Historical market-experience H01 forecast diagnostic
+        run: |
+          set -euo pipefail
+          set +e
+          python -m logic_b.h01_cli \
+            --data-root "$DATA_ROOT" \
+            --start "$START_DATE" \
+            --end "$END_DATE" \
+            --vendor-market-experience \
+            --audit-market-summary \
+            --min-train 20 \
+            --min-test 15 \
+            --out /tmp/h01-vendor-probe
+          rc=$?
+          set -e
+          H01_RC="$rc" python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path("/tmp/h01-vendor-probe")
+          rc=int(os.environ["H01_RC"])
+          metrics=root/"h01_metrics.json"
+          if metrics.exists() and rc==0:
+              result=json.loads(metrics.read_text())
+              state="EXPLORATORY_FORECAST_COMPUTED"
+          else:
+              report=root/"h01_readiness.json"
+              result=json.loads(report.read_text()) if report.exists() else {
+                  "status":"BLOCKED_MISSING_REPORT"
+              }
+              state="BLOCKED_EXPERIENCE_STUDY"
+          out={"status":state,"cli_rc":rc,"result":result}
+          root.mkdir(parents=True,exist_ok=True)
+          (root/"probe_status.json").write_text(json.dumps(out,indent=2,ensure_ascii=False))
+          print(json.dumps(out,indent=2,ensure_ascii=False))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as f:
+              f.write("\\n## H01 experience forecast pilot (unseen holdout NOT evaluated)\\n\\n")
+              f.write(f"- status: {state}\\n")
+              for k in ["baseline_mae","h01_mae","paired_mae_improvement","test_days","reason"]:
+                  if k in result:
+                      f.write(f"- {k}: {result[k]}\\n")
+          PY
       - name: Archive real market audit
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: h01-activity-2025q1
           retention-days: 14
-          path: /tmp/h01-activity-pilot/
+          path: |
+            /tmp/h01-activity-pilot/
+            /tmp/h01-vendor-probe/
           if-no-files-found: warn
