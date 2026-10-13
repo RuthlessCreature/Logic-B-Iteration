@@ -6,7 +6,7 @@ from logic_b.h01_activity import H01DataBlocked
 from logic_b.h01_sensitivity import analyze, paired_block_interval
 
 
-def make_samples(n=168):
+def make_samples(n=200):
     days=pd.bdate_range("2023-01-02",periods=n)
     x=pd.DataFrame({
         "trade_date":days.strftime("%Y-%m-%d"),
