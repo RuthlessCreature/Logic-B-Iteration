@@ -1,0 +1,95 @@
+name: h02-2020-minute-candidate-pilot
+on:
+  push:
+    paths: [".github/workflows/h02-2020-minute-candidate-pilot.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  data-pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]"
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-evidence
+      - name: Materialize ten REAL previous-limit-up candidate minute sets
+        run: |
+          mkdir -p /tmp/h02-pilot
+          python - <<'PY'
+          from datetime import date
+          from pathlib import Path
+          from collections import Counter
+          import json
+          import pandas as pd
+          from logic_b.providers.xuangubao_market import XuangubaoMarketProvider
+          from logic_b.xgb_market_ingest import XuangubaoMarketIngestor
+          from logic_b.storage import LocalParquetStore
+          s=LocalParquetStore("/tmp/h02-evidence")
+          prev=s.read_frame("limit_up","20200102")
+          assert prev["ts_code"].is_unique
+          prefer=["000998.SZ","000716.SZ"]
+          ordered=[k for k in prefer if k in prev.ts_code.values]
+          ordered += [k for k in prev.ts_code.astype(str).tolist() if k not in ordered and (k.startswith("00") or k.startswith("60"))]
+          target=ordered[:10]
+          assert len(target)==10, "not enough historical candidates"
+          ing=XuangubaoMarketIngestor(
+             XuangubaoMarketProvider(timeout=10,max_attempts=2,retry_base_seconds=0.2),
+             s,max_workers=1,inter_request_sleep=0.03
+          )
+          cases=[]
+          for code in target:
+              p=prev.loc[prev.ts_code.eq(code)].iloc[0]
+              pre=ing.pre_close_from_prior_row(p)
+              case={"trade_date":"20200103","ts_code":code,"checkpoint":"09:35:00","pre_close_from_prior_limitup":pre}
+              try:
+                  ret=ing.materialize_symbol_day(trade_date=date(2020,1,3),ts_code=code,pre_close=pre)
+                  b=ret["minute_1m"]
+                  t=pd.to_datetime(b.trade_time)
+                  valid_ohlc=bool(((b.high>=b[["open","close","low"]].max(axis=1))&(b.low<=b[["open","close","high"]].min(axis=1))).all()) if len(b) else False
+                  same_day=bool((t.dt.strftime("%Y%m%d")=="20200103").all()) if len(t) else False
+                  case.update({"minute_count":len(b),
+                     "has_checkpoint":bool((t.dt.strftime("%H:%M")=="09:35").any()) if len(t) else False,
+                     "minute_manifest_verified":s.verify("minute_1m",f"20200103/{code}"),
+                     "daily_code_present":code in set(s.read_frame("daily","20200103").ts_code.astype(str)),
+                     "limit_code_present":code in set(s.read_frame("limit_prices","20200103").ts_code.astype(str)),
+                     "ohlc_valid":valid_ohlc,"same_day":same_day,"unique_times":bool(t.is_unique),
+                     "limit_source":"inferred_NOT_official"})
+                  case["fully_materialized"]=all([case["minute_count"]>=180,case["has_checkpoint"],case["minute_manifest_verified"],case["daily_code_present"],case["limit_code_present"],case["ohlc_valid"],case["same_day"],case["unique_times"]])
+              except Exception as e:
+                  case.update({"fully_materialized":False,"error_type":type(e).__name__,"error":str(e)[:200]})
+              cases.append(case)
+              print(json.dumps(case,ensure_ascii=False))
+          successes=sum(bool(x["fully_materialized"]) for x in cases)
+          report={
+            "scope":"2020-01-02 previous-day limitup -> 2020-01-03 ten symbols",
+            "checked_symbol_days":len(cases),
+            "minute_market_slices_complete":successes,
+            "minute_market_slices_failed":len(cases)-successes,
+            "minute_coverage_fraction":successes/len(cases),
+            "per_symbol":cases,
+            "official_limit_price_source_validated":False,
+            "point_in_time_ST_status_validated":False,
+            "point_in_time_halt_status_validated":False,
+            "replay_promotion_allowed":False,
+            "not_full_2020_or_full_2020_to_2026_coverage":True,
+            "contains_no_trade_equity_claims":True,
+          }
+          Path("/tmp/h02-pilot/report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          assert successes>=8, "Historical minute provider supplied fewer than 8/10 candidate slices"
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-ten-candidate-minute-coverage
+          retention-days: 30
+          path: /tmp/h02-pilot
+          if-no-files-found: warn
