@@ -39,7 +39,8 @@ def audit_h02_minute_execution(bars: pd.DataFrame, trade_date: str) -> dict:
     clock = times.dt.strftime("%H:%M:%S")
     in_session = ((clock >= "09:30:00") & (clock <= "11:30:00")) | (
         (clock >= "13:00:00") & (clock <= "15:00:00"))
-    if (~in_session).any() or (times.dt.second != 0).any():
+    if ((~in_session).any() or (times.dt.second != 0).any() or
+            (times.dt.microsecond != 0).any() or (times.dt.nanosecond != 0).any()):
         return {"status": "BLOCKED", "reason": "out_of_session_or_nonminute_timestamp"}
     decision = pd.Timestamp(f"{trade_date[:4]}-{trade_date[4:6]}-{trade_date[6:]} 09:35:00")
     if not (times == decision).any():
@@ -49,7 +50,9 @@ def audit_h02_minute_execution(bars: pd.DataFrame, trade_date: str) -> dict:
         return {"status": "BLOCKED", "reason": "missing_post_signal_bar"}
 
     px = bars[["open", "high", "low", "close"]].apply(pd.to_numeric, errors="coerce")
-    if not px.notna().all().all() or not (px > 0).all().all():
+    if (not px.notna().all().all() or
+            not px.apply(lambda col: col.map(math.isfinite)).all().all() or
+            not (px > 0).all().all()):
         return {"status": "BLOCKED", "reason": "invalid_ohlc"}
     if (px["high"] < px[["open", "low", "close"]].max(axis=1)).any() or (
         px["low"] > px[["open", "high", "close"]].min(axis=1)

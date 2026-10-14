@@ -7,6 +7,7 @@ bands and D-1 name-inferred ST/halts are insufficient for net-equity claims.
 from __future__ import annotations
 
 import json
+import numpy as np
 from pathlib import Path
 
 import pandas as pd
@@ -28,6 +29,30 @@ def _manifest_source(store: LocalParquetStore, dataset: str, day: str) -> str | 
     return record.get("metadata", {}).get("source")
 
 
+
+def _validated_official_limit_codes(frame: pd.DataFrame) -> set[str]:
+    """Require one valid official price-band row per symbol; reject ambiguity.
+
+    Provenance is checked separately. This validates only structural values;
+    it does not prove when the limits were publicly available.
+    """
+    required = {"ts_code", "up_limit", "down_limit"}
+    if not required.issubset(frame.columns):
+        return set()
+    codes = frame["ts_code"].astype("string")
+    up = pd.to_numeric(frame["up_limit"], errors="coerce").astype("float64")
+    down = pd.to_numeric(frame["down_limit"], errors="coerce").astype("float64")
+    good = (
+        codes.str.fullmatch(r"[0-9]{6}\.(?:SH|SZ)").fillna(False)
+        & ~codes.duplicated(keep=False)
+        & np.isfinite(up)
+        & np.isfinite(down)
+        & (up > down)
+        & (down > 0)
+    )
+    return set(codes.loc[good].astype(str))
+
+
 def inspect_h02_executable_provenance(
     store: LocalParquetStore, trade_dates: list[str]
 ) -> dict:
@@ -43,6 +68,7 @@ def inspect_h02_executable_provenance(
     checked_minutes = 0
     structurally_executable_minutes = 0
     unmatched_limits = 0
+    invalid_limits = 0
 
     for i, day in enumerate(trade_dates):
         for ds, allowed in (
@@ -72,13 +98,17 @@ def inspect_h02_executable_provenance(
             continue
         if _manifest_source(store, "limit_prices", day) == APPROVED_LIMIT_PROVIDER:
             lp = store.read_frame("limit_prices", day)
-            available = set(lp.ts_code.astype(str)) if "ts_code" in lp else set()
+            available = _validated_official_limit_codes(lp)
+            present = set(lp.ts_code.dropna().astype(str)) if "ts_code" in lp else set()
         else:
             available = set()
+            present = set()
         for code in pool.ts_code.astype(str):
             candidate_days += 1
             if code not in available:
                 unmatched_limits += 1
+                if code in present:
+                    invalid_limits += 1
             part = f"{day}/{code}"
             if not store.exists("minute_1m", part) or not store.verify("minute_1m", part):
                 reasons.append({"date": day, "symbol": code, "dataset": "minute_1m", "issue": "missing_or_invalid_manifest"})
@@ -103,8 +133,8 @@ def inspect_h02_executable_provenance(
             structurally_executable_minutes += 1
 
     if unmatched_limits:
-        reasons.append({"dataset": "limit_prices", "issue": "candidate_official_limit_rows_missing",
-                        "symbol_days": unmatched_limits})
+        reasons.append({"dataset": "limit_prices", "issue": "candidate_official_limit_rows_missing_or_invalid",
+                        "symbol_days": unmatched_limits, "invalid_symbol_days": invalid_limits})
     return {
         "status": "READY_FOR_FURTHER_EXECUTION_AUDIT" if not reasons else "BLOCKED_UNCERTIFIED_EXECUTION_INPUTS",
         "trade_days": len(trade_dates),
@@ -113,6 +143,7 @@ def inspect_h02_executable_provenance(
         "minute_execution_structurally_valid_symbol_days": structurally_executable_minutes,
         "minute_publication_certified": False,
         "candidate_official_limit_rows_missing": unmatched_limits,
+        "candidate_official_limit_rows_invalid": invalid_limits,
         "failed_evidence_items": len(reasons),
         "first_blockers": reasons[:30],
         "source_provenance_gate_passed": not reasons,
