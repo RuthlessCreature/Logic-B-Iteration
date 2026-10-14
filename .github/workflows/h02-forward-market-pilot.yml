@@ -6,6 +6,8 @@ on:
     paths:
       - .github/workflows/h02-forward-market-pilot.yml
       - scripts/h02_forward_market_condition_pilot.py
+      - scripts/h02_stock_event_conditional_pilot.py
+      - tests/test_h02_stock_event_conditional_pilot.py
       - tests/test_h02_forward_market_condition_pilot.py
   pull_request:
     branches:
@@ -33,7 +35,7 @@ jobs:
       - name: Install project
         run: python -m pip install -e ".[dev]"
       - name: Run forward pilot regressions
-        run: python -m pytest -q tests/test_h02_forward_market_condition_pilot.py
+        run: python -m pytest -q tests/test_h02_forward_market_condition_pilot.py tests/test_h02_stock_event_conditional_pilot.py
       - name: Inspect retained source report and artifact contract (metadata only)
         run: |
           python - <<'PY'
@@ -83,6 +85,16 @@ jobs:
           python scripts/h02_forward_market_condition_pilot.py \
             --source runs/h02-forward-market-pilot/source-reconstructed.json \
             --out runs/h02-forward-market-pilot/report.json
+      - name: Run stock-level event-streak conditional pilot (Tier D only)
+        run: |
+          python scripts/h02_stock_event_conditional_pilot.py \
+            --artifacts \
+              "$RUNNER_TEMP/h02-archives/h01-raw-2024h1.zip" \
+              "$RUNNER_TEMP/h02-archives/h01-raw-2024h2.zip" \
+              "$RUNNER_TEMP/h02-archives/h01-raw-2025h1.zip" \
+              "$RUNNER_TEMP/h02-archives/h01-raw-2025h2.zip" \
+              "$RUNNER_TEMP/h02-archives/h01-raw-2026dev.zip" \
+            --out runs/h02-forward-market-pilot/stock-event-report.json
       - uses: actions/upload-artifact@v4
         if: always()
         with:
