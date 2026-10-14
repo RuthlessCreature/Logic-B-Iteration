@@ -1,3 +1,9 @@
+# 当前最高优先级：下一轮必须交付初步真实历史数值结果
+
+**先执行：** [H02_NEXT_ROUND_FIRST_EMPIRICAL_RESULT.md](research/handoffs/h02-20261014/H02_NEXT_ROUND_FIRST_EMPIRICAL_RESULT.md)。用户要求下一轮看到**2024-09-30..2026-06-30内D-1涨停事件→D涨停事件续存比例、→D跌停事件风险及三交易日跌停事件风险**的真实分子/分母（TIER D，不是可成交收益）。先修ZIP保护期预检、只用五个白名单已哈希校验的开发档案，真正计算JSON/Markdown并提交CI；如遇权限/下载错误按真实证据标PARTIAL。**其他长期工程不得拖延这份实证结果。** 不允许访问2026-07-01..09-28保护集、调参、修改main、伪造收益。
+
+---
+
 # H02 FAST-TRACK：先出真实数据结果
 
 **最新、优先执行规格：** [H02_FAST_TRACK_EXECUTION.md](research/handoffs/h02-20261014/H02_FAST_TRACK_EXECUTION.md)
