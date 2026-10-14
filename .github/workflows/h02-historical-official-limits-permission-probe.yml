@@ -51,19 +51,19 @@ jobs:
                               raise ValueError("missing official price-limit fields")
                           sample=frame.loc[frame.ts_code.isin(result["sample_codes"]),
                                            ["ts_code","up_limit","down_limit"]]
-                          rows=sample.to_dict(orient="records")
+                          sample_rows=len(sample)
                       else:
-                          rows=[]
+                          sample_rows=None
                       result["features"][name]={
                           "status":"READABLE" if len(frame) or name=="suspend_d" else "REVIEW_EMPTY",
                           "rows":len(frame),
-                          "sample_limit_rows":rows,
+                          "sample_code_rows":sample_rows,
                       }
                   except Exception as exc:
                       result["features"][name]={
                           "status":"BLOCKED_PERMISSION_OR_PROVIDER_ERROR",
                           "error_type":type(exc).__name__,
-                          "message":str(exc)[:180],
+                          "message":"provider call failed; details redacted",
                       }
               result["status"]=(
                   "HISTORICAL_FIELDS_READABLE"
@@ -82,3 +82,4 @@ jobs:
           path: /tmp/h02-official-preflight
           if-no-files-found: warn
           retention-days: 14
+
