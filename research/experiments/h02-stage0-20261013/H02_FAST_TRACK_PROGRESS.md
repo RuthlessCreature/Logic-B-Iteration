@@ -22,9 +22,9 @@ Local checks before commit: full pytest passed (226 tests); `logic-b smoke` pass
 
 ## Permissions and immediate blockers
 
-- Local Tushare credential: absent (`TUSHARE_TOKEN_CONFIGURED=False`; secret value was never read or printed).
+- Local Tushare credential: absent (`TUSHARE_TOKEN_CONFIGURED=False`; secret value was never read or printed). Current endpoint tiers, fields, publication caveats, and user unblock request are recorded in [H02_DATA_ACCESS_REQUIREMENTS.md](H02_DATA_ACCESS_REQUIREMENTS.md).
 - Existing official-limit probe: `BLOCKED_MISSING_TUSHARE_TOKEN`, [run 38403924915](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38403924915). Its 316-byte artifact SHA256 is `7409ba5e30835e4a18359d945aa274c3bbfca9da272530aec312995456a96e6c`.
 - Official per-stock limits: 0/3 in the current sample; PIT ST/halt publication times: 0/3 verified; executable rows: 0/3.
 - To clear the official-data blocker, the user must provide an authorized Tushare credential with applicable historical `stk_limit`, `stock_st`, and `suspend_d` access, or authorize and provision another licensed source with per-stock/per-day values and historical publication/effective-time evidence. No purchase or access bypass has been attempted.
 
-No main/config change, holdout access, parameter tuning, fabricated historical bars, or real-return claim was made.
+Permissions checkpoint commit `9e0075c3ce46b5b126818655ff990f170c5a0148`; [matching Actions run 38515447796](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38515447796) succeeded on that exact head (pytest, smoke, config validation). The local Git HTTPS push path was unavailable, so this documentation commit was written to the authorized branch through the GitHub API.\n\nNo main/config change, holdout access, parameter tuning, fabricated historical bars, or real-return claim was made.
