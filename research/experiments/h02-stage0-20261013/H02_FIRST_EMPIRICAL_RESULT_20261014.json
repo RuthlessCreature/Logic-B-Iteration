@@ -1,0 +1,2315 @@
+Warning: truncated output (original token count: 122555)
+Total output lines: 9139
+
+{
+  "overall": {
+    "outcome_date_first": "20240930",
+    "outcome_date_last": "20260630",
+    "outcome_trade_days": 421,
+    "candidate_symbol_days": 36775,
+    "continuation": {
+      "numerator": 9371,
+      "denominator": 36775,
+      "pooled_rate": 0.25481985044187627,
+      "pooled_percent": 25.481985044187628,
+      "daily_ratio_mean": 0.25444032550370627,
+      "daily_ratio_median": 0.24175824175824176,
+      "days_with_nonzero_denominator": 421
+    },
+    "next_day_down_event": {
+      "numerator": 1230,
+      "denominator": 36775,
+      "pooled_rate": 0.033446634942216176,
+      "pooled_percent": 3.344663494221618,
+      "daily_ratio_mean": 0.03421334759696861,
+      "daily_ratio_median": 0.02197802197802198,
+      "days_with_nonzero_denominator": 421
+    },
+    "three_day_down_event": {
+      "numerator": 4801,
+      "denominator": 36580,
+      "pooled_rate": 0.1312465828321487,
+      "pooled_percent": 13.124658283214872,
+      "daily_ratio_mean": 0.13206709456103155,
+      "daily_ratio_median": 0.10666666666666667,
+      "days_with_nonzero_denominator": 419
+    },
+    "three_day_observation_days": 419,
+    "same_day_up_down_pool_overlap_symbol_days": 0,
+    "cross_half_year_calendar_pairs": 3
+  },
+  "by_year": {
+    "2024": {
+      "outcome_trade_days": 62,
+      "candidate_symbol_days": 8619,
+      "continuation": {
+        "numerator": 2703,
+        "denominator": 8619,
+        "pooled_rate": 0.3136094674556213,
+        "pooled_percent": 31.36094674556213,
+        "daily_ratio_mean": 0.3235756210119626,
+        "daily_ratio_median": 0.3082800777993887,
+        "days_with_nonzero_denominator": 62
+      },
+      "next_day_down_event": {
+        "numerator": 382,
+        "denominator": 8619,
+        "pooled_rate": 0.04432068685462351,
+        "pooled_percent": 4.432068685462351,
+        "daily_ratio_mean": 0.04374331789771574,
+        "daily_ratio_median": 0.025347243468151502,
+        "days_with_nonzero_denominator": 62
+      },
+      "three_day_down_event": {
+        "numerator": 1558,
+        "denominator": 8619,
+        "pooled_rate": 0.1807634296322079,
+        "pooled_percent": 18.076342963220792,
+        "daily_ratio_mean": 0.18554633660982484,
+        "daily_ratio_median": 0.1332891978373607,
+        "days_with_nonzero_denominator": 62
+      }
+    },
+    "2025": {
+      "outcome_trade_days": 243,
+      "candidate_symbol_days": 18125,
+      "continuation": {
+        "numerator": 4563,
+        "denominator": 18125,
+        "pooled_rate": 0.251751724137931,
+        "pooled_percent": 25.175172413793103,
+        "daily_ratio_mean": 0.25687083156438767,
+        "daily_ratio_median": 0.25,
+        "days_with_nonzero_denominator": 243
+      },
+      "next_day_down_event": {
+        "numerator": 548,
+        "denominator": 18125,
+        "pooled_rate": 0.03023448275862069,
+        "pooled_percent": 3.023448275862069,
+        "daily_ratio_mean": 0.0328966523460271,
+        "daily_ratio_median": 0.024691358024691357,
+        "days_with_nonzero_denominator": 243
+      },
+      "three_day_down_event": {
+        "numerator": 2187,
+        "denominator": 18125,
+        "pooled_rate": 0.12066206896551725,
+        "pooled_percent": 12.066206896551725,
+        "daily_ratio_mean": 0.12859659810717497,
+        "daily_ratio_median": 0.0970873786407767,
+        "days_with_nonzero_denominator": 243
+      }
+    },
+    "2026": {
+      "outcome_trade_days": 116,
+      "candidate_symbol_days": 10031,
+      "continuation": {
+        "numerator": 2105,
+        "denominator": 10031,
+        "pooled_rate": 0.20984946665337453,
+        "pooled_percent": 20.984946665337453,
+        "daily_ratio_mean": 0.21239721089803826,
+        "daily_ratio_median": 0.19577526132404183,
+        "days_with_nonzero_denominator": 116
+      },
+      "next_day_down_event": {
+        "numerator": 300,
+        "denominator": 10031,
+        "pooled_rate": 0.029907287409032,
+        "pooled_percent": 2.9907287409032,
+        "daily_ratio_mean": 0.03187799231535193,
+        "daily_ratio_median": 0.020427305888483585,
+        "days_with_nonzero_denominator": 116
+      },
+      "three_day_down_event": {
+        "numerator": 1056,
+        "denominator": 9836,
+        "pooled_rate": 0.10736071573810492,
+        "pooled_percent": 10.736071573810491,
+        "daily_ratio_mean": 0.11037952992297863,
+        "daily_ratio_median": 0.09526209677419355,
+        "days_with_nonzero_denominator": 114
+      }
+    }
+  },
+  "by_half_year": {
+    "2024H2": {
+      "outcome_trade_days": 62,
+      "candidate_symbol_days": 8619,
+      "continuation": {
+        "numerator": 2703,
+        "denominator": 8619,
+        "pooled_rate": 0.3136094674556213,
+        "pooled_percent": 31.36094674556213,
+        "daily_ratio_mean": 0.3235756210119626,
+        "daily_ratio_median": 0.3082800777993887,
+        "days_with_nonzero_denominator": 62
+      },
+      "next_day_down_event": {
+        "numerator": 382,
+        "denominator": 8619,
+        "pooled_rate": 0.04432068685462351,
+        "pooled_percent": 4.432068685462351,
+        "daily_ratio_mean": 0.04374331789771574,
+        "daily_ratio_median": 0.025347243468151502,
+        "days_with_nonzero_denominator": 62
+      },
+      "three_day_down_event": {
+        "numerator": 1558,
+        "denominator": 8619,
+        "pooled_rate": 0.1807634296322079,
+        "pooled_percent": 18.076342963220792,
+        "daily_ratio_mean": 0.18554633660982484,
+        "daily_ratio_median": 0.1332891978373607,
+        "days_with_nonzero_denominator": 62
+      }
+    },
+    "2025H1": {
+      "outcome_trade_days": 117,
+      "candidate_symbol_days": 9110,
+      "continuation": {
+        "numerator": 2323,
+        "denominator": 9110,
+        "pooled_rate": 0.25499451152579583,
+        "pooled_percent": 25.49945115257958,
+        "daily_ratio_mean": 0.2634848179883484,
+        "daily_ratio_median": 0.25555555555555554,
+        "days_with_nonzero_denominator": 117
+      },
+      "next_day_down_event": {
+        "numerator": 292,
+        "denominator": 9110,
+        "pooled_rate": 0.032052689352360046,
+        "pooled_percent": 3.2052689352360044,
+        "daily_ratio_mean": 0.035546708979921994,
+        "daily_ratio_median": 0.02666666666666667,
+        "days_with_nonzero_denominator": 117
+      },
+      "three_day_down_event": {
+        "numerator": 1191,
+        "denominator": 9110,
+        "pooled_rate": 0.13073545554335894,
+        "pooled_percent": 13.073545554335894,
+        "daily_ratio_mean": 0.1456119642539315,
+        "daily_ratio_median": 0.1125,
+        "days_with_nonzero_denominator": 117
+      }
+    },
+    "2025H2": {
+      "outcome_trade_days": 126,
+      "candidate_symbol_days": 9015,
+      "continuation": {
+        "numerator": 2240,
+        "denominator": 9015,
+        "pooled_rate": 0.24847476428175264,
+        "pooled_percent": 24.847476428175263,
+        "daily_ratio_mean": 0.25072927274213846,
+        "daily_ratio_median": 0.24764150943396226,
+        "days_with_nonzero_denominator": 126
+      },
+      "next_day_down_event": {
+        "numerator": 256,
+        "denominator": 9015,
+        "pooled_rate": 0.028397115917914585,
+        "pooled_percent": 2.839711591791459,
+        "daily_ratio_mean": 0.030435885471696126,
+        "daily_ratio_median": 0.01818181818181818,
+        "days_with_nonzero_denominator": 126
+      },
+      "three_day_down_event": {
+        "numerator": 996,
+        "denominator": 9015,
+        "pooled_rate": 0.11048252911813644,
+        "pooled_percent": 11.048252911813645,
+        "daily_ratio_mean": 0.11279661525661536,
+        "daily_ratio_median": 0.09523809523809523,
+        "days_with_nonzero_denominator": 126
+      }
+    },
+    "2026H1": {
+      "outcome_trade_days": 116,
+      "candidate_symbol_days": 10031,
+      "continuation": {
+        "numerator": 2105,
+        "denominator": 10031,
+        "pooled_rate": 0.20984946665337453,
+        "pooled_percent": 20.984946665337453,
+        "daily_ratio_mean": 0.21239721089803826,
+        "daily_ratio_median": 0.19577526132404183,
+        "days_with_nonzero_denominator": 116
+      },
+      "next_day_down_event": {
+        "numerator": 300,
+        "denominator": 10031,
+        "pooled_rate": 0.029907287409032,
+        "pooled_percent": 2.9907287409032,
+        "daily_ratio_mean": 0.03187799231535193,
+        "daily_ratio_median": 0.020427305888483585,
+        "days_with_nonzero_denominator": 116
+      },
+      "three_day_down_event": {
+        "numerator": 1056,
+        "denominator": 9836,
+        "pooled_rate": 0.10736071573810492,
+        "pooled_percent": 10.736071573810491,
+        "daily_ratio_mean": 0.11037952992297863,
+        "daily_ratio_median": 0.09526209677419355,
+        "days_with_nonzero_denominator": 114
+      }
+    }
+  },
+  "coverage": {
+    "requested_outcome_sessions": 421,
+    "complete_candidate_observation_days": 421,
+    "calendar_sessions_available": 601,
+    "limit_up_partitions": 601,
+    "limit_down_partitions": 601,
+    "manifest_hashes_verified": 1207,
+    "manifest_hashes_expected": 1207,
+    "whole_archive_hashes_verified": 5,
+    "whole_archive_hashes_expected": 5,
+    "missing_limit_up_partitions": 0,
+    "missing_limit_down_partitions": 0
+  },
+  "quality_checks": {
+    "duplicate_calendar_days": 0,
+    "duplicate_limit_up_symbol_days": 0,
+    "duplicate_limit_down_symbol_days": 0,
+    "cross_half_year_pairs_in_scope": 3,
+    "same_day_up_down_pool_overlap_symbol_days": 0,
+    "three_day_windows_extending_beyond_cutoff_excluded": 2,
+    "inference_intervals_calculated": false,
+    "reason_intervals_not_inferred": "descriptive full-coverage vendor event-pool observations; repeated symbol-days are not independent samples"
+  },
+  "skipped_or_limited_days": {
+    "THREE_DAY_WINDOW_NOT_FULLY_WITHIN_DEVELOPMENT_RANGE": 2
+  },
+  "daily": [
+    {
+      "outcome_date": "20240930",
+      "prior_candidate_date": "20240927",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 135,
+      "next_day_limit_up_pool_matches": 104,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 62,
+      "three_day_denominator": 135,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "00b21ce61d5b659e730a42e8f185e7412256304fa3a60bb2964278d538764c14",
+      "outcome_limit_up_partition_sha256": "b308e2fefcff171c8ef21be860401bf5fc30284372e84d14145de2244141bdd3",
+      "outcome_limit_down_partition_sha256": "bcbe3b60e678ea3cb2d3822c4dde509a26d9be7765b837c8533f59f93efae63d",
+      "three_day_limit_down_partition_sha256": [
+        "bcbe3b60e678ea3cb2d3822c4dde509a26d9be7765b837c8533f59f93efae63d",
+        "2b19492a777534c47e6c29825665d9fd2299beedb4a3869e510cd953001ec632",
+        "5ddea5cf816ae4aabcba20d1b22bb584aa79ff6d231e89e334e8c53f4aa35e9a"
+      ]
+    },
+    {
+      "outcome_date": "20241008",
+      "prior_candidate_date": "20240930",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 693,
+      "next_day_limit_up_pool_matches": 351,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 227,
+      "three_day_denominator": 693,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "b308e2fefcff171c8ef21be860401bf5fc30284372e84d14145de2244141bdd3",
+      "outcome_limit_up_partition_sha256": "98b35770cc99de1948ee098d00d88696fae2734aac1142dbdfb201c59e7eed53",
+      "outcome_limit_down_partition_sha256": "2b19492a777534c47e6c29825665d9fd2299beedb4a3869e510cd953001ec632",
+      "three_day_limit_down_partition_sha256": [
+        "2b19492a777534c47e6c29825665d9fd2299beedb4a3869e510cd953001ec632",
+        "5ddea5cf816ae4aabcba20d1b22bb584aa79ff6d231e89e334e8c53f4aa35e9a",
+        "6146574df1b44bd53f0b02684d881aa0560554cded53b06dfb2ed8e1eba02a3d"
+      ]
+    },
+    {
+      "outcome_date": "20241009",
+      "prior_candidate_date": "20241008",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 730,
+      "next_day_limit_up_pool_matches": 33,
+      "next_day_limit_down_pool_matches": 92,
+      "three_trade_day_limit_down_pool_touches": 128,
+      "three_day_denominator": 730,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "98b35770cc99de1948ee098d00d88696fae2734aac1142dbdfb201c59e7eed53",
+      "outcome_limit_up_partition_sha256": "79cea3fc7345c5a134af1b295e0319ee4a6392333839c736f11577d6a4b75475",
+      "outcome_limit_down_partition_sha256": "5ddea5cf816ae4aabcba20d1b22bb584aa79ff6d231e89e334e8c53f4aa35e9a",
+      "three_day_limit_down_partition_sha256": [
+        "5ddea5cf816ae4aabcba20d1b22bb584aa79ff6d231e89e334e8c53f4aa35e9a",
+        "6146574df1b44bd53f0b02684d881aa0560554cded53b06dfb2ed8e1eba02a3d",
+        "df80f638d08593892a3fa847bcd4d2d09a37bd05c983f81b2c94e910ee34bfe0"
+      ]
+    },
+    {
+      "outcome_date": "20241010",
+      "prior_candidate_date": "20241009",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 49,
+      "next_day_limit_up_pool_matches": 11,
+      "next_day_limit_down_pool_matches": 8,
+      "three_trade_day_limit_down_pool_touches": 17,
+      "three_day_denominator": 49,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "79cea3fc7345c5a134af1b295e0319ee4a6392333839c736f11577d6a4b75475",
+      "outcome_limit_up_partition_sha256": "b29d16e651b3b38714c82122d6c1ed3c16c980d180684dd303691afd8884603a",
+      "outcome_limit_down_partition_sha256": "6146574df1b44bd53f0b02684d881aa0560554cded53b06dfb2ed8e1eba02a3d",
+      "three_day_limit_down_partition_sha256": [
+        "6146574df1b44bd53f0b02684d881aa0560554cded53b06dfb2ed8e1eba02a3d",
+        "df80f638d08593892a3fa847bcd4d2d09a37bd05c983f81b2c94e910ee34bfe0",
+        "9586e42f5b53fde21296eb2b01a933f12985c2b85e76fb3b3cb38cf2c6b0c34b"
+      ]
+    },
+    {
+      "outcome_date": "20241011",
+      "prior_candidate_date": "20241010",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 81,
+      "next_day_limit_up_pool_matches": 12,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 9,
+      "three_day_denominator": 81,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "b29d16e651b3b38714c82122d6c1ed3c16c980d180684dd303691afd8884603a",
+      "outcome_limit_up_partition_sha256": "6547e28c9fb9b87358a92deb200fd2022ad0c2c7ea5176bce88789483678b885",
+      "outcome_limit_down_partition_sha256": "df80f638d08593892a3fa847bcd4d2d09a37bd05c983f81b2c94e910ee34bfe0",
+      "three_day_limit_down_partition_sha256": [
+        "df80f638d08593892a3fa847bcd4d2d09a37bd05c983f81b2c94e910ee34bfe0",
+        "9586e42f5b53fde21296eb2b01a933f12985c2b85e76fb3b3cb38cf2c6b0c34b",
+        "1cc03ba1431d2d64562b70244963dd92444411d1b54f49ff3c267beff7f19961"
+      ]
+    },
+    {
+      "outcome_date": "20241014",
+      "prior_candidate_date": "20241011",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 50,
+      "next_day_limit_up_pool_matches": 15,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 50,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "6547e28c9fb9b87358a92deb200fd2022ad0c2c7ea5176bce88789483678b885",
+      "outcome_limit_up_partition_sha256": "22ee9f5b86693ad979a3ec78b9e1a15ecb775dc97dd1760dc24b57f67be85270",
+      "outcome_limit_down_partition_sha256": "9586e42f5b53fde21296eb2b01a933f12985c2b85e76fb3b3cb38cf2c6b0c34b",
+      "three_day_limit_down_partition_sha256": [
+        "9586e42f5b53fde21296eb2b01a933f12985c2b85e76fb3b3cb38cf2c6b0c34b",
+        "1cc03ba1431d2d64562b70244963dd92444411d1b54f49ff3c267beff7f19961",
+        "4fac3ee3b634dc6dce518b46fd6ec18b8dcbc23859c1bed292d89041a3ef4c9c"
+      ]
+    },
+    {
+      "outcome_date": "20241015",
+      "prior_candidate_date": "20241014",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 118,
+      "next_day_limit_up_pool_matches": 27,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 5,
+      "three_day_denominator": 118,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "22ee9f5b86693ad979a3ec78b9e1a15ecb775dc97dd1760dc24b57f67be85270",
+      "outcome_limit_up_partition_sha256": "3fd0e0144496b5754d8a7ce19edb6eff95342656675e16eff0c0e38aa23801ab",
+      "outcome_limit_down_partition_sha256": "1cc03ba1431d2d64562b70244963dd92444411d1b54f49ff3c267beff7f19961",
+      "three_day_limit_down_partition_sha256": [
+        "1cc03ba1431d2d64562b70244963dd92444411d1b54f49ff3c267beff7f19961",
+        "4fac3ee3b634dc6dce518b46fd6ec18b8dcbc23859c1bed292d89041a3ef4c9c",
+        "44998cb4ccd75f10729e2aeffd971364d80b34703f6b689459fddf97b0920d7d"
+      ]
+    },
+    {
+      "outcome_date": "20241016",
+      "prior_candidate_date": "20241015",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 72,
+      "next_day_limit_up_pool_matches": 25,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 72,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "3fd0e0144496b5754d8a7ce19edb6eff95342656675e16eff0c0e38aa23801ab",
+      "outcome_limit_up_partition_sha256": "48601a2d8a8c87c179db13fbf7154f6132d9d37fa197780c21517787db37c4d8",
+      "outcome_limit_down_partition_sha256": "4fac3ee3b634dc6dce518b46fd6ec18b8dcbc23859c1bed292d89041a3ef4c9c",
+      "three_day_limit_down_partition_sha256": [
+        "4fac3ee3b634dc6dce518b46fd6ec18b8dcbc23859c1bed292d89041a3ef4c9c",
+        "44998cb4ccd75f10729e2aeffd971364d80b34703f6b689459fddf97b0920d7d",
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43"
+      ]
+    },
+    {
+      "outcome_date": "20241017",
+      "prior_candidate_date": "20241016",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 101,
+      "next_day_limit_up_pool_matches": 23,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 4,
+      "three_day_denominator": 101,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "48601a2d8a8c87c179db13fbf7154f6132d9d37fa197780c21517787db37c4d8",
+      "outcome_limit_up_partition_sha256": "96e475fe4f53265f1dea5c2cecf79d5d217ff8db16efaa671abefd0e2b315147",
+      "outcome_limit_down_partition_sha256": "44998cb4ccd75f10729e2aeffd971364d80b34703f6b689459fddf97b0920d7d",
+      "three_day_limit_down_partition_sha256": [
+        "44998cb4ccd75f10729e2aeffd971364d80b34703f6b689459fddf97b0920d7d",
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43"
+      ]
+    },
+    {
+      "outcome_date": "20241018",
+      "prior_candidate_date": "20241017",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 62,
+      "next_day_limit_up_pool_matches": 27,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 0,
+      "three_day_denominator": 62,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "96e475fe4f53265f1dea5c2cecf79d5d217ff8db16efaa671abefd0e2b315147",
+      "outcome_limit_up_partition_sha256": "dc0f6481b6fa31979db49f345dd49b4696a5bc36918403405f49d3ebed662318",
+      "outcome_limit_down_partition_sha256": "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+      "three_day_limit_down_partition_sha256": [
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43"
+      ]
+    },
+    {
+      "outcome_date": "20241021",
+      "prior_candidate_date": "20241018",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 122,
+      "next_day_limit_up_pool_matches": 43,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 1,
+      "three_day_denominator": 122,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "dc0f6481b6fa31979db49f345dd49b4696a5bc36918403405f49d3ebed662318",
+      "outcome_limit_up_partition_sha256": "4b6f3cd23a85959f162d526ed4f424a1bde264e119f86523e81a42ee7e927b28",
+      "outcome_limit_down_partition_sha256": "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+      "three_day_limit_down_partition_sha256": [
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+        "2389ce445a8aeffaa67dfa242edd35f41edb46b05c4237cc1f680ee527669950"
+      ]
+    },
+    {
+      "outcome_date": "20241022",
+      "prior_candidate_date": "20241021",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 151,
+      "next_day_limit_up_pool_matches": 51,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 2,
+      "three_day_denominator": 151,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "4b6f3cd23a85959f162d526ed4f424a1bde264e119f86523e81a42ee7e927b28",
+      "outcome_limit_up_partition_sha256": "e49c4b78e189ba7e3148bb1ae9b0244017acfb53641e00dbdb6838ccb338863b",
+      "outcome_limit_down_partition_sha256": "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+      "three_day_limit_down_partition_sha256": [
+        "76ba462b9022cba80070c34a2eec2cef870d9e64db7314f3e3c93867eeda8b43",
+        "2389ce445a8aeffaa67dfa242edd35f41edb46b05c4237cc1f680ee527669950",
+        "289def8bf6926a3dfd976d6e80f896b694353f80e808fa66ea8ed234ccb62f4b"
+      ]
+    },
+    {
+      "outcome_date": "20241023",
+      "prior_candidate_date": "20241022",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 126,
+      "next_day_limit_up_pool_matches": 46,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 126,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "e49c4b78e189ba7e3148bb1ae9b0244017acfb53641e00dbdb6838ccb338863b",
+      "outcome_limit_up_partition_sha256": "3f744e072c388b7c25bd16920cae4506052f92a369d8ba83f00deeb293c9923f",
+      "outcome_limit_down_partition_sha256": "2389ce445a8aeffaa67dfa242edd35f41edb46b05c4237cc1f680ee527669950",
+      "three_day_limit_down_partition_sha256": [
+        "2389ce445a8aeffaa67dfa242edd35f41edb46b05c4237cc1f680ee527669950",
+        "289def8bf6926a3dfd976d6e80f896b694353f80e808fa66ea8ed234ccb62f4b",
+        "2606ea98355f283f6e91b063acf177cbf09b74d8e3abb10622f994c785f875b1"
+      ]
+    },
+    {
+      "outcome_date": "20241024",
+      "prior_candidate_date": "20241023",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 122,
+      "next_day_limit_up_pool_matches": 38,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 2,
+      "three_day_denominator": 122,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "3f744e072c388b7c25bd16920cae4506052f92a369d8ba83f00deeb293c9923f",
+      "outcome_limit_up_partition_sha256": "5a5b78b5d889b1b43b86bb60935cffad4c3860017d273cba9e7497c3f711c183",
+      "outcome_limit_down_partition_sha256": "289def8bf6926a3dfd976d6e80f896b694353f80e808fa66ea8ed234ccb62f4b",
+      "three_day_limit_down_partition_sha256": [
+        "289def8bf6926a3dfd976d6e80f896b694353f80e808fa66ea8ed234ccb62f4b",
+        "2606ea98355f283f6e91b063acf177cbf09b74d8e3abb10622f994c785f875b1",
+        "e6e9c3c2d8aea98581fc5d589e2096f3e5755364f2d30207bbe2951f510680b3"
+      ]
+    },
+    {
+      "outcome_date": "20241025",
+      "prior_candidate_date": "20241024",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 123,
+      "next_day_limit_up_pool_matches": 56,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 9,
+      "three_day_denominator": 123,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "5a5b78b5d889b1b43b86bb60935cffad4c3860017d273cba9e7497c3f711c183",
+      "outcome_limit_up_partition_sha256": "dbad416b665e2db91d818800802e369ddb9bcff15225248b1fbe359ac5d2cd81",
+      "outcome_limit_down_partition_sha256": "2606ea98355f283f6e91b063acf177cbf09b74d8e3abb10622f994c785f875b1",
+      "three_day_limit_down_partition_sha256": [
+        "2606ea98355f283f6e91b063acf177cbf09b74d8e3abb10622f994c785f875b1",
+        "e6e9c3c2d8aea98581fc5d589e2096f3e5755364f2d30207bbe2951f510680b3",
+        "7e54d27042a75d06ea0b2fb1f6418d05830ca1a52bd670b1f15cb3783b5d866f"
+      ]
+    },
+    {
+      "outcome_date": "20241028",
+      "prior_candidate_date": "20241025",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 182,
+      "next_day_limit_up_pool_matches": 102,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 9,
+      "three_day_denominator": 182,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "dbad416b665e2db91d818800802e369ddb9bcff15225248b1fbe359ac5d2cd81",
+      "outcome_limit_up_partition_sha256": "5efc80cf1276f47d1520fcfaf4bda129c779359200f664e2d25b5d854b199357",
+      "outcome_limit_down_partition_sha256": "e6e9c3c2d8aea98581fc5d589e2096f3e5755364f2d30207bbe2951f510680b3",
+      "three_day_limit_down_partition_sha256": [
+        "e6e9c3c2d8aea98581fc5d589e2096f3e5755364f2d30207bbe2951f510680b3",
+        "7e54d27042a75d06ea0b2fb1f6418d05830ca1a52bd670b1f15cb3783b5d866f",
+        "7fb07e8c129c2502b583241406ce492f051dd9ac09c8d7c1b2194bebc6b31581"
+      ]
+    },
+    {
+      "outcome_date": "20241029",
+      "prior_candidate_date": "20241028",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 277,
+      "next_day_limit_up_pool_matches": 67,
+      "next_day_limit_down_pool_matches": 7,
+      "three_trade_day_limit_down_pool_touches": 17,
+      "three_day_denominator": 277,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "5efc80cf1276f47d1520fcfaf4bda129c779359200f664e2d25b5d854b199357",
+      "outcome_limit_up_partition_sha256": "6bba2966a2b684437928d0a1d842a2591c45c0b491bf7348390fd7026c0a2037",
+      "outcome_limit_down_partition_sha256": "7e54d27042a75d06ea0b2fb1f6418d05830ca1a52bd670b1f15cb3783b5d866f",
+      "three_day_limit_down_partition_sha256": [
+        "7e54d27042a75d06ea0b2fb1f6418d05830ca1a52bd670b1f15cb3783b5d866f",
+        "7fb07e8c129c2502b583241406ce492f051dd9ac09c8d7c1b2194bebc6b31581",
+        "158519cf89b3cb0c4e6e0c041d9d98e95584cf32600bec8519ee6fabf9ac700d"
+      ]
+    },
+    {
+      "outcome_date": "20241030",
+      "prior_candidate_date": "20241029",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 136,
+      "next_day_limit_up_pool_matches": 66,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 53,
+      "three_day_denominator": 136,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "6bba2966a2b684437928d0a1d842a2591c45c0b491bf7348390fd7026c0a2037",
+      "outcome_limit_up_partition_sha256": "d5e996bdd3e47a049a95790f3e0f1a699955ee7b1b184badcd42c54f368bfc11",
+      "outcome_limit_down_partition_sha256": "7fb07e8c129c2502b583241406ce492f051dd9ac09c8d7c1b2194bebc6b31581",
+      "three_day_limit_down_partition_sha256": [
+        "7fb07e8c129c2502b583241406ce492f051dd9ac09c8d7c1b2194bebc6b31581",
+        "158519cf89b3cb0c4e6e0c041d9d98e95584cf32600bec8519ee6fabf9ac700d",
+        "0e51fdf4f00db0a0290d93b8eb2aff3641f874e116800efeeed34615299c8847"
+      ]
+    },
+    {
+      "outcome_date": "20241031",
+      "prior_candidate_date": "20241030",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 184,
+      "next_day_limit_up_pool_matches": 85,
+      "next_day_limit_down_pool_matches": 5,
+      "three_trade_day_limit_down_pool_touches": 80,
+      "three_day_denominator": 184,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "d5e996bdd3e47a049a95790f3e0f1a699955ee7b1b184badcd42c54f368bfc11",
+      "outcome_limit_up_partition_sha256": "e47e74f2633cddcc01cc033e19b563a9909d76edd029eb4eb4c19f9523105fb6",
+      "outcome_limit_down_partition_sha256": "158519cf89b3cb0c4e6e0c041d9d98e95584cf32600bec8519ee6fabf9ac700d",
+      "three_day_limit_down_partition_sha256": [
+        "158519cf89b3cb0c4e6e0c041d9d98e95584cf32600bec8519ee6fabf9ac700d",
+        "0e51fdf4f00db0a0290d93b8eb2aff3641f874e116800efeeed34615299c8847",
+        "f0fef02203fa5fdcdf0cea841c7eda918cedab85f7c5df21a35a8ded0ee68812"
+      ]
+    },
+    {
+      "outcome_date": "20241101",
+      "prior_candidate_date": "20241031",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 205,
+      "next_day_limit_up_pool_matches": 47,
+      "next_day_limit_down_pool_matches": 30,
+      "three_trade_day_limit_down_pool_touches": 41,
+      "three_day_denominator": 205,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "e47e74f2633cddcc01cc033e19b563a9909d76edd029eb4eb4c19f9523105fb6",
+      "outcome_limit_up_partition_sha256": "08361346812aca63bbbdb182344293d80f7f08b98b2a78a97a7a29cb13b6e325",
+      "outcome_limit_down_partition_sha256": "0e51fdf4f00db0a0290d93b8eb2aff3641f874e116800efeeed34615299c8847",
+      "three_day_limit_down_partition_sha256": [
+        "0e51fdf4f00db0a0290d93b8eb2aff3641f874e116800efeeed34615299c8847",
+        "f0fef02203fa5fdcdf0cea841c7eda918cedab85f7c5df21a35a8ded0ee68812",
+        "1f3b5b6a583109cfc573e9387bcc1e63650101505c1a8e2b2ff6fc8f6dc891e1"
+      ]
+    },
+    {
+      "outcome_date": "20241104",
+      "prior_candidate_date": "20241101",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 118,
+      "next_day_limit_up_pool_matches": 42,
+      "next_day_limit_down_pool_matches": 7,
+      "three_trade_day_limit_down_pool_touches": 10,
+      "three_day_denominator": 118,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "08361346812aca63bbbdb182344293d80f7f08b98b2a78a97a7a29cb13b6e325",
+      "outcome_limit_up_partition_sha256": "82d2353c9f42063c71d75d2115040ef5aa4572513e3306840d8dbe9d1310bb9d",
+      "outcome_limit_down_partition_sha256": "f0fef02203fa5fdcdf0cea841c7eda918cedab85f7c5df21a35a8ded0ee68812",
+      "three_day_limit_down_partition_sha256": [
+        "f0fef02203fa5fdcdf0cea841c7eda918cedab85f7c5df21a35a8ded0ee68812",
+        "1f3b5b6a583109cfc573e9387bcc1e63650101505c1a8e2b2ff6fc8f6dc891e1",
+        "f0253fb5e2d0a7aff9f13b38e4c5ccb7f38d9c731fffc7d54b09a167346d868d"
+      ]
+    },
+    {
+      "outcome_date": "20241105",
+      "prior_candidate_date": "20241104",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 176,
+      "next_day_limit_up_pool_matches": 68,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 176,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "82d2353c9f42063c71d75d2115040ef5aa4572513e3306840d8dbe9d1310bb9d",
+      "outcome_limit_up_partition_sha256": "df6054e4fd897a29405974c86b41150062b8ed5f0c9878d3ce80896282db962f",
+      "outcome_limit_down_partition_sha256": "1f3b5b6a583109cfc573e9387bcc1e63650101505c1a8e2b2ff6fc8f6dc891e1",
+      "three_day_limit_down_partition_sha256": [
+        "1f3b5b6a583109cfc573e9387bcc1e63650101505c1a8e2b2ff6fc8f6dc891e1",
+        "f0253fb5e2d0a7aff9f13b38e4c5ccb7f38d9c731fffc7d54b09a167346d868d",
+        "c30e56e6ead8991f45116986e74397dd11a966377e235af82ccc71b1eae2dc20"
+      ]
+    },
+    {
+      "outcome_date": "20241106",
+      "prior_candidate_date": "20241105",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 204,
+      "next_day_limit_up_pool_matches": 70,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 8,
+      "three_day_denominator": 204,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "df6054e4fd897a29405974c86b41150062b8ed5f0c9878d3ce80896282db962f",
+      "outcome_limit_up_partition_sha256": "b74ba244deb3cebd504176441ef368bf13d41464ad4ee9ad53fa2769bb5c6ce3",
+      "outcome_limit_down_partition_sha256": "f0253fb5e2d0a7aff9f13b38e4c5ccb7f38d9c731fffc7d54b09a167346d868d",
+      "three_day_limit_down_partition_sha256": [
+        "f0253fb5e2d0a7aff9f13b38e4c5ccb7f38d9c731fffc7d54b09a167346d868d",
+        "c30e56e6ead8991f45116986e74397dd11a966377e235af82ccc71b1eae2dc20",
+        "5ed5c9e149ed85927c57fbceea2d480f77cd5a2f65d93569369349172a559a2e"
+      ]
+    },
+    {
+      "outcome_date": "20241107",
+      "prior_candidate_date": "20241106",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 162,
+      "next_day_limit_up_pool_matches": 66,
+      "next_day_limit_down_pool_matches": 5,
+      "three_trade_day_limit_down_pool_touches": 20,
+      "three_day_denominator": 162,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "b74ba244deb3cebd504176441ef368bf13d41464ad4ee9ad53fa2769bb5c6ce3",
+      "outcome_limit_up_partition_sha256": "8fce906b644cdc886d0a24bc37a2fed45bbda14ffc54972eee511edb2cfce4ec",
+      "outcome_limit_down_partition_sha256": "c30e56e6ead8991f45116986e74397dd11a966377e235af82ccc71b1eae2dc20",
+      "three_day_limit_down_partition_sha256": [
+        "c30e56e6ead8991f45116986e74397dd11a966377e235af82ccc71b1eae2dc20",
+        "5ed5c9e149ed85927c57fbceea2d480f77cd5a2f65d93569369349172a559a2e",
+        "826f4949abd6ece0ca57e71ce208a240ed7cf9f2f32a57dcb8dccb535e486a5c"
+      ]
+    },
+    {
+      "outcome_date": "20241108",
+      "prior_candidate_date": "20241107",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 224,
+      "next_day_limit_up_pool_matches": 66,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 25,
+      "three_day_denominator": 224,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "8fce906b644cdc886d0a24bc37a2fed45bbda14ffc54972eee511edb2cfce4ec",
+      "outcome_limit_up_partition_sha256": "3a9849bda86239f6e1acb9765002ec006f7ee15156fbf768b3876fe9c43fe29a",
+      "outcome_limit_down_partition_sha256": "5ed5c9e149ed85927c57fbceea2d480f77cd5a2f65d93569369349172a559a2e",
+      "three_day_limit_down_partition_sha256": [
+        "5ed5c9e149ed85927c57fbceea2d480f77cd5a2f65d93569369349172a559a2e",
+        "826f4949abd6ece0ca57e71ce208a240ed7cf9f2f32a57dcb8dccb535e486a5c",
+        "9472d3566cd7ce554289d871e1c9d3a208dec23b3604656471e7b5a2795ee283"
+      ]
+    },
+    {
+      "outcome_date": "20241111",
+      "prior_candidate_date": "20241108",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 152,
+      "next_day_limit_up_pool_matches": 64,
+      "next_day_limit_down_pool_matches": 8,
+      "three_trade_day_limit_down_pool_touches": 31,
+      "three_day_denominator": 152,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "3a9849bda86239f6e1acb9765002ec006f7ee15156fbf768b3876fe9c43fe29a",
+      "outcome_limit_up_partition_sha256": "b640c4627adad72f8fcc243b7b59fa9ad760db0378503515e5d5ee24ab97f838",
+      "outcome_limit_down_partition_sha256": "826f4949abd6ece0ca57e71ce208a240ed7cf9f2f32a57dcb8dccb535e486a5c",
+      "three_day_limit_down_partition_sha256": [
+        "826f4949abd6ece0ca57e71ce208a240ed7cf9f2f32a57dcb8dccb535e486a5c",
+        "9472d3566cd7ce554289d871e1c9d3a208dec23b3604656471e7b5a2795ee283",
+        "b445b417877dc9d6ea83e605f76071dd4e1e2ca2d2b1e7d482fc24b80bd68451"
+      ]
+    },
+    {
+      "outcome_date": "20241112",
+      "prior_candidate_date": "20241111",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 212,
+      "next_day_limit_up_pool_matches": 46,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 28,
+      "three_day_denominator": 212,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "b640c4627adad72f8fcc243b7b59fa9ad760db0378503515e5d5ee24ab97f838",
+      "outcome_limit_up_partition_sha256": "2411321a48b0c552714b550d68c1ac22d7a33d1b2801d8e43050c5880ebafb6c",
+      "outcome_limit_down_partition_sha256": "9472d3566cd7ce554289d871e1c9d3a208dec23b3604656471e7b5a2795ee283",
+      "three_day_limit_down_partition_sha256": [
+        "9472d3566cd7ce554289d871e1c9d3a208dec23b3604656471e7b5a2795ee283",
+        "b445b417877dc9d6ea83e605f76071dd4e1e2ca2d2b1e7d482fc24b80bd68451",
+        "efaf7b68e596ba54429f06c85d9a815f0e83974e65fbaab017eb5bcc373f81ed"
+      ]
+    },
+    {
+      "outcome_date": "20241113",
+      "prior_candidate_date": "20241112",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 111,
+      "next_day_limit_up_pool_matches": 22,
+      "next_day_limit_down_pool_matches": 9,
+      "three_trade_day_limit_down_pool_touches": 27,
+      "three_day_denominator": 111,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "2411321a48b0c552714b550d68c1ac22d7a33d1b2801d8e43050c5880ebafb6c",
+      "outcome_limit_up_partition_sha256": "42c4627bd478d04e8afc06577094ab96da5e94cae2c471d54805d0018f44d01d",
+      "outcome_limit_down_partition_sha256": "b445b417877dc9d6ea83e605f76071dd4e1e2ca2d2b1e7d482fc24b80bd68451",
+      "three_day_limit_down_partition_sha256": [
+        "b445b417877dc9d6ea83e605f76071dd4e1e2ca2d2b1e7d482fc24b80bd68451",
+        "efaf7b68e596ba54429f06c85d9a815f0e83974e65fbaab017eb5bcc373f81ed",
+        "28a1f9bd05211dd92acf4ea30774e9050cf8f21d0c880c7e730ba78dc6bdda6f"
+      ]
+    },
+    {
+      "outcome_date": "20241114",
+      "prior_candidate_date": "20241113",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 83,
+      "next_day_limit_up_pool_matches": 23,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 29,
+      "three_day_denominator": 83,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "42c4627bd478d04e8afc06577094ab96da5e94cae2c471d54805d0018f44d01d",
+      "outcome_limit_up_partition_sha256": "63e715de20bb6cb4a374d8e059bb02f28e55972982a940ac2e2e94c2b51b9f53",
+      "outcome_limit_down_partition_sha256": "efaf7b68e596ba54429f06c85d9a815f0e83974e65fbaab017eb5bcc373f81ed",
+      "three_day_limit_down_partition_sha256": [
+        "efaf7b68e596ba54429f06c85d9a815f0e83974e65fbaab017eb5bcc373f81ed",
+        "28a1f9bd05211dd92acf4ea30774e9050cf8f21d0c880c7e730ba78dc6bdda6f",
+        "04b55ae2fe67692570f60c546ab35988e0d0c90f05722d3ac002bc3e3aeaf18e"
+      ]
+    },
+    {
+      "outcome_date": "20241115",
+      "prior_candidate_date": "20241114",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 56,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 9,
+      "three_trade_day_limit_down_pool_touches": 29,
+      "three_day_denominator": 56,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "63e715de20bb6cb4a374d8e059bb02f28e55972982a940ac2e2e94c2b51b9f53",
+      "outcome_limit_up_partition_sha256": "5d9b280fc789710d0013c025fdbfff1c2626b5c6d7cb8e48e36cd9e3feb1e87b",
+      "outcome_limit_down_partition_sha256": "28a1f9bd05211dd92acf4ea30774e9050cf8f21d0c880c7e730ba78dc6bdda6f",
+      "three_day_limit_down_partition_sha256": [
+        "28a1f9bd05211dd92acf4ea30774e9050cf8f21d0c880c7e730ba78dc6bdda6f",
+        "04b55ae2fe67692570f60c546ab35988e0d0c90f05722d3ac002bc3e3aeaf18e",
+        "53f114708385dfeae1e4151dd90cbafc96c443da3e99d9d859b145324ecbe14f"
+      ]
+    },
+    {
+      "outcome_date": "20241118",
+      "prior_candidate_date": "20241115",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 75,
+      "next_day_limit_up_pool_matches": 28,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 75,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "5d9b280fc789710d0013c025fdbfff1c2626b5c6d7cb8e48e36cd9e3feb1e87b",
+      "outcome_limit_up_partition_sha256": "a0ce1f7d0840d7de03c4ae0ed18573fcda6466e8865737648e9555878e44f9d4",
+      "outcome_limit_down_partition_sha256": "04b55ae2fe67692570f60c546ab35988e0d0c90f05722d3ac002bc3e3aeaf18e",
+      "three_day_limit_down_partition_sha256": [
+        "04b55ae2fe67692570f60c546ab35988e0d0c90f05722d3ac002bc3e3aeaf18e",
+        "53f114708385dfeae1e4151dd90cbafc96c443da3e99d9d859b145324ecbe14f",
+        "43482d1b27eb0644c46f38dc2c5d59dd059d637a7767a0d0abb8bec1505856f8"
+      ]
+    },
+    {
+      "outcome_date": "20241119",
+      "prior_candidate_date": "20241118",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 85,
+      "next_day_limit_up_pool_matches": 18,
+      "next_day_limit_down_pool_matches": 12,
+      "three_trade_day_limit_down_pool_touches": 14,
+      "three_day_denominator": 85,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "a0ce1f7d0840d7de03c4ae0ed18573fcda6466e8865737648e9555878e44f9d4",
+      "outcome_limit_up_partition_sha256": "aea868b84e5d690c2a58b31bebdcbffc90e715e4cef8817e3db2a6f866118a89",
+      "outcome_limit_down_partition_sha256": "53f114708385dfeae1e4151dd90cbafc96c443da3e99d9d859b145324ecbe14f",
+      "three_day_limit_down_partition_sha256": [
+        "53f114708385dfeae1e4151dd90cbafc96c443da3e99d9d859b145324ecbe14f",
+        "43482d1b27eb0644c46f38dc2c5d59dd059d637a7767a0d0abb8bec1505856f8",
+        "f9494db46774baca7568d2583ca2223ab9809e1a61fb2474216b34812e853f95"
+      ]
+    },
+    {
+      "outcome_date": "20241120",
+      "prior_candidate_date": "20241119",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 101,
+      "next_day_limit_up_pool_matches": 41,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 4,
+      "three_day_denominator": 101,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "aea868b84e5d690c2a58b31bebdcbffc90e715e4cef8817e3db2a6f866118a89",
+      "outcome_limit_up_partition_sha256": "3b1e29bdca9c054480fca72bdf08ad1294408ee78eacfb2bd4fbfb4201a6b86a",
+      "outcome_limit_down_partition_sha256": "43482d1b27eb0644c46f38dc2c5d59dd059d637a7767a0d0abb8bec1505856f8",
+      "three_day_limit_down_partition_sha256": [
+        "43482d1b27eb0644c46f38dc2c5d59dd059d637a7767a0d0abb8bec1505856f8",
+        "f9494db46774baca7568d2583ca2223ab9809e1a61fb2474216b34812e853f95",
+        "80324edd603cf962b48ccafbf6174a825d95fb6117c5b47457f51249664c7c61"
+      ]
+    },
+    {
+      "outcome_date": "20241121",
+      "prior_candidate_date": "20241120",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 171,
+      "next_day_limit_up_pool_matches": 50,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 23,
+      "three_day_denominator": 171,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "3b1e29bdca9c054480fca72bdf08ad1294408ee78eacfb2bd4fbfb4201a6b86a",
+      "outcome_limit_up_partition_sha256": "2dff61c29fac2ed95c56fb9bc553ef2cb07b8e0c1ffba9f3e9cfd7f05d2529f6",
+      "outcome_limit_down_partition_sha256": "f9494db46774baca7568d2583ca2223ab9809e1a61fb2474216b34812e853f95",
+      "three_day_limit_down_partition_sha256": [
+        "f9494db46774baca7568d2583ca2223ab9809e1a61fb2474216b34812e853f95",
+        "80324edd603cf962b48ccafbf6174a825d95fb6117c5b47457f51249664c7c61",
+        "f9975b4350e136a5187854b5b4f9b2e66daa0c97f892c8ec85cef4fceac7ae7f"
+      ]
+    },
+    {
+      "outcome_date": "20241122",
+      "prior_candidate_date": "20241121",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 118,
+      "next_day_limit_up_pool_matches": 39,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 46,
+      "three_day_denominator": 118,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "2dff61c29fac2ed95c56fb9bc553ef2cb07b8e0c1ffba9f3e9cfd7f05d2529f6",
+      "outcome_limit_up_partition_sha256": "4a1567a7658f1ff837f6d81bb73c22d1c4c40ba7c1e33c81b2676cdd1e38f0eb",
+      "outcome_limit_down_partition_sha256": "80324edd603cf962b48ccafbf6174a825d95fb6117c5b47457f51249664c7c61",
+      "three_day_limit_down_partition_sha256": [
+        "80324edd603cf962b48ccafbf6174a825d95fb6117c5b47457f51249664c7c61",
+        "f9975b4350e136a5187854b5b4f9b2e66daa0c97f892c8ec85cef4fceac7ae7f",
+        "a7e68079595bb8bde28beb3e09e6c68b38feea81ef857a54285e6c08fff49c0e"
+      ]
+    },
+    {
+      "outcome_date": "20241125",
+      "prior_candidate_date": "20241122",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 74,
+      "next_day_limit_up_pool_matches": 49,
+      "next_day_limit_down_pool_matches": 6,
+      "three_trade_day_limit_down_pool_touches": 35,
+      "three_day_denominator": 74,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "4a1567a7658f1ff837f6d81bb73c22d1c4c40ba7c1e33c81b2676cdd1e38f0eb",
+      "outcome_limit_up_partition_sha256": "895954137ec650b78addf7a461e8da9895caa310425e4808d0ae811e3452772c",
+      "outcome_limit_down_partition_sha256": "f9975b4350e136a5187854b5b4f9b2e66daa0c97f892c8ec85cef4fceac7ae7f",
+      "three_day_limit_down_partition_sha256": [
+        "f9975b4350e136a5187854b5b4f9b2e66daa0c97f892c8ec85cef4fceac7ae7f",
+        "a7e68079595bb8bde28beb3e09e6c68b38feea81ef857a54285e6c08fff49c0e",
+        "0c85832cf20fd9e45600e4e1e5905ef92e73f4c4c247c6a9ed99e64b61ad729c"
+      ]
+    },
+    {
+      "outcome_date": "20241126",
+      "prior_candidate_date": "20241125",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 167,
+      "next_day_limit_up_pool_matches": 37,
+      "next_day_limit_down_pool_matches": 31,
+      "three_trade_day_limit_down_pool_touches": 35,
+      "three_day_denominator": 167,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "895954137ec650b78addf7a461e8da9895caa310425e4808d0ae811e3452772c",
+      "outcome_limit_up_partition_sha256": "a11b44c1b63f47f6af5eba2001041fea7b4d6fec262f396aa2fa28985b935632",
+      "outcome_limit_down_partition_sha256": "a7e68079595bb8bde28beb3e09e6c68b38feea81ef857a54285e6c08fff49c0e",
+      "three_day_limit_down_partition_sha256": [
+        "a7e68079595bb8bde28beb3e09e6c68b38feea81ef857a54285e6c08fff49c0e",
+        "0c85832cf20fd9e45600e4e1e5905ef92e73f4c4c247c6a9ed99e64b61ad729c",
+        "2061ccf6696c515fca50602e6c2f93a716d3a1d70f0dd0b34130d020f15dbc8a"
+      ]
+    },
+    {
+      "outcome_date": "20241127",
+      "prior_candidate_date": "20241126",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 105,
+      "next_day_limit_up_pool_matches": 23,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 9,
+      "three_day_denominator": 105,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "a11b44c1b63f47f6af5eba2001041fea7b4d6fec262f396aa2fa28985b935632",
+      "outcome_limit_up_partition_sha256": "6c31bce345c8963ea324c605d033469e8866e6190ccd476a10a880ad507cb30e",
+      "outcome_limit_down_partition_sha256": "0c85832cf20fd9e45600e4e1e5905ef92e73f4c4c247c6a9ed99e64b61ad729c",
+      "three_day_limit_down_partition_sha256": [
+        "0c85832cf20fd9e45600e4e1e5905ef92e73f4c4c247c6a9ed99e64b61ad729c",
+        "2061ccf6696c515fca50602e6c2f93a716d3a1d70f0dd0b34130d020f15dbc8a",
+        "32484805b88829989858b5ed8b85b44c188b52e8fe056bbb3748cddaea976e92"
+      ]
+    },
+    {
+      "outcome_date": "20241128",
+      "prior_candidate_date": "20241127",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 103,
+      "next_day_limit_up_pool_matches": 36,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 8,
+      "three_day_denominator": 103,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "6c31bce345c8963ea324c605d033469e8866e6190ccd476a10a880ad507cb30e",
+      "outcome_limit_up_partition_sha256": "64f67bd70eba2937efd8f827b79409b2b4ad35b94e26c5339969644bf757c84e",
+      "outcome_limit_down_partition_sha256": "2061ccf6696c515fca50602e6c2f93a716d3a1d70f0dd0b34130d020f15dbc8a",
+      "three_day_limit_down_partition_sha256": [
+        "2061ccf6696c515fca50602e6c2f93a716d3a1d70f0dd0b34130d020f15dbc8a",
+        "32484805b88829989858b5ed8b85b44c188b52e8fe056bbb3748cddaea976e92",
+        "525199360592e256189b695b5c9b8ee8c85666d945651ed903edd3b849b69511"
+      ]
+    },
+    {
+      "outcome_date": "20241129",
+      "prior_candidate_date": "20241128",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 109,
+      "next_day_limit_up_pool_matches": 38,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 8,
+      "three_day_denominator": 109,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "64f67bd70eba2937efd8f827b79409b2b4ad35b94e26c5339969644bf757c84e",
+      "outcome_limit_up_partition_sha256": "c9640d2f76d5dd8f6976295e5b9e030401fcbee01aebbbcaedff02bfe0f85fe5",
+      "outcome_limit_down_partition_sha256": "32484805b88829989858b5ed8b85b44c188b52e8fe056bbb3748cddaea976e92",
+      "three_day_limit_down_partition_sha256": [
+        "32484805b88829989858b5ed8b85b44c188b52e8fe056bbb3748cddaea976e92",
+        "525199360592e256189b695b5c9b8ee8c85666d945651ed903edd3b849b69511",
+        "556d693cbbcd5d71160aa31a2406230ee1622b057097dceb0e9ae1aefe14bdef"
+      ]
+    },
+    {
+      "outcome_date": "20241202",
+      "prior_candidate_date": "20241129",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 138,
+      "next_day_limit_up_pool_matches": 55,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 18,
+      "three_day_denominator": 138,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "c9640d2f76d5dd8f6976295e5b9e030401fcbee01aebbbcaedff02bfe0f85fe5",
+      "outcome_limit_up_partition_sha256": "b8a9809eec7cddb028e7cf596d08fff8fbd8ae86d92cb1fd39c27113fa7cb9fc",
+      "outcome_limit_down_partition_sha256": "525199360592e256189b695b5c9b8ee8c85666d945651ed903edd3b849b69511",
+      "three_day_limit_down_partition_sha256": [
+        "525199360592e256189b695b5c9b8ee8c85666d945651ed903edd3b849b69511",
+        "556d693cbbcd5d71160aa31a2406230ee1622b057097dceb0e9ae1aefe14bdef",
+        "d92613403fd6c0269cbd150137cc21ae263304b6116d89449dd532fb7fa2655c"
+      ]
+    },
+    {
+      "outcome_date": "20241203",
+      "prior_candidate_date": "20241202",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 181,
+      "next_day_limit_up_pool_matches": 54,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 20,
+      "three_day_denominator": 181,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "b8a9809eec7cddb028e7cf596d08fff8fbd8ae86d92cb1fd39c27113fa7cb9fc",
+      "outcome_limit_up_partition_sha256": "3e482823e575825e617280c3cdcadac38dc5b265e353569528f1cdf077846440",
+      "outcome_limit_down_partition_sha256": "556d693cbbcd5d71160aa31a2406230ee1622b057097dceb0e9ae1aefe14bdef",
+      "three_day_limit_down_partition_sha256": [
+        "556d693cbbcd5d71160aa31a2406230ee1622b057097dceb0e9ae1aefe14bdef",
+        "d92613403fd6c0269cbd150137cc21ae263304b6116d89449dd532fb7fa2655c",
+        "3336fec1df2f15dcd6c452ed0204e2403d3db46d693d25b98d6ebe705761b065"
+      ]
+    },
+    {
+      "outcome_date": "20241204",
+      "prior_candidate_date": "20241203",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 131,
+      "next_day_limit_up_pool_matches": 35,
+      "next_day_limit_down_pool_matches": 9,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 131,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "3e482823e575825e617280c3cdcadac38dc5b265e353569528f1cdf077846440",
+      "outcome_limit_up_partition_sha256": "2d6a0d47944d81cec00091522ab35ada5f46574757e3ba6e7698658739af6f50",
+      "outcome_limit_down_partition_sha256": "d92613403fd6c0269cbd150137cc21ae263304b6116d89449dd532fb7fa2655c",
+      "three_day_limit_down_partition_sha256": [
+        "d92613403fd6c0269cbd150137cc21ae263304b6116d89449dd532fb7fa2655c",
+        "3336fec1df2f15dcd6c452ed0204e2403d3db46d693d25b98d6ebe705761b065",
+        "30c850e3d71f43affdb27d56723d4eb7f7cbc63fdac10862cc24078b6b3d0926"
+      ]
+    },
+    {
+      "outcome_date": "20241205",
+      "prior_candidate_date": "20241204",
+      "year": "2024",
+      "half_year": "2024H2",
+      "prior_limit_up_candidates": 96,
+      "next_day_limit_up_pool_matches": 42,
+      "next_day_limit_down_pool_matches": 6,
+      "three_trade_day_limit_down_pool_touches": 22,
+      "three_day_denominator": 96,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "1e82b282a2d8a348a3ea1454e54ad4661720b0bf602e75905c52f4edacde805b",
+      "prior_limit_up_partition_sha256": "2d6a0d47944d81cec00091522ab35ada5f46574757e3ba6e7698658739af6f50",
+      "outcome_limit_up_partition_sha256": "ee259d87bd438a5027807f08c70d0f3ac06e072b0c7a928ad9860ddc0f25ce06",
+      "outcome_limit_down_partition_sha256": "3336fec1df2f15dcd6c452ed0204e2403d3db46d693d25b98d6ebe705761b065",
+      "three_day_limit_down_pa…92555 tokens truncated…391c22226d7a756",
+        "964f1b1e47f570c418f5312c26d3c93ee632c5554c6209882440efa97e5f2b45"
+      ]
+    },
+    {
+      "outcome_date": "20260414",
+      "prior_candidate_date": "20260413",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 87,
+      "next_day_limit_up_pool_matches": 18,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 87,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "6ffd0255776b66cef02a455d4e2d28b9928599c5dd2fabcba4432cc65524ea77",
+      "outcome_limit_up_partition_sha256": "64bb0dbd5c23e8212a858cea76f8249fdcca9ccb83c74db2d82f804241fb7a61",
+      "outcome_limit_down_partition_sha256": "fccf9ee6b1b8fcec06f278099a4e6cdb63f0997978e97dc9c391c22226d7a756",
+      "three_day_limit_down_partition_sha256": [
+        "fccf9ee6b1b8fcec06f278099a4e6cdb63f0997978e97dc9c391c22226d7a756",
+        "964f1b1e47f570c418f5312c26d3c93ee632c5554c6209882440efa97e5f2b45",
+        "52145ec103cb1d7f0e136b5a90620d4ce629a09b737f457bbb234da74852344e"
+      ]
+    },
+    {
+      "outcome_date": "20260415",
+      "prior_candidate_date": "20260414",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 71,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 71,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "64bb0dbd5c23e8212a858cea76f8249fdcca9ccb83c74db2d82f804241fb7a61",
+      "outcome_limit_up_partition_sha256": "a42abd52335fd8161a4b5e60ca0c099164c0c9de7f5cbc26c213af74e481cc43",
+      "outcome_limit_down_partition_sha256": "964f1b1e47f570c418f5312c26d3c93ee632c5554c6209882440efa97e5f2b45",
+      "three_day_limit_down_partition_sha256": [
+        "964f1b1e47f570c418f5312c26d3c93ee632c5554c6209882440efa97e5f2b45",
+        "52145ec103cb1d7f0e136b5a90620d4ce629a09b737f457bbb234da74852344e",
+        "5abb4e547f872fc93927a865cf89b1724f627bc14f39b827fa3501d99154cad1"
+      ]
+    },
+    {
+      "outcome_date": "20260416",
+      "prior_candidate_date": "20260415",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 68,
+      "next_day_limit_up_pool_matches": 12,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 4,
+      "three_day_denominator": 68,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "a42abd52335fd8161a4b5e60ca0c099164c0c9de7f5cbc26c213af74e481cc43",
+      "outcome_limit_up_partition_sha256": "2cfbec847ddb3517575d00730bf8ed2d95cb5db49aa9d968f0f8d66eebb2ba6a",
+      "outcome_limit_down_partition_sha256": "52145ec103cb1d7f0e136b5a90620d4ce629a09b737f457bbb234da74852344e",
+      "three_day_limit_down_partition_sha256": [
+        "52145ec103cb1d7f0e136b5a90620d4ce629a09b737f457bbb234da74852344e",
+        "5abb4e547f872fc93927a865cf89b1724f627bc14f39b827fa3501d99154cad1",
+        "3198db7bc5e0bfe524c33e5b4acb6b6cdfa9deb826ed9f0c990f6ff0b70b04de"
+      ]
+    },
+    {
+      "outcome_date": "20260417",
+      "prior_candidate_date": "20260416",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 88,
+      "next_day_limit_up_pool_matches": 15,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 4,
+      "three_day_denominator": 88,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "2cfbec847ddb3517575d00730bf8ed2d95cb5db49aa9d968f0f8d66eebb2ba6a",
+      "outcome_limit_up_partition_sha256": "5ca158ea6b0db3b4a940e29cb88cb199071a1803964dd3de4417c74dfac694f3",
+      "outcome_limit_down_partition_sha256": "5abb4e547f872fc93927a865cf89b1724f627bc14f39b827fa3501d99154cad1",
+      "three_day_limit_down_partition_sha256": [
+        "5abb4e547f872fc93927a865cf89b1724f627bc14f39b827fa3501d99154cad1",
+        "3198db7bc5e0bfe524c33e5b4acb6b6cdfa9deb826ed9f0c990f6ff0b70b04de",
+        "4b67de075da6530675aee2c9f099ca90ffe0fda037a9edf1fce9f5c152a5127a"
+      ]
+    },
+    {
+      "outcome_date": "20260420",
+      "prior_candidate_date": "20260417",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 74,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 4,
+      "three_day_denominator": 74,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "5ca158ea6b0db3b4a940e29cb88cb199071a1803964dd3de4417c74dfac694f3",
+      "outcome_limit_up_partition_sha256": "fe52942082a1b5f5583a46dd90ba94f95b014f261c7700c40341cbc3c278c568",
+      "outcome_limit_down_partition_sha256": "3198db7bc5e0bfe524c33e5b4acb6b6cdfa9deb826ed9f0c990f6ff0b70b04de",
+      "three_day_limit_down_partition_sha256": [
+        "3198db7bc5e0bfe524c33e5b4acb6b6cdfa9deb826ed9f0c990f6ff0b70b04de",
+        "4b67de075da6530675aee2c9f099ca90ffe0fda037a9edf1fce9f5c152a5127a",
+        "39a7bc6d8aa74561211805878cb41930e478690c7dcda4c437fd57bd471ff9d9"
+      ]
+    },
+    {
+      "outcome_date": "20260421",
+      "prior_candidate_date": "20260420",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 90,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 90,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "fe52942082a1b5f5583a46dd90ba94f95b014f261c7700c40341cbc3c278c568",
+      "outcome_limit_up_partition_sha256": "a8c48518849cdb7580645a7d3dfff3c5b6b1e638af4efd52ece7283e2a86432c",
+      "outcome_limit_down_partition_sha256": "4b67de075da6530675aee2c9f099ca90ffe0fda037a9edf1fce9f5c152a5127a",
+      "three_day_limit_down_partition_sha256": [
+        "4b67de075da6530675aee2c9f099ca90ffe0fda037a9edf1fce9f5c152a5127a",
+        "39a7bc6d8aa74561211805878cb41930e478690c7dcda4c437fd57bd471ff9d9",
+        "67ef68be584eca52268b03f58fb3063b8b7231b7f84354ed71ce2d8fbadfa846"
+      ]
+    },
+    {
+      "outcome_date": "20260422",
+      "prior_candidate_date": "20260421",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 65,
+      "next_day_limit_up_pool_matches": 11,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 65,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "a8c48518849cdb7580645a7d3dfff3c5b6b1e638af4efd52ece7283e2a86432c",
+      "outcome_limit_up_partition_sha256": "c4b21a6fff4f857f31393017a68d7211246aaa4dd1016cf84ce5f980f38e3e1f",
+      "outcome_limit_down_partition_sha256": "39a7bc6d8aa74561211805878cb41930e478690c7dcda4c437fd57bd471ff9d9",
+      "three_day_limit_down_partition_sha256": [
+        "39a7bc6d8aa74561211805878cb41930e478690c7dcda4c437fd57bd471ff9d9",
+        "67ef68be584eca52268b03f58fb3063b8b7231b7f84354ed71ce2d8fbadfa846",
+        "3d63bc8c1cf6d645029a3f938e04a0ef7509a0e7310f50794f22348f454a5003"
+      ]
+    },
+    {
+      "outcome_date": "20260423",
+      "prior_candidate_date": "20260422",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 62,
+      "next_day_limit_up_pool_matches": 11,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 62,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "c4b21a6fff4f857f31393017a68d7211246aaa4dd1016cf84ce5f980f38e3e1f",
+      "outcome_limit_up_partition_sha256": "056f0803c43a711e31398b1be870280ffa5e9c15f982c2df5d2e5f85d31aa246",
+      "outcome_limit_down_partition_sha256": "67ef68be584eca52268b03f58fb3063b8b7231b7f84354ed71ce2d8fbadfa846",
+      "three_day_limit_down_partition_sha256": [
+        "67ef68be584eca52268b03f58fb3063b8b7231b7f84354ed71ce2d8fbadfa846",
+        "3d63bc8c1cf6d645029a3f938e04a0ef7509a0e7310f50794f22348f454a5003",
+        "84549cb62896adce22b257a8a06bc42d7129de70cfdec98008fb05ddbc140e87"
+      ]
+    },
+    {
+      "outcome_date": "20260424",
+      "prior_candidate_date": "20260423",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 58,
+      "next_day_limit_up_pool_matches": 10,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 8,
+      "three_day_denominator": 58,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "056f0803c43a711e31398b1be870280ffa5e9c15f982c2df5d2e5f85d31aa246",
+      "outcome_limit_up_partition_sha256": "c92c46878a6ad998ca8758e193028e12ee9a47b51a316cfea9e8e972a4138a47",
+      "outcome_limit_down_partition_sha256": "3d63bc8c1cf6d645029a3f938e04a0ef7509a0e7310f50794f22348f454a5003",
+      "three_day_limit_down_partition_sha256": [
+        "3d63bc8c1cf6d645029a3f938e04a0ef7509a0e7310f50794f22348f454a5003",
+        "84549cb62896adce22b257a8a06bc42d7129de70cfdec98008fb05ddbc140e87",
+        "c9c29ee068a6bb3a95269ff9c96646786271624583accbe42f85d8734c4a53c4"
+      ]
+    },
+    {
+      "outcome_date": "20260427",
+      "prior_candidate_date": "20260424",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 68,
+      "next_day_limit_up_pool_matches": 12,
+      "next_day_limit_down_pool_matches": 7,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 68,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "c92c46878a6ad998ca8758e193028e12ee9a47b51a316cfea9e8e972a4138a47",
+      "outcome_limit_up_partition_sha256": "f76f6531d9f2cf976d7d377b1805e173d03f8fc2f727345bff90260d74fd1c53",
+      "outcome_limit_down_partition_sha256": "84549cb62896adce22b257a8a06bc42d7129de70cfdec98008fb05ddbc140e87",
+      "three_day_limit_down_partition_sha256": [
+        "84549cb62896adce22b257a8a06bc42d7129de70cfdec98008fb05ddbc140e87",
+        "c9c29ee068a6bb3a95269ff9c96646786271624583accbe42f85d8734c4a53c4",
+        "1ef07d05a6bc6b25f9706c1330532fecb664b2a820a6d1775545cf358c3b4d4b"
+      ]
+    },
+    {
+      "outcome_date": "20260428",
+      "prior_candidate_date": "20260427",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 84,
+      "next_day_limit_up_pool_matches": 19,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 84,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "f76f6531d9f2cf976d7d377b1805e173d03f8fc2f727345bff90260d74fd1c53",
+      "outcome_limit_up_partition_sha256": "418c0140b1f6786153a655aaa356fe74a6f3a1a29e8af26b8b2ca24f2324c8e4",
+      "outcome_limit_down_partition_sha256": "c9c29ee068a6bb3a95269ff9c96646786271624583accbe42f85d8734c4a53c4",
+      "three_day_limit_down_partition_sha256": [
+        "c9c29ee068a6bb3a95269ff9c96646786271624583accbe42f85d8734c4a53c4",
+        "1ef07d05a6bc6b25f9706c1330532fecb664b2a820a6d1775545cf358c3b4d4b",
+        "2931cfce3edadfbd97f5bd81ceb9fc216c603e2ff196ca933d2141b44e092133"
+      ]
+    },
+    {
+      "outcome_date": "20260429",
+      "prior_candidate_date": "20260428",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 75,
+      "next_day_limit_up_pool_matches": 18,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 5,
+      "three_day_denominator": 75,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "418c0140b1f6786153a655aaa356fe74a6f3a1a29e8af26b8b2ca24f2324c8e4",
+      "outcome_limit_up_partition_sha256": "ed86d59c81feee8d9aa68bb12e29716297dd0431f2aa50934627dcfb22f82108",
+      "outcome_limit_down_partition_sha256": "1ef07d05a6bc6b25f9706c1330532fecb664b2a820a6d1775545cf358c3b4d4b",
+      "three_day_limit_down_partition_sha256": [
+        "1ef07d05a6bc6b25f9706c1330532fecb664b2a820a6d1775545cf358c3b4d4b",
+        "2931cfce3edadfbd97f5bd81ceb9fc216c603e2ff196ca933d2141b44e092133",
+        "92b640c6075a77f43e75b08b59efcf17888e7f1b25fabad732e89a3797bb104d"
+      ]
+    },
+    {
+      "outcome_date": "20260430",
+      "prior_candidate_date": "20260429",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 118,
+      "next_day_limit_up_pool_matches": 24,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 118,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "ed86d59c81feee8d9aa68bb12e29716297dd0431f2aa50934627dcfb22f82108",
+      "outcome_limit_up_partition_sha256": "5054640d492daeb56ca8fa33f1581eac646f3015230406a599fa92f1824fb195",
+      "outcome_limit_down_partition_sha256": "2931cfce3edadfbd97f5bd81ceb9fc216c603e2ff196ca933d2141b44e092133",
+      "three_day_limit_down_partition_sha256": [
+        "2931cfce3edadfbd97f5bd81ceb9fc216c603e2ff196ca933d2141b44e092133",
+        "92b640c6075a77f43e75b08b59efcf17888e7f1b25fabad732e89a3797bb104d",
+        "8a79059b5faad13d30619fabc5a913f5fd77bc9f6bd72109ce0f593f99a9ba17"
+      ]
+    },
+    {
+      "outcome_date": "20260506",
+      "prior_candidate_date": "20260430",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 97,
+      "next_day_limit_up_pool_matches": 31,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 2,
+      "three_day_denominator": 97,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "5054640d492daeb56ca8fa33f1581eac646f3015230406a599fa92f1824fb195",
+      "outcome_limit_up_partition_sha256": "293c146dc169c2b41e81b5155b691671a76fe566dbdae1d7af94231b78be4ea6",
+      "outcome_limit_down_partition_sha256": "92b640c6075a77f43e75b08b59efcf17888e7f1b25fabad732e89a3797bb104d",
+      "three_day_limit_down_partition_sha256": [
+        "92b640c6075a77f43e75b08b59efcf17888e7f1b25fabad732e89a3797bb104d",
+        "8a79059b5faad13d30619fabc5a913f5fd77bc9f6bd72109ce0f593f99a9ba17",
+        "bda604b07ebff89e0bb8b84e6308c2ea94e3c0e8358ace5a73cca146b243843c"
+      ]
+    },
+    {
+      "outcome_date": "20260507",
+      "prior_candidate_date": "20260506",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 124,
+      "next_day_limit_up_pool_matches": 33,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 124,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "293c146dc169c2b41e81b5155b691671a76fe566dbdae1d7af94231b78be4ea6",
+      "outcome_limit_up_partition_sha256": "de33f9d83b285a622a9624e0d4a03d9b9c22810694ae3cd56c86ca9ab84930b0",
+      "outcome_limit_down_partition_sha256": "8a79059b5faad13d30619fabc5a913f5fd77bc9f6bd72109ce0f593f99a9ba17",
+      "three_day_limit_down_partition_sha256": [
+        "8a79059b5faad13d30619fabc5a913f5fd77bc9f6bd72109ce0f593f99a9ba17",
+        "bda604b07ebff89e0bb8b84e6308c2ea94e3c0e8358ace5a73cca146b243843c",
+        "54d5008b3ac00aaafdc9a9bfc5bc9bab6754f2028cecff6ce3304eca831b4a31"
+      ]
+    },
+    {
+      "outcome_date": "20260508",
+      "prior_candidate_date": "20260507",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 126,
+      "next_day_limit_up_pool_matches": 28,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 126,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "de33f9d83b285a622a9624e0d4a03d9b9c22810694ae3cd56c86ca9ab84930b0",
+      "outcome_limit_up_partition_sha256": "679acc3412e390a0df30529863579dec1c24c4206125ab24afc0b9d11688de49",
+      "outcome_limit_down_partition_sha256": "bda604b07ebff89e0bb8b84e6308c2ea94e3c0e8358ace5a73cca146b243843c",
+      "three_day_limit_down_partition_sha256": [
+        "bda604b07ebff89e0bb8b84e6308c2ea94e3c0e8358ace5a73cca146b243843c",
+        "54d5008b3ac00aaafdc9a9bfc5bc9bab6754f2028cecff6ce3304eca831b4a31",
+        "ba552619d50e79da3f12b1284c61867beac21be01ea64ccd89996b0233f270a9"
+      ]
+    },
+    {
+      "outcome_date": "20260511",
+      "prior_candidate_date": "20260508",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 124,
+      "next_day_limit_up_pool_matches": 35,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 4,
+      "three_day_denominator": 124,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "679acc3412e390a0df30529863579dec1c24c4206125ab24afc0b9d11688de49",
+      "outcome_limit_up_partition_sha256": "a382926ffafd92c1b1995725412ee585ff101bcf52457431e41096c6d4165fd8",
+      "outcome_limit_down_partition_sha256": "54d5008b3ac00aaafdc9a9bfc5bc9bab6754f2028cecff6ce3304eca831b4a31",
+      "three_day_limit_down_partition_sha256": [
+        "54d5008b3ac00aaafdc9a9bfc5bc9bab6754f2028cecff6ce3304eca831b4a31",
+        "ba552619d50e79da3f12b1284c61867beac21be01ea64ccd89996b0233f270a9",
+        "0e5852767a23177553c092e2d098ac8ef2d8b0132e6dd164437e96868199714d"
+      ]
+    },
+    {
+      "outcome_date": "20260512",
+      "prior_candidate_date": "20260511",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 133,
+      "next_day_limit_up_pool_matches": 41,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 133,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "a382926ffafd92c1b1995725412ee585ff101bcf52457431e41096c6d4165fd8",
+      "outcome_limit_up_partition_sha256": "c04eff5a08581a33516f0bf9b0abc1087266df40a088e530f7cb555248f4864c",
+      "outcome_limit_down_partition_sha256": "ba552619d50e79da3f12b1284c61867beac21be01ea64ccd89996b0233f270a9",
+      "three_day_limit_down_partition_sha256": [
+        "ba552619d50e79da3f12b1284c61867beac21be01ea64ccd89996b0233f270a9",
+        "0e5852767a23177553c092e2d098ac8ef2d8b0132e6dd164437e96868199714d",
+        "6843c80dbc8f73c4a4bd0a5595f22be3e11812d48de9209511d7735321444256"
+      ]
+    },
+    {
+      "outcome_date": "20260513",
+      "prior_candidate_date": "20260512",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 94,
+      "next_day_limit_up_pool_matches": 32,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 14,
+      "three_day_denominator": 94,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "c04eff5a08581a33516f0bf9b0abc1087266df40a088e530f7cb555248f4864c",
+      "outcome_limit_up_partition_sha256": "cc2c56d26f83c640e5471b7aad3c2c48b2bc0e58077c3f564eb70baa80f82d72",
+      "outcome_limit_down_partition_sha256": "0e5852767a23177553c092e2d098ac8ef2d8b0132e6dd164437e96868199714d",
+      "three_day_limit_down_partition_sha256": [
+        "0e5852767a23177553c092e2d098ac8ef2d8b0132e6dd164437e96868199714d",
+        "6843c80dbc8f73c4a4bd0a5595f22be3e11812d48de9209511d7735321444256",
+        "6a33153f0f06fd62593a8ecbeba6eecbc582432ef5e0d2ff601a0f06d02b19ef"
+      ]
+    },
+    {
+      "outcome_date": "20260514",
+      "prior_candidate_date": "20260513",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 146,
+      "next_day_limit_up_pool_matches": 28,
+      "next_day_limit_down_pool_matches": 9,
+      "three_trade_day_limit_down_pool_touches": 29,
+      "three_day_denominator": 146,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "cc2c56d26f83c640e5471b7aad3c2c48b2bc0e58077c3f564eb70baa80f82d72",
+      "outcome_limit_up_partition_sha256": "5dc8b6ab985cbacb7d467edc4f9600d2952bee8246aaec74f10726b3d3e7e5ea",
+      "outcome_limit_down_partition_sha256": "6843c80dbc8f73c4a4bd0a5595f22be3e11812d48de9209511d7735321444256",
+      "three_day_limit_down_partition_sha256": [
+        "6843c80dbc8f73c4a4bd0a5595f22be3e11812d48de9209511d7735321444256",
+        "6a33153f0f06fd62593a8ecbeba6eecbc582432ef5e0d2ff601a0f06d02b19ef",
+        "496031ed6f793b0e128deb3e8281ab0a66ba10cd3d5e495c316e99f8edf0df7c"
+      ]
+    },
+    {
+      "outcome_date": "20260515",
+      "prior_candidate_date": "20260514",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 79,
+      "next_day_limit_up_pool_matches": 13,
+      "next_day_limit_down_pool_matches": 10,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 79,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "5dc8b6ab985cbacb7d467edc4f9600d2952bee8246aaec74f10726b3d3e7e5ea",
+      "outcome_limit_up_partition_sha256": "65ad0f1bdc29cc01b863e00eecd611d6b6affeb2e114fb9b7a0275bfd7262f04",
+      "outcome_limit_down_partition_sha256": "6a33153f0f06fd62593a8ecbeba6eecbc582432ef5e0d2ff601a0f06d02b19ef",
+      "three_day_limit_down_partition_sha256": [
+        "6a33153f0f06fd62593a8ecbeba6eecbc582432ef5e0d2ff601a0f06d02b19ef",
+        "496031ed6f793b0e128deb3e8281ab0a66ba10cd3d5e495c316e99f8edf0df7c",
+        "fc2d214e32c814d458707e954a70abc4a70ea18d1d856db9935e5dfbee73052a"
+      ]
+    },
+    {
+      "outcome_date": "20260518",
+      "prior_candidate_date": "20260515",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 72,
+      "next_day_limit_up_pool_matches": 13,
+      "next_day_limit_down_pool_matches": 9,
+      "three_trade_day_limit_down_pool_touches": 17,
+      "three_day_denominator": 72,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "65ad0f1bdc29cc01b863e00eecd611d6b6affeb2e114fb9b7a0275bfd7262f04",
+      "outcome_limit_up_partition_sha256": "c73ad35673ca6c20b76a405384dd6030da54269896f6e389f0a640892039d2ee",
+      "outcome_limit_down_partition_sha256": "496031ed6f793b0e128deb3e8281ab0a66ba10cd3d5e495c316e99f8edf0df7c",
+      "three_day_limit_down_partition_sha256": [
+        "496031ed6f793b0e128deb3e8281ab0a66ba10cd3d5e495c316e99f8edf0df7c",
+        "fc2d214e32c814d458707e954a70abc4a70ea18d1d856db9935e5dfbee73052a",
+        "4909c011b75ed9334817b37a55f4ecff4b28c833e99e925f21906f3225d56c8c"
+      ]
+    },
+    {
+      "outcome_date": "20260519",
+      "prior_candidate_date": "20260518",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 101,
+      "next_day_limit_up_pool_matches": 25,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 101,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "c73ad35673ca6c20b76a405384dd6030da54269896f6e389f0a640892039d2ee",
+      "outcome_limit_up_partition_sha256": "4af9399c5be47ae1b24f5078b097929f078a5ade241ef5d13c2dac61a0180b51",
+      "outcome_limit_down_partition_sha256": "fc2d214e32c814d458707e954a70abc4a70ea18d1d856db9935e5dfbee73052a",
+      "three_day_limit_down_partition_sha256": [
+        "fc2d214e32c814d458707e954a70abc4a70ea18d1d856db9935e5dfbee73052a",
+        "4909c011b75ed9334817b37a55f4ecff4b28c833e99e925f21906f3225d56c8c",
+        "beb32b55ef30aa5c4bd45a51be352f0208b1510a30f72542b4e51e52ca26278b"
+      ]
+    },
+    {
+      "outcome_date": "20260520",
+      "prior_candidate_date": "20260519",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 122,
+      "next_day_limit_up_pool_matches": 14,
+      "next_day_limit_down_pool_matches": 5,
+      "three_trade_day_limit_down_pool_touches": 21,
+      "three_day_denominator": 122,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "4af9399c5be47ae1b24f5078b097929f078a5ade241ef5d13c2dac61a0180b51",
+      "outcome_limit_up_partition_sha256": "1db7398366b0bf8e2a2f56152d0d865ea83ad9abf73c788b3c46862c2671ad33",
+      "outcome_limit_down_partition_sha256": "4909c011b75ed9334817b37a55f4ecff4b28c833e99e925f21906f3225d56c8c",
+      "three_day_limit_down_partition_sha256": [
+        "4909c011b75ed9334817b37a55f4ecff4b28c833e99e925f21906f3225d56c8c",
+        "beb32b55ef30aa5c4bd45a51be352f0208b1510a30f72542b4e51e52ca26278b",
+        "3324ae7766c7c7f8f741e9334c9910b463dc33484277541db9c49b727601488d"
+      ]
+    },
+    {
+      "outcome_date": "20260521",
+      "prior_candidate_date": "20260520",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 70,
+      "next_day_limit_up_pool_matches": 6,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 8,
+      "three_day_denominator": 70,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "1db7398366b0bf8e2a2f56152d0d865ea83ad9abf73c788b3c46862c2671ad33",
+      "outcome_limit_up_partition_sha256": "5e63792523ecfce0222e3d1274be793d69f62175d36b48124e2d69b0dfdac91d",
+      "outcome_limit_down_partition_sha256": "beb32b55ef30aa5c4bd45a51be352f0208b1510a30f72542b4e51e52ca26278b",
+      "three_day_limit_down_partition_sha256": [
+        "beb32b55ef30aa5c4bd45a51be352f0208b1510a30f72542b4e51e52ca26278b",
+        "3324ae7766c7c7f8f741e9334c9910b463dc33484277541db9c49b727601488d",
+        "604602cf949d26bd2f2da98faa79a623bd720b3f1221041044e73c2e63d37f60"
+      ]
+    },
+    {
+      "outcome_date": "20260522",
+      "prior_candidate_date": "20260521",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 35,
+      "next_day_limit_up_pool_matches": 11,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 7,
+      "three_day_denominator": 35,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "5e63792523ecfce0222e3d1274be793d69f62175d36b48124e2d69b0dfdac91d",
+      "outcome_limit_up_partition_sha256": "b9778bbd6ac88b2117d3aa83760fc29cee31cb3c04bab8cf64207b4d465133f9",
+      "outcome_limit_down_partition_sha256": "3324ae7766c7c7f8f741e9334c9910b463dc33484277541db9c49b727601488d",
+      "three_day_limit_down_partition_sha256": [
+        "3324ae7766c7c7f8f741e9334c9910b463dc33484277541db9c49b727601488d",
+        "604602cf949d26bd2f2da98faa79a623bd720b3f1221041044e73c2e63d37f60",
+        "ef870febd9f474d7556cbf1e2309390143af3178e97b205728384e036cb3912c"
+      ]
+    },
+    {
+      "outcome_date": "20260525",
+      "prior_candidate_date": "20260522",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 136,
+      "next_day_limit_up_pool_matches": 31,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 136,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "b9778bbd6ac88b2117d3aa83760fc29cee31cb3c04bab8cf64207b4d465133f9",
+      "outcome_limit_up_partition_sha256": "2caaf4dd64b7304b7c891222f1c70e2a4efbefc8275da079f211866f30b0222b",
+      "outcome_limit_down_partition_sha256": "604602cf949d26bd2f2da98faa79a623bd720b3f1221041044e73c2e63d37f60",
+      "three_day_limit_down_partition_sha256": [
+        "604602cf949d26bd2f2da98faa79a623bd720b3f1221041044e73c2e63d37f60",
+        "ef870febd9f474d7556cbf1e2309390143af3178e97b205728384e036cb3912c",
+        "49207f81fe1012c8bfd8593d22c32534e1838b1160f57b801ee3bc1464725038"
+      ]
+    },
+    {
+      "outcome_date": "20260526",
+      "prior_candidate_date": "20260525",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 128,
+      "next_day_limit_up_pool_matches": 24,
+      "next_day_limit_down_pool_matches": 6,
+      "three_trade_day_limit_down_pool_touches": 12,
+      "three_day_denominator": 128,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "2caaf4dd64b7304b7c891222f1c70e2a4efbefc8275da079f211866f30b0222b",
+      "outcome_limit_up_partition_sha256": "14ccf5f3c6e15cda5f1c609ef2adcb34cad44c8bc47bc84d6d30ccb50f4e084e",
+      "outcome_limit_down_partition_sha256": "ef870febd9f474d7556cbf1e2309390143af3178e97b205728384e036cb3912c",
+      "three_day_limit_down_partition_sha256": [
+        "ef870febd9f474d7556cbf1e2309390143af3178e97b205728384e036cb3912c",
+        "49207f81fe1012c8bfd8593d22c32534e1838b1160f57b801ee3bc1464725038",
+        "dc2bb31a85ccc54d5ead68be4a2ee9bf840e17339579ac1d7f7b5d1ba59b37bd"
+      ]
+    },
+    {
+      "outcome_date": "20260527",
+      "prior_candidate_date": "20260526",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 64,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 64,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "14ccf5f3c6e15cda5f1c609ef2adcb34cad44c8bc47bc84d6d30ccb50f4e084e",
+      "outcome_limit_up_partition_sha256": "10a3184247f611c1360f9ea1c323b3fb62e57b6371d4797fb95da9022a29afe0",
+      "outcome_limit_down_partition_sha256": "49207f81fe1012c8bfd8593d22c32534e1838b1160f57b801ee3bc1464725038",
+      "three_day_limit_down_partition_sha256": [
+        "49207f81fe1012c8bfd8593d22c32534e1838b1160f57b801ee3bc1464725038",
+        "dc2bb31a85ccc54d5ead68be4a2ee9bf840e17339579ac1d7f7b5d1ba59b37bd",
+        "560920de18124f85b291961fbb05f0dd1d2c5a525dc828ca4a89779eb4484d8c"
+      ]
+    },
+    {
+      "outcome_date": "20260528",
+      "prior_candidate_date": "20260527",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 61,
+      "next_day_limit_up_pool_matches": 14,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 9,
+      "three_day_denominator": 61,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "10a3184247f611c1360f9ea1c323b3fb62e57b6371d4797fb95da9022a29afe0",
+      "outcome_limit_up_partition_sha256": "2099a08dc5bb4fb18830c3c4dbf262d3f81b12d8ca49c5cab44a6b82eec1caf1",
+      "outcome_limit_down_partition_sha256": "dc2bb31a85ccc54d5ead68be4a2ee9bf840e17339579ac1d7f7b5d1ba59b37bd",
+      "three_day_limit_down_partition_sha256": [
+        "dc2bb31a85ccc54d5ead68be4a2ee9bf840e17339579ac1d7f7b5d1ba59b37bd",
+        "560920de18124f85b291961fbb05f0dd1d2c5a525dc828ca4a89779eb4484d8c",
+        "7143efecf6c88d164f628198f5f55305fe9c0276dc54faa317bf0e50e666d813"
+      ]
+    },
+    {
+      "outcome_date": "20260529",
+      "prior_candidate_date": "20260528",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 125,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 7,
+      "three_trade_day_limit_down_pool_touches": 14,
+      "three_day_denominator": 125,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "2099a08dc5bb4fb18830c3c4dbf262d3f81b12d8ca49c5cab44a6b82eec1caf1",
+      "outcome_limit_up_partition_sha256": "2ce1a7d7636cf03c2bd29fc96972f3979625f7f50c365a2590c5d3c84fa857c2",
+      "outcome_limit_down_partition_sha256": "560920de18124f85b291961fbb05f0dd1d2c5a525dc828ca4a89779eb4484d8c",
+      "three_day_limit_down_partition_sha256": [
+        "560920de18124f85b291961fbb05f0dd1d2c5a525dc828ca4a89779eb4484d8c",
+        "7143efecf6c88d164f628198f5f55305fe9c0276dc54faa317bf0e50e666d813",
+        "c67b7b77ed344e58cb34d08e1e92d3aea8ac3db69101368ba33d41c8984b9223"
+      ]
+    },
+    {
+      "outcome_date": "20260601",
+      "prior_candidate_date": "20260529",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 67,
+      "next_day_limit_up_pool_matches": 22,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 3,
+      "three_day_denominator": 67,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "2ce1a7d7636cf03c2bd29fc96972f3979625f7f50c365a2590c5d3c84fa857c2",
+      "outcome_limit_up_partition_sha256": "72212ad88943b8f3765225a29e21b249e9ffd378b3ba9287ac816f337496774d",
+      "outcome_limit_down_partition_sha256": "7143efecf6c88d164f628198f5f55305fe9c0276dc54faa317bf0e50e666d813",
+      "three_day_limit_down_partition_sha256": [
+        "7143efecf6c88d164f628198f5f55305fe9c0276dc54faa317bf0e50e666d813",
+        "c67b7b77ed344e58cb34d08e1e92d3aea8ac3db69101368ba33d41c8984b9223",
+        "a748f802a4268a177751694cb7bd0cc60933ff423cebeff8f9f8bafd38627404"
+      ]
+    },
+    {
+      "outcome_date": "20260602",
+      "prior_candidate_date": "20260601",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 164,
+      "next_day_limit_up_pool_matches": 31,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 18,
+      "three_day_denominator": 164,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "72212ad88943b8f3765225a29e21b249e9ffd378b3ba9287ac816f337496774d",
+      "outcome_limit_up_partition_sha256": "0bd188f5f66c94ad47df260228be9e19f1b008350a62727942c2cbc23a07485b",
+      "outcome_limit_down_partition_sha256": "c67b7b77ed344e58cb34d08e1e92d3aea8ac3db69101368ba33d41c8984b9223",
+      "three_day_limit_down_partition_sha256": [
+        "c67b7b77ed344e58cb34d08e1e92d3aea8ac3db69101368ba33d41c8984b9223",
+        "a748f802a4268a177751694cb7bd0cc60933ff423cebeff8f9f8bafd38627404",
+        "631c381fd60698a5b43ccba4a6c95d3cddd6bc1a35cdeb63e0c6f47c154956fa"
+      ]
+    },
+    {
+      "outcome_date": "20260603",
+      "prior_candidate_date": "20260602",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 93,
+      "next_day_limit_up_pool_matches": 20,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 12,
+      "three_day_denominator": 93,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "0bd188f5f66c94ad47df260228be9e19f1b008350a62727942c2cbc23a07485b",
+      "outcome_limit_up_partition_sha256": "9118d9a7cc26e619ae16aa8ca1a1cc5ea8305714f7aa068ef52cbd3706bc9888",
+      "outcome_limit_down_partition_sha256": "a748f802a4268a177751694cb7bd0cc60933ff423cebeff8f9f8bafd38627404",
+      "three_day_limit_down_partition_sha256": [
+        "a748f802a4268a177751694cb7bd0cc60933ff423cebeff8f9f8bafd38627404",
+        "631c381fd60698a5b43ccba4a6c95d3cddd6bc1a35cdeb63e0c6f47c154956fa",
+        "ee67292b93d95bd7e15534bd3dcdb7f9bfcf4b3806f54ef3ef2b560ff45196d2"
+      ]
+    },
+    {
+      "outcome_date": "20260604",
+      "prior_candidate_date": "20260603",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 81,
+      "next_day_limit_up_pool_matches": 15,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 81,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "9118d9a7cc26e619ae16aa8ca1a1cc5ea8305714f7aa068ef52cbd3706bc9888",
+      "outcome_limit_up_partition_sha256": "51b7f687c668e5cbb642a80c08869ebcb776211fdf774f41a626e174f3c6e428",
+      "outcome_limit_down_partition_sha256": "631c381fd60698a5b43ccba4a6c95d3cddd6bc1a35cdeb63e0c6f47c154956fa",
+      "three_day_limit_down_partition_sha256": [
+        "631c381fd60698a5b43ccba4a6c95d3cddd6bc1a35cdeb63e0c6f47c154956fa",
+        "ee67292b93d95bd7e15534bd3dcdb7f9bfcf4b3806f54ef3ef2b560ff45196d2",
+        "2289342d20e6125dc727ae995d0a923425ed36b4b7cf89b07077fe221bc7ebba"
+      ]
+    },
+    {
+      "outcome_date": "20260605",
+      "prior_candidate_date": "20260604",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 89,
+      "next_day_limit_up_pool_matches": 8,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 89,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "51b7f687c668e5cbb642a80c08869ebcb776211fdf774f41a626e174f3c6e428",
+      "outcome_limit_up_partition_sha256": "5eb12d2abcaa859064850e509d4dd306d0e3c16f6c83163e30395855d3447b84",
+      "outcome_limit_down_partition_sha256": "ee67292b93d95bd7e15534bd3dcdb7f9bfcf4b3806f54ef3ef2b560ff45196d2",
+      "three_day_limit_down_partition_sha256": [
+        "ee67292b93d95bd7e15534bd3dcdb7f9bfcf4b3806f54ef3ef2b560ff45196d2",
+        "2289342d20e6125dc727ae995d0a923425ed36b4b7cf89b07077fe221bc7ebba",
+        "00d0c95904af6b53560fbfdd20c16f25942b769b8133742623d074f53a63089c"
+      ]
+    },
+    {
+      "outcome_date": "20260608",
+      "prior_candidate_date": "20260605",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 82,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 82,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "5eb12d2abcaa859064850e509d4dd306d0e3c16f6c83163e30395855d3447b84",
+      "outcome_limit_up_partition_sha256": "d852ac9dec7ecec0186904655dd80ed321f0a0978404c862ab4ecf21f84bfbd6",
+      "outcome_limit_down_partition_sha256": "2289342d20e6125dc727ae995d0a923425ed36b4b7cf89b07077fe221bc7ebba",
+      "three_day_limit_down_partition_sha256": [
+        "2289342d20e6125dc727ae995d0a923425ed36b4b7cf89b07077fe221bc7ebba",
+        "00d0c95904af6b53560fbfdd20c16f25942b769b8133742623d074f53a63089c",
+        "7ed85b2e4cb547bf93131ffdd2eef143e08fd8b48c288085fc3e9531c276e4c7"
+      ]
+    },
+    {
+      "outcome_date": "20260609",
+      "prior_candidate_date": "20260608",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 62,
+      "next_day_limit_up_pool_matches": 11,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 12,
+      "three_day_denominator": 62,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "d852ac9dec7ecec0186904655dd80ed321f0a0978404c862ab4ecf21f84bfbd6",
+      "outcome_limit_up_partition_sha256": "dd6ea6930e4a663bb11d94aafea72f5b0b1972ebaef6998111e1e7d8ddec80c1",
+      "outcome_limit_down_partition_sha256": "00d0c95904af6b53560fbfdd20c16f25942b769b8133742623d074f53a63089c",
+      "three_day_limit_down_partition_sha256": [
+        "00d0c95904af6b53560fbfdd20c16f25942b769b8133742623d074f53a63089c",
+        "7ed85b2e4cb547bf93131ffdd2eef143e08fd8b48c288085fc3e9531c276e4c7",
+        "a1671033390ccb8aed88548845736d953d012823ca37ab66cf9e947502532395"
+      ]
+    },
+    {
+      "outcome_date": "20260610",
+      "prior_candidate_date": "20260609",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 139,
+      "next_day_limit_up_pool_matches": 16,
+      "next_day_limit_down_pool_matches": 7,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 139,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "dd6ea6930e4a663bb11d94aafea72f5b0b1972ebaef6998111e1e7d8ddec80c1",
+      "outcome_limit_up_partition_sha256": "88853ed1736dd6e6a2137688f0d4b2cbffd9228024d02e55a1fb2132a91a3fba",
+      "outcome_limit_down_partition_sha256": "7ed85b2e4cb547bf93131ffdd2eef143e08fd8b48c288085fc3e9531c276e4c7",
+      "three_day_limit_down_partition_sha256": [
+        "7ed85b2e4cb547bf93131ffdd2eef143e08fd8b48c288085fc3e9531c276e4c7",
+        "a1671033390ccb8aed88548845736d953d012823ca37ab66cf9e947502532395",
+        "a84d997921e460404b7dc8b89ac05666caaec7b2e5515676cfade5739a5349ad"
+      ]
+    },
+    {
+      "outcome_date": "20260611",
+      "prior_candidate_date": "20260610",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 75,
+      "next_day_limit_up_pool_matches": 11,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 7,
+      "three_day_denominator": 75,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "88853ed1736dd6e6a2137688f0d4b2cbffd9228024d02e55a1fb2132a91a3fba",
+      "outcome_limit_up_partition_sha256": "75f7219b8167c8cdae677214a0096af7c8b6e5f1785ec357532110b6f1243a73",
+      "outcome_limit_down_partition_sha256": "a1671033390ccb8aed88548845736d953d012823ca37ab66cf9e947502532395",
+      "three_day_limit_down_partition_sha256": [
+        "a1671033390ccb8aed88548845736d953d012823ca37ab66cf9e947502532395",
+        "a84d997921e460404b7dc8b89ac05666caaec7b2e5515676cfade5739a5349ad",
+        "af15b609d2e36888f67337606a266b3bc80b733999df7529094e63b9cd9e98d7"
+      ]
+    },
+    {
+      "outcome_date": "20260612",
+      "prior_candidate_date": "20260611",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 78,
+      "next_day_limit_up_pool_matches": 13,
+      "next_day_limit_down_pool_matches": 4,
+      "three_trade_day_limit_down_pool_touches": 6,
+      "three_day_denominator": 78,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "75f7219b8167c8cdae677214a0096af7c8b6e5f1785ec357532110b6f1243a73",
+      "outcome_limit_up_partition_sha256": "685edf61b2204d0b32b40b13fefa11f90d14e5d7a58edce47dcd41f9e174699a",
+      "outcome_limit_down_partition_sha256": "a84d997921e460404b7dc8b89ac05666caaec7b2e5515676cfade5739a5349ad",
+      "three_day_limit_down_partition_sha256": [
+        "a84d997921e460404b7dc8b89ac05666caaec7b2e5515676cfade5739a5349ad",
+        "af15b609d2e36888f67337606a266b3bc80b733999df7529094e63b9cd9e98d7",
+        "47213b0ab53e9338acfdcc6c9aa049149bceac6fb4b7843cd72daf5d1263c9cb"
+      ]
+    },
+    {
+      "outcome_date": "20260615",
+      "prior_candidate_date": "20260612",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 99,
+      "next_day_limit_up_pool_matches": 15,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": 1,
+      "three_day_denominator": 99,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "685edf61b2204d0b32b40b13fefa11f90d14e5d7a58edce47dcd41f9e174699a",
+      "outcome_limit_up_partition_sha256": "fd10de1068fc174535597095d887da014abcabae3cdc5540c3e3c9c03b6d5a43",
+      "outcome_limit_down_partition_sha256": "af15b609d2e36888f67337606a266b3bc80b733999df7529094e63b9cd9e98d7",
+      "three_day_limit_down_partition_sha256": [
+        "af15b609d2e36888f67337606a266b3bc80b733999df7529094e63b9cd9e98d7",
+        "47213b0ab53e9338acfdcc6c9aa049149bceac6fb4b7843cd72daf5d1263c9cb",
+        "eecdee8eefe9d33ee3611c49ab9bf3cfdb6685c8435e7320be2c4d28d871f132"
+      ]
+    },
+    {
+      "outcome_date": "20260616",
+      "prior_candidate_date": "20260615",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 159,
+      "next_day_limit_up_pool_matches": 37,
+      "next_day_limit_down_pool_matches": 0,
+      "three_trade_day_limit_down_pool_touches": 5,
+      "three_day_denominator": 159,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "fd10de1068fc174535597095d887da014abcabae3cdc5540c3e3c9c03b6d5a43",
+      "outcome_limit_up_partition_sha256": "6721242323297ddca983d897654138c0c44bb15ea7b472f725686aaeeb240069",
+      "outcome_limit_down_partition_sha256": "47213b0ab53e9338acfdcc6c9aa049149bceac6fb4b7843cd72daf5d1263c9cb",
+      "three_day_limit_down_partition_sha256": [
+        "47213b0ab53e9338acfdcc6c9aa049149bceac6fb4b7843cd72daf5d1263c9cb",
+        "eecdee8eefe9d33ee3611c49ab9bf3cfdb6685c8435e7320be2c4d28d871f132",
+        "3e249f485cd5def94bb427193d42e8ab412b913464e17dc09f4ccdeac8dd5e18"
+      ]
+    },
+    {
+      "outcome_date": "20260617",
+      "prior_candidate_date": "20260616",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 137,
+      "next_day_limit_up_pool_matches": 26,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 137,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "6721242323297ddca983d897654138c0c44bb15ea7b472f725686aaeeb240069",
+      "outcome_limit_up_partition_sha256": "e4df2ee700874969f7e81c1d3db5ef8276393aff99e1a86196a53f4bf84c5d24",
+      "outcome_limit_down_partition_sha256": "eecdee8eefe9d33ee3611c49ab9bf3cfdb6685c8435e7320be2c4d28d871f132",
+      "three_day_limit_down_partition_sha256": [
+        "eecdee8eefe9d33ee3611c49ab9bf3cfdb6685c8435e7320be2c4d28d871f132",
+        "3e249f485cd5def94bb427193d42e8ab412b913464e17dc09f4ccdeac8dd5e18",
+        "80900876f747d5428153f28233b48e2300e07ccd7056e6e6058c53a65eb453a9"
+      ]
+    },
+    {
+      "outcome_date": "20260618",
+      "prior_candidate_date": "20260617",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 95,
+      "next_day_limit_up_pool_matches": 14,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 12,
+      "three_day_denominator": 95,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "e4df2ee700874969f7e81c1d3db5ef8276393aff99e1a86196a53f4bf84c5d24",
+      "outcome_limit_up_partition_sha256": "6dbb2c50a59ca9b6b1d47ba91f259d7adb6768b75e70e1da4cad2e2b62088785",
+      "outcome_limit_down_partition_sha256": "3e249f485cd5def94bb427193d42e8ab412b913464e17dc09f4ccdeac8dd5e18",
+      "three_day_limit_down_partition_sha256": [
+        "3e249f485cd5def94bb427193d42e8ab412b913464e17dc09f4ccdeac8dd5e18",
+        "80900876f747d5428153f28233b48e2300e07ccd7056e6e6058c53a65eb453a9",
+        "425a2c4719ada28c36185b3bd6b81758cda84ea855ef7c2c86acdbd55f934e3c"
+      ]
+    },
+    {
+      "outcome_date": "20260622",
+      "prior_candidate_date": "20260618",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 101,
+      "next_day_limit_up_pool_matches": 27,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 101,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "6dbb2c50a59ca9b6b1d47ba91f259d7adb6768b75e70e1da4cad2e2b62088785",
+      "outcome_limit_up_partition_sha256": "1ef6a8e89ed48bf3e9613ef6f2f08b57dc48e9ef9d2ea27a47ef4d36c112ff1c",
+      "outcome_limit_down_partition_sha256": "80900876f747d5428153f28233b48e2300e07ccd7056e6e6058c53a65eb453a9",
+      "three_day_limit_down_partition_sha256": [
+        "80900876f747d5428153f28233b48e2300e07ccd7056e6e6058c53a65eb453a9",
+        "425a2c4719ada28c36185b3bd6b81758cda84ea855ef7c2c86acdbd55f934e3c",
+        "068310f64035d1d5a49852a107f3d6f0348c297d259abae96f399c28bbe6b41d"
+      ]
+    },
+    {
+      "outcome_date": "20260623",
+      "prior_candidate_date": "20260622",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 149,
+      "next_day_limit_up_pool_matches": 27,
+      "next_day_limit_down_pool_matches": 6,
+      "three_trade_day_limit_down_pool_touches": 11,
+      "three_day_denominator": 149,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "1ef6a8e89ed48bf3e9613ef6f2f08b57dc48e9ef9d2ea27a47ef4d36c112ff1c",
+      "outcome_limit_up_partition_sha256": "69bf5cd5c94755dbf3bcffb99a7a30b33b7edeeda80442165d9f5ded9da0bf95",
+      "outcome_limit_down_partition_sha256": "425a2c4719ada28c36185b3bd6b81758cda84ea855ef7c2c86acdbd55f934e3c",
+      "three_day_limit_down_partition_sha256": [
+        "425a2c4719ada28c36185b3bd6b81758cda84ea855ef7c2c86acdbd55f934e3c",
+        "068310f64035d1d5a49852a107f3d6f0348c297d259abae96f399c28bbe6b41d",
+        "e1b5dd0e047adcd4a25c22c17de09d22c9c0129a227d3ff23255af57590f1c08"
+      ]
+    },
+    {
+      "outcome_date": "20260624",
+      "prior_candidate_date": "20260623",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 122,
+      "next_day_limit_up_pool_matches": 17,
+      "next_day_limit_down_pool_matches": 6,
+      "three_trade_day_limit_down_pool_touches": 21,
+      "three_day_denominator": 122,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "69bf5cd5c94755dbf3bcffb99a7a30b33b7edeeda80442165d9f5ded9da0bf95",
+      "outcome_limit_up_partition_sha256": "a07db42ec9e2e23fad829d872694448b072399d44305ff3b4eefda7e072fe675",
+      "outcome_limit_down_partition_sha256": "068310f64035d1d5a49852a107f3d6f0348c297d259abae96f399c28bbe6b41d",
+      "three_day_limit_down_partition_sha256": [
+        "068310f64035d1d5a49852a107f3d6f0348c297d259abae96f399c28bbe6b41d",
+        "e1b5dd0e047adcd4a25c22c17de09d22c9c0129a227d3ff23255af57590f1c08",
+        "ac9d342c37c1cf9cdf8429b8279d839b5d9dd3964a8d84c703bff48a31f1f416"
+      ]
+    },
+    {
+      "outcome_date": "20260625",
+      "prior_candidate_date": "20260624",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 106,
+      "next_day_limit_up_pool_matches": 17,
+      "next_day_limit_down_pool_matches": 3,
+      "three_trade_day_limit_down_pool_touches": 15,
+      "three_day_denominator": 106,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "a07db42ec9e2e23fad829d872694448b072399d44305ff3b4eefda7e072fe675",
+      "outcome_limit_up_partition_sha256": "2f56f92d52b672fdaec00fb08bb564eb0cfc450c59fea47b2b39de16a7108bd2",
+      "outcome_limit_down_partition_sha256": "e1b5dd0e047adcd4a25c22c17de09d22c9c0129a227d3ff23255af57590f1c08",
+      "three_day_limit_down_partition_sha256": [
+        "e1b5dd0e047adcd4a25c22c17de09d22c9c0129a227d3ff23255af57590f1c08",
+        "ac9d342c37c1cf9cdf8429b8279d839b5d9dd3964a8d84c703bff48a31f1f416",
+        "9c35a2118c0013ebe53574dabeaf3f577d0ed3c69f5697163e7205d12c9467d2"
+      ]
+    },
+    {
+      "outcome_date": "20260626",
+      "prior_candidate_date": "20260625",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 91,
+      "next_day_limit_up_pool_matches": 12,
+      "next_day_limit_down_pool_matches": 2,
+      "three_trade_day_limit_down_pool_touches": 10,
+      "three_day_denominator": 91,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "2f56f92d52b672fdaec00fb08bb564eb0cfc450c59fea47b2b39de16a7108bd2",
+      "outcome_limit_up_partition_sha256": "e805f3cda2fcbcdae3dc8f3945b7acf68a3fea422d000668e59677410815bcd7",
+      "outcome_limit_down_partition_sha256": "ac9d342c37c1cf9cdf8429b8279d839b5d9dd3964a8d84c703bff48a31f1f416",
+      "three_day_limit_down_partition_sha256": [
+        "ac9d342c37c1cf9cdf8429b8279d839b5d9dd3964a8d84c703bff48a31f1f416",
+        "9c35a2118c0013ebe53574dabeaf3f577d0ed3c69f5697163e7205d12c9467d2",
+        "6442b53f7c78d85510bc5caaad588198319e175d86521d87d6990cc1910aaa02"
+      ]
+    },
+    {
+      "outcome_date": "20260629",
+      "prior_candidate_date": "20260626",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 73,
+      "next_day_limit_up_pool_matches": 15,
+      "next_day_limit_down_pool_matches": 6,
+      "three_trade_day_limit_down_pool_touches": null,
+      "three_day_denominator": null,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "e805f3cda2fcbcdae3dc8f3945b7acf68a3fea422d000668e59677410815bcd7",
+      "outcome_limit_up_partition_sha256": "32b00d188148d375e4175bccfe17aebab0580b4a6359433c12a2439ae161dc5c",
+      "outcome_limit_down_partition_sha256": "9c35a2118c0013ebe53574dabeaf3f577d0ed3c69f5697163e7205d12c9467d2",
+      "three_day_limit_down_partition_sha256": []
+    },
+    {
+      "outcome_date": "20260630",
+      "prior_candidate_date": "20260629",
+      "year": "2026",
+      "half_year": "2026H1",
+      "prior_limit_up_candidates": 122,
+      "next_day_limit_up_pool_matches": 28,
+      "next_day_limit_down_pool_matches": 1,
+      "three_trade_day_limit_down_pool_touches": null,
+      "three_day_denominator": null,
+      "same_day_up_down_pool_overlap": 0,
+      "calendar_partition_sha256": "c94b680b417fd26924c1b96124f8700206ed9d33dfdb7d747b73d68fe14108ee",
+      "prior_limit_up_partition_sha256": "32b00d188148d375e4175bccfe17aebab0580b4a6359433c12a2439ae161dc5c",
+      "outcome_limit_up_partition_sha256": "540f2eb73f7bcbeb9f940b2d995f0e34e9c8edf7c5e56bd0de35fd7ac453d666",
+      "outcome_limit_down_partition_sha256": "6442b53f7c78d85510bc5caaad588198319e175d86521d87d6990cc1910aaa02",
+      "three_day_limit_down_partition_sha256": []
+    }
+  ],
+  "archive_hashes_sha256": {
+    "h01-raw-2024h1.zip": "1abfc7022075958537e635b107c0919a68122dc0ff6b7a97cec6132f9ab6fec8",
+    "h01-raw-2024h2.zip": "ddd770f7f0dc1322c2d782ae1925d43df302570277c0b53af0bde8bef674c1ad",
+    "h01-raw-2025h1.zip": "cb9bca81e71fa42ed85659564e5a6a7f446f25cbfc1bc7005d734529dbdc0c67",
+    "h01-raw-2025h2.zip": "8c4a9c90acfc9b7e841a453b127b2dcfb6dcc68e43566ca9f5838d1dcbcb0144",
+    "h01-raw-2026dev.zip": "7da9da754fb7d976b03a371666fd9d27fec0fcaf4f4f784dbecae01e978e857c"
+  },
+  "source_run_id": 38358815302,
+  "source_semantics": {
+    "status": "EVENT_POOL_SEMANTICS_UNCONFIRMED",
+    "interpretation": "same-vendor limit_up/limit_down pool membership transitions; not certified close-limit or intraday touch semantics"
+  },
+  "classification": "TIER_D_HISTORICAL_MARKET_EVENT_OBSERVATION_NOT_TRADING_PERFORMANCE",
+  "tier_e_status": "BLOCKED_UNVERIFIED_EXECUTION_PIT_AND_SOURCE_TERMS",
+  "decision_time_inputs_used": false,
+  "future_data_used_as_decision_input": false,
+  "protected_holdout_accessed": false,
+  "sample_observations_are_independent": false
+}
+

@@ -46,6 +46,36 @@ class ArtifactAuditError(ValueError):
     """An artifact is malformed, ambiguous, or crosses the protected cutoff."""
 
 
+def trusted_archive_bytes(path: Path) -> bytes:
+    """Return bytes only for an exact, whole-archive SHA256 allowlist match."""
+    expected = TRUSTED_ARCHIVE_SHA256.get(Path(path).name)
+    if expected is None:
+        raise ArtifactAuditError(f"unapproved archive name: {Path(path).name}")
+    raw = Path(path).read_bytes()
+    if hashlib.sha256(raw).hexdigest() != expected:
+        raise ArtifactAuditError(f"untrusted archive SHA256: {Path(path).name}")
+    return raw
+
+
+def preflight_raw_member_names(names: set[str]) -> set[str]:
+    """Validate every raw partition path/date before any Parquet is read."""
+    raw_datasets: set[str] = set()
+    for name in names:
+        if not name.startswith("raw/"):
+            continue
+        parts = name.split("/")
+        if len(parts) != 3 or parts[1] not in HASHED_DATASETS:
+            raise ArtifactAuditError(f"unexpected raw dataset/member path: {name}")
+        raw_datasets.add(parts[1])
+        match = re.fullmatch(r"(\d{8})(?:_(\d{8}))?\.parquet", parts[2])
+        if match is None:
+            raise ArtifactAuditError(f"invalid raw partition path: {name}")
+        partition_dates = [value for value in match.groups() if value is not None]
+        if max(partition_dates) > DEV_CUTOFF:
+            raise ArtifactAuditError("artifact contains a post-development partition")
+    return raw_datasets
+
+
 def _date_text(value: Any) -> str:
     parsed = pd.to_datetime(value, errors="coerce")
     if pd.isna(parsed):
@@ -99,34 +129,14 @@ def audit_artifacts(paths: list[Path]) -> dict[str, Any]:
             raise ArtifactAuditError(f"duplicate artifact period: {period}")
         used_periods.add(period)
 
-        expected_archive_sha256 = TRUSTED_ARCHIVE_SHA256[path.name]
-        archive_bytes = path.read_bytes()
+        archive_bytes = trusted_archive_bytes(path)
         archive_sha256 = hashlib.sha256(archive_bytes).hexdigest()
-        if archive_sha256 != expected_archive_sha256:
-            raise ArtifactAuditError(f"untrusted archive SHA256: {path.name}")
         # No ZIP member listing, decompression, or Parquet parsing occurs before
         # the complete archive bytes match the trusted source-run allowlist.
         with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
             names = set(archive.namelist())
-            artifact_raw_datasets.update(
-                name.split("/")[1]
-                for name in names
-                if name.startswith("raw/") and len(name.split("/")) > 2
-            )
             # Check member names only. Do not decompress or read any protected data.
-            for name in names:
-                if not name.startswith("raw/"):
-                    continue
-                parts = name.split("/")
-                if len(parts) != 3 or parts[1] not in HASHED_DATASETS:
-                    raise ArtifactAuditError(f"unexpected raw dataset/member path: {name}")
-                leaf = parts[2]
-                match = re.fullmatch(r"(\d{8})(?:_(\d{8}))?\.parquet", leaf)
-                if match is None:
-                    raise ArtifactAuditError(f"invalid raw partition path: {name}")
-                partition_dates = [value for value in match.groups() if value is not None]
-                if max(partition_dates) > DEV_CUTOFF:
-                    raise ArtifactAuditError("artifact contains a post-development partition")
+            artifact_raw_datasets.update(preflight_raw_member_names(names))
 
             metadata_paths = [n for n in names if n == f"batch_metadata/{period}.json"]
             if len(metadata_paths) != 1:
