@@ -8,9 +8,11 @@ on:
       - scripts/h02_forward_market_condition_pilot.py
       - scripts/h02_stock_event_conditional_pilot.py
       - scripts/h02_final_stock_features.py
+      - scripts/h02_final_stock_forecast.py
       - tests/test_h02_stock_event_conditional_pilot.py
       - tests/test_h02_forward_market_condition_pilot.py
       - tests/test_h02_final_stock_features.py
+      - tests/test_h02_final_stock_forecast.py
   pull_request:
     branches:
       - main
@@ -18,8 +20,10 @@ on:
       - .github/workflows/h02-forward-market-pilot.yml
       - scripts/h02_forward_market_condition_pilot.py
       - scripts/h02_final_stock_features.py
+      - scripts/h02_final_stock_forecast.py
       - tests/test_h02_forward_market_condition_pilot.py
       - tests/test_h02_final_stock_features.py
+      - tests/test_h02_final_stock_forecast.py
   workflow_dispatch:
 
 permissions:
@@ -111,6 +115,12 @@ jobs:
             --out-json runs/h02-forward-market-pilot/final-stock-features.json \
             --out-markdown runs/h02-forward-market-pilot/final-stock-features.md \
             --matrix-out "$RUNNER_TEMP/h02-final-stock-feature-matrix.csv"
+      - name: Fit stock event forecast models and risk-prioritized research rankings
+        run: |
+          python scripts/h02_final_stock_forecast.py \
+            --matrix "$RUNNER_TEMP/h02-final-stock-feature-matrix.csv" \
+            --out-json runs/h02-forward-market-pilot/final-stock-forecast.json \
+            --out-markdown runs/h02-forward-market-pilot/final-stock-forecast.md
       - uses: actions/upload-artifact@v4
         if: always()
         with:
