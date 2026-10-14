@@ -1,3 +1,13 @@
+# H02 FAST-TRACK：先出真实数据结果
+
+**最新、优先执行规格：** [H02_FAST_TRACK_EXECUTION.md](research/handoffs/h02-20261014/H02_FAST_TRACK_EXECUTION.md)
+
+用户明确要求加快看到结果。**当前以FAST-0→FAST-1→FAST-2为最优先**：马上盘点现有数据、做2020-01-03的三股与全日候选真实覆盖统计、查明官方限价/PIT阻碍；之后按日扩至2020-01。无需等待七个旧工程包顺序全部完成。可以并行修认证门与合成交易账本。**所有旧文档的Git/冻结策略/真实收益准入/留出集硬约束继续适用。**
+
+**本地Codex首句话：** 请阅读本入口、FAST-TRACK文档和旧完整规格，直接执行FAST-0、FAST-1、FAST-2；每个有数据的checkpoint输出实际分子/分母、SHA、失败reason、commit及新HEAD CI，缺权限则真实BLOCKED同时做离线任务。不要只回复计划。
+
+---
+
 # H02 长任务 — 本地 Codex 唯一当前入口
 
 **完整执行规格：** [research/handoffs/h02-20261014/H02_LONG_TASK_EVIDENCE_PIPELINE.md](research/handoffs/h02-20261014/H02_LONG_TASK_EVIDENCE_PIPELINE.md)
