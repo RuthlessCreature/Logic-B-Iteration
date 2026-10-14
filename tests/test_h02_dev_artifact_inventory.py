@@ -85,8 +85,16 @@ def make_artifacts(root: Path, *, duplicate_period=None, corrupt_period=None) ->
     return paths
 
 
-def test_audit_reports_hash_verified_candidate_coverage_and_blocks_tier_e(tmp_path):
-    report = audit_artifacts(make_artifacts(tmp_path))
+def trust_fixture_archives(monkeypatch, paths: list[Path]) -> list[Path]:
+    _AUDITOR.TRUSTED_ARCHIVE_SHA256 = {
+        path.name: hashlib.sha256(path.read_bytes()).hexdigest() for path in paths
+    }
+    return paths
+
+
+def test_audit_reports_hash_verified_candidate_coverage_and_blocks_tier_e(tmp_path, monkeypatch):
+    paths = trust_fixture_archives(monkeypatch, make_artifacts(tmp_path))
+    report = audit_artifacts(paths)
     assert report["status"] == "TIER_D_INVENTORY_COMPLETE_TIER_E_BLOCKED"
     assert report["coverage"]["calendar_sessions"] == 5
     assert report["coverage"]["candidate_partitions"] == 5
@@ -102,20 +110,55 @@ def test_audit_reports_hash_verified_candidate_coverage_and_blocks_tier_e(tmp_pa
     assert report["daily_candidate_diagnostics"][0][4] == 31
 
 
-def test_duplicate_symbol_day_fails_closed(tmp_path):
+def test_duplicate_symbol_day_fails_closed(tmp_path, monkeypatch):
+    paths = trust_fixture_archives(monkeypatch, make_artifacts(tmp_path, duplicate_period="2024h1"))
     with pytest.raises(ArtifactAuditError, match="duplicate candidate symbols"):
-        audit_artifacts(make_artifacts(tmp_path, duplicate_period="2024h1"))
+        audit_artifacts(paths)
 
 
-def test_raw_hash_mismatch_fails_closed(tmp_path):
+def test_raw_hash_mismatch_fails_closed(tmp_path, monkeypatch):
+    paths = make_artifacts(tmp_path, corrupt_period="2024h1")
+    paths = trust_fixture_archives(monkeypatch, paths)
     with pytest.raises(ArtifactAuditError, match="raw hash mismatch"):
-        audit_artifacts(make_artifacts(tmp_path, corrupt_period="2024h1"))
+        audit_artifacts(paths)
 
 
-def test_protected_period_partition_is_rejected_before_reading_data(tmp_path):
-    path = tmp_path / "h01-raw-2024h1.zip"
-    with zipfile.ZipFile(path, "w") as archive:
-        archive.writestr("raw/limit_up/20260701.parquet", b"must not read")
-    with pytest.raises(ArtifactAuditError, match="post-development"):
+def test_archive_sha_is_checked_before_zip_or_parquet_access(tmp_path, monkeypatch):
+    paths = make_artifacts(tmp_path)
+    _AUDITOR.TRUSTED_ARCHIVE_SHA256 = {path.name: "0" * 64 for path in paths}
+
+    def forbidden_zip(*args, **kwargs):
+        raise AssertionError("ZIP member was opened before trusted archive SHA verification")
+
+    monkeypatch.setattr(_AUDITOR.zipfile, "ZipFile", forbidden_zip)
+    with pytest.raises(ArtifactAuditError, match="untrusted archive SHA256"):
+        audit_artifacts(paths)
+
+
+def test_unapproved_observed_archive_is_rejected(tmp_path):
+    path = tmp_path / "h01-raw-2026observed.zip"
+    path.write_bytes(b"not opened")
+    with pytest.raises(ArtifactAuditError, match="exactly match the five trusted"):
         audit_artifacts([path])
+
+
+def test_trusted_archive_preflight_rejects_protected_partition_name(tmp_path, monkeypatch):
+    paths = make_artifacts(tmp_path)
+    protected = tmp_path / "h01-raw-2026dev.zip"
+    with zipfile.ZipFile(protected, "w") as archive:
+        archive.writestr("raw/limit_up/20260701.parquet", b"synthetic protected payload")
+    paths[-1] = protected
+    trust_fixture_archives(monkeypatch, paths)
+    with pytest.raises(ArtifactAuditError, match="post-development"):
+        audit_artifacts(paths)
+
+
+def test_trusted_archive_preflight_rejects_fake_date_suffix(tmp_path, monkeypatch):
+    paths = make_artifacts(tmp_path)
+    archive_path = paths[-1]
+    with zipfile.ZipFile(archive_path, "a") as archive:
+        archive.writestr("raw/limit_up/20260630_not-a-date_20260701.parquet", b"synthetic")
+    trust_fixture_archives(monkeypatch, paths)
+    with pytest.raises(ArtifactAuditError, match="invalid raw partition path"):
+        audit_artifacts(paths)
 

@@ -21,6 +21,14 @@ import pandas as pd
 
 DEV_CUTOFF = "20260630"
 ALLOWED_PERIODS = {"2024h1", "2024h2", "2025h1", "2025h2", "2026dev"}
+TRUSTED_SOURCE_RUN_ID = 38358815302
+TRUSTED_ARCHIVE_SHA256 = {
+    "h01-raw-2024h1.zip": "1abfc7022075958537e635b107c0919a68122dc0ff6b7a97cec6132f9ab6fec8",
+    "h01-raw-2024h2.zip": "ddd770f7f0dc1322c2d782ae1925d43df302570277c0b53af0bde8bef674c1ad",
+    "h01-raw-2025h1.zip": "cb9bca81e71fa42ed85659564e5a6a7f446f25cbfc1bc7005d734529dbdc0c67",
+    "h01-raw-2025h2.zip": "8c4a9c90acfc9b7e841a453b127b2dcfb6dcc68e43566ca9f5838d1dcbcb0144",
+    "h01-raw-2026dev.zip": "7da9da754fb7d976b03a371666fd9d27fec0fcaf4f4f784dbecae01e978e857c",
+}
 HASHED_DATASETS = {
     "calendar", "limit_up", "limit_down", "limit_break",
     "market_indicator", "theme_limit_up",
@@ -67,6 +75,11 @@ def _read_frame(raw: bytes, name: str) -> pd.DataFrame:
 def audit_artifacts(paths: list[Path]) -> dict[str, Any]:
     if not paths:
         raise ArtifactAuditError("at least one development artifact ZIP is required")
+    supplied_names = [Path(path).name for path in paths]
+    if len(supplied_names) != len(set(supplied_names)):
+        raise ArtifactAuditError("duplicate artifact filename")
+    if set(supplied_names) != set(TRUSTED_ARCHIVE_SHA256):
+        raise ArtifactAuditError("archives must exactly match the five trusted development artifacts")
 
     period_reports: list[dict[str, Any]] = []
     all_calendar: set[str] = set()
@@ -86,8 +99,14 @@ def audit_artifacts(paths: list[Path]) -> dict[str, Any]:
             raise ArtifactAuditError(f"duplicate artifact period: {period}")
         used_periods.add(period)
 
-        archive_sha256 = hashlib.sha256(path.read_bytes()).hexdigest()
-        with zipfile.ZipFile(path) as archive:
+        expected_archive_sha256 = TRUSTED_ARCHIVE_SHA256[path.name]
+        archive_bytes = path.read_bytes()
+        archive_sha256 = hashlib.sha256(archive_bytes).hexdigest()
+        if archive_sha256 != expected_archive_sha256:
+            raise ArtifactAuditError(f"untrusted archive SHA256: {path.name}")
+        # No ZIP member listing, decompression, or Parquet parsing occurs before
+        # the complete archive bytes match the trusted source-run allowlist.
+        with zipfile.ZipFile(io.BytesIO(archive_bytes)) as archive:
             names = set(archive.namelist())
             artifact_raw_datasets.update(
                 name.split("/")[1]
@@ -98,9 +117,15 @@ def audit_artifacts(paths: list[Path]) -> dict[str, Any]:
             for name in names:
                 if not name.startswith("raw/"):
                     continue
-                leaf = name.rsplit("/", 1)[-1]
+                parts = name.split("/")
+                if len(parts) != 3 or parts[1] not in HASHED_DATASETS:
+                    raise ArtifactAuditError(f"unexpected raw dataset/member path: {name}")
+                leaf = parts[2]
                 match = re.fullmatch(r"(\d{8})(?:_(\d{8}))?\.parquet", leaf)
-                if match and max(filter(None, match.groups())) > DEV_CUTOFF:
+                if match is None:
+                    raise ArtifactAuditError(f"invalid raw partition path: {name}")
+                partition_dates = [value for value in match.groups() if value is not None]
+                if max(partition_dates) > DEV_CUTOFF:
                     raise ArtifactAuditError("artifact contains a post-development partition")
 
             metadata_paths = [n for n in names if n == f"batch_metadata/{period}.json"]
@@ -365,3 +390,4 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
+
