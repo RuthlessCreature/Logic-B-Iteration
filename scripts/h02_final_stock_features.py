@@ -305,7 +305,7 @@ def _rate(rows: list[dict], label: str) -> tuple[int, int, float | None]:
     return k, n, k / n if n else None
 
 
-def _block_bootstrap_rate(rows: list[dict], label: str, reps: int = BOOTSTRAP_REPS) -> list[float]:
+def _block_bootstrap_rate(rows: list[dict], label: str, reps: int = BOOTSTRAP_REPS, calendar_days: list[str] | tuple[str, ...] | None = None) -> list[float]:
     if not rows:
         return []
     grouped: defaultdict[str, list[int]] = defaultdict(lambda: [0, 0])
@@ -313,20 +313,22 @@ def _block_bootstrap_rate(rows: list[dict], label: str, reps: int = BOOTSTRAP_RE
         grouped[row["outcome_date"]][0] += int(row[label])
         grouped[row["outcome_date"]][1] += 1
     per_day = {day: tuple(values) for day, values in grouped.items()}
-    days = list(per_day)
+    days = list(calendar_days) if calendar_days is not None else sorted(per_day)
+    if any(day not in set(days) for day in per_day):
+        raise ValueError("calendar_days must include every observed outcome_date")
     rng = np.random.default_rng(20261014)
     block_count = math.ceil(len(days) / BLOCK_DAYS)
     starts = rng.integers(0, len(days), size=(reps, block_count))
     offsets = np.arange(BLOCK_DAYS)
     indices = ((starts[:, :, None] + offsets[None, None, :]) % len(days)).reshape(reps, -1)[:, :len(days)]
-    daily_events = np.asarray([per_day[day][0] for day in days], dtype=np.int64)
-    daily_candidates = np.asarray([per_day[day][1] for day in days], dtype=np.int64)
+    daily_events = np.asarray([per_day.get(day, (0, 0))[0] for day in days], dtype=np.int64)
+    daily_candidates = np.asarray([per_day.get(day, (0, 0))[1] for day in days], dtype=np.int64)
     events = daily_events[indices].sum(axis=1)
     candidates = daily_candidates[indices].sum(axis=1)
     return (events[candidates > 0] / candidates[candidates > 0]).astype(float).tolist()
 
 
-def _conditional_table(rows: list[dict], label: str, groupers: dict[str, tuple[str, ...]]) -> dict:
+def _conditional_table(rows: list[dict], label: str, groupers: dict[str, tuple[str, ...]], calendar_days: list[str] | tuple[str, ...] | None = None) -> dict:
     output = {}
     all_n = len(rows)
     for name, (field, levels) in groupers.items():
@@ -334,7 +336,7 @@ def _conditional_table(rows: list[dict], label: str, groupers: dict[str, tuple[s
         for level in levels:
             part = [r for r in rows if r[field] == level]
             k, n, rate = _rate(part, label)
-            draws = _block_bootstrap_rate(part, label)
+            draws = _block_bootstrap_rate(part, label, calendar_days=calendar_days)
             groups.append({
                 "level": level, "events": k, "candidate_days": n,
                 "coverage": n / all_n if all_n else None, "rate": rate,
@@ -423,13 +425,13 @@ def analyze_features(data: dict[str, Any], aux: dict[str, Any]) -> tuple[dict[st
         for label, target in (("continuation_D", "Y1_D_vendor_limit_up_pool"), ("down_next_D", "Y2_D_vendor_limit_down_pool"), ("down_three_D_to_D2", "Y3_D_to_D2_vendor_limit_down_pool")):
             eligible = _eligible(rows, phase, label)
             k, n, rate = _rate(eligible, label)
-            draws = _block_bootstrap_rate(eligible, label)
+            draws = _block_bootstrap_rate(eligible, label, calendar_days=phase_days)
             summary["outcomes"][phase][target] = {
                 "events": k, "candidate_symbol_days": n,
                 "phase_eligible_candidate_coverage": n / len(part) if part else None,
                 "rate": rate,
                 "five_trading_day_block_bootstrap_95pct_ci": [float(np.quantile(draws, .025)), float(np.quantile(draws, .975))] if draws else None,
-                "groups": _conditional_table(eligible, label, GROUPERS),
+                "groups": _conditional_table(eligible, label, GROUPERS, calendar_days=phase_days),
             }
     return summary, rows
 
