@@ -178,6 +178,16 @@ def _select(frame: pd.DataFrame, thresholds: dict[str, Any]) -> dict[str, pd.Dat
     return {name: pd.DataFrame(rows) for name, rows in selected.items()}
 
 
+def _final_candidates(rule: str, rows: pd.DataFrame) -> pd.DataFrame:
+    """Take one deterministic final name per session from the policy ordering."""
+    if rows.empty:
+        return rows
+    if rule == "A_full_pool_reference":
+        ranked = rows.sort_values(["outcome_date", "risk_score", "ts_code"], ascending=[True, False, True], kind="mergesort")
+        return ranked.groupby("outcome_date", sort=True).head(1)
+    return rows.groupby("outcome_date", sort=True).head(1)
+
+
 def analyze(matrix: Path) -> dict[str, Any]:
     raw = matrix.read_bytes()
     df = pd.read_csv(matrix, dtype={"ts_code": str, "outcome_date": str})
@@ -207,7 +217,7 @@ def analyze(matrix: Path) -> dict[str, Any]:
             metrics = {label: _rate_ci(eligible, label, calendar) for label in LABELS}
             day_counts = eligible.groupby("outcome_date").size() if len(eligible) else pd.Series(dtype=int)
             # At most one final candidate is the highest-ranked name in each daily shortlist.
-            final = eligible.groupby("outcome_date", sort=True).head(1) if len(eligible) else eligible
+            final = _final_candidates(rule, eligible)
             phase_data["rules"][rule] = {
                 "selected_symbol_days": len(eligible), "pool_coverage": len(eligible)/len(pool) if len(pool) else None,
                 "sessions_with_selection": int(day_counts.size), "empty_sessions": len(calendar)-int(day_counts.size),

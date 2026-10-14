@@ -54,3 +54,11 @@ def test_train_rule_thresholds_are_provenanced_as_oof_only():
     assert "train dates only" in thresholds["source"]
     assert np.isclose(thresholds["down3_probability_q75"], .7425)
     assert thresholds["selection_limit"]["final_candidate_max_per_session"] == 1
+
+
+def test_full_pool_final_reference_uses_risk_score_rank_and_one_name():
+    rows = pd.DataFrame({"outcome_date": ["d1", "d1", "d2", "d2"],
+        "ts_code": ["A", "B", "A", "B"], "risk_score": [0.1, 0.9, 0.8, 0.2]})
+    final = POLICY._final_candidates("A_full_pool_reference", rows)
+    assert final.ts_code.tolist() == ["B", "A"]
+    assert final.groupby("outcome_date").size().max() == 1
