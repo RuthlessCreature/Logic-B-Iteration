@@ -18,7 +18,14 @@ class Portfolio:
     position: Position | None=None
 
     def __post_init__(self):
-        self.cash=float(self.initial_cash)
+        try:
+            initial_cash = float(self.initial_cash)
+        except (TypeError, ValueError, OverflowError) as exc:
+            raise ValueError("initial_cash must be finite and positive") from exc
+        if not math.isfinite(initial_cash) or initial_cash <= 0:
+            raise ValueError("initial_cash must be finite and positive")
+        self.initial_cash = initial_cash
+        self.cash = initial_cash
 
     def buy_all(
         self,

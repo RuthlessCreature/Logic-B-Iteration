@@ -1,4 +1,5 @@
 from datetime import datetime
+import math
 
 import pytest
 
@@ -28,6 +29,29 @@ def test_large_trade_uses_rate_instead_of_minimum_commission():
         stamp_rate=0.0005,
     )
     assert costs.commission(1_000_000)==pytest.approx(300.0)
+
+
+@pytest.mark.parametrize("field", [
+    "commission_rate", "minimum_commission", "transfer_fee_rate", "stamp_rate",
+])
+@pytest.mark.parametrize("invalid", [math.nan, math.inf, -math.inf])
+def test_trading_costs_reject_non_finite_values(field, invalid):
+    with pytest.raises(ValueError, match=f"{field} must be finite"):
+        TradingCosts(**{field: invalid})
+
+
+@pytest.mark.parametrize("field", [
+    "commission_rate", "minimum_commission", "transfer_fee_rate", "stamp_rate",
+])
+def test_trading_costs_reject_negative_values(field):
+    with pytest.raises(ValueError, match=f"{field} must be finite and non-negative"):
+        TradingCosts(**{field: -0.01})
+
+
+@pytest.mark.parametrize("invalid", [0, -1, math.nan, math.inf, -math.inf])
+def test_portfolio_rejects_invalid_initial_cash(invalid):
+    with pytest.raises(ValueError, match="initial_cash must be finite and positive"):
+        Portfolio(initial_cash=invalid)
 
 
 def test_portfolio_cash_includes_buy_and_sell_costs():

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import math
 
 
 @dataclass(frozen=True)
@@ -23,9 +24,10 @@ class TradingCosts:
             "transfer_fee_rate",
             "stamp_rate",
         ):
-            if getattr(self,name)<0:
+            value = getattr(self, name)
+            if not math.isfinite(value) or value < 0:
                 raise ValueError(
-                    f"{name} must be non-negative"
+                    f"{name} must be finite and non-negative"
                 )
 
     def commission(self,gross: float) -> float:
