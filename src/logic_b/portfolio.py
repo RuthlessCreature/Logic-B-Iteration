@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass,field
 from datetime import datetime
+import math
 
 from .costs import TradingCosts
 from .models import Position
@@ -29,9 +30,9 @@ class Portfolio:
             raise RuntimeError(
                 "B0 allows at most one position"
             )
-        if price<=0:
+        if not math.isfinite(price) or price <= 0:
             raise ValueError(
-                "price must be positive"
+                "price must be finite positive"
             )
 
         shares=int(
@@ -82,6 +83,9 @@ class Portfolio:
                 "T+1 violation: same-day sell is forbidden"
             )
 
+        if not math.isfinite(price) or price <= 0:
+            raise ValueError("price must be finite positive")
+
         gross=self.position.shares*price
         sell_cost=self.costs.sell_cost(gross)
         net=gross-sell_cost
@@ -98,6 +102,8 @@ class Portfolio:
             return self.cash
         if mark_price is None:
             mark_price=self.position.entry_price
+        if not math.isfinite(mark_price) or mark_price <= 0:
+            raise ValueError("mark_price must be finite positive")
         return (
             self.cash
             +self.position.shares*mark_price
