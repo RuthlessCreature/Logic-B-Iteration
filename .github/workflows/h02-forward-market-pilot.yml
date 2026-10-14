@@ -9,10 +9,12 @@ on:
       - scripts/h02_stock_event_conditional_pilot.py
       - scripts/h02_final_stock_features.py
       - scripts/h02_final_stock_forecast.py
+      - scripts/h02_synthetic_execution_ledger.py
       - tests/test_h02_stock_event_conditional_pilot.py
       - tests/test_h02_forward_market_condition_pilot.py
       - tests/test_h02_final_stock_features.py
       - tests/test_h02_final_stock_forecast.py
+      - tests/test_h02_synthetic_execution_ledger.py
   pull_request:
     branches:
       - main
@@ -21,9 +23,11 @@ on:
       - scripts/h02_forward_market_condition_pilot.py
       - scripts/h02_final_stock_features.py
       - scripts/h02_final_stock_forecast.py
+      - scripts/h02_synthetic_execution_ledger.py
       - tests/test_h02_forward_market_condition_pilot.py
       - tests/test_h02_final_stock_features.py
       - tests/test_h02_final_stock_forecast.py
+      - tests/test_h02_synthetic_execution_ledger.py
   workflow_dispatch:
 
 permissions:
@@ -43,7 +47,7 @@ jobs:
       - name: Install project
         run: python -m pip install -e ".[dev]"
       - name: Run forward pilot regressions
-        run: python -m pytest -q tests/test_h02_forward_market_condition_pilot.py tests/test_h02_stock_event_conditional_pilot.py tests/test_h02_final_stock_features.py
+        run: python -m pytest -q tests/test_h02_forward_market_condition_pilot.py tests/test_h02_stock_event_conditional_pilot.py tests/test_h02_final_stock_features.py tests/test_h02_final_stock_forecast.py tests/test_h02_synthetic_execution_ledger.py
       - name: Inspect retained source report and artifact contract (metadata only)
         run: |
           python - <<'PY'
@@ -121,6 +125,11 @@ jobs:
             --matrix "$RUNNER_TEMP/h02-final-stock-feature-matrix.csv" \
             --out-json runs/h02-forward-market-pilot/final-stock-forecast.json \
             --out-markdown runs/h02-forward-market-pilot/final-stock-forecast.md
+      - name: Run synthetic-only execution mechanics scenarios
+        run: |
+          python scripts/h02_synthetic_execution_ledger.py \
+            --out-json runs/h02-forward-market-pilot/synthetic-execution-ledger.json \
+            --out-markdown runs/h02-forward-market-pilot/synthetic-execution-ledger.md
       - uses: actions/upload-artifact@v4
         if: always()
         with:
