@@ -36,8 +36,10 @@ def _check(data: dict):
         raise ValueError("calendar must be unique and strictly sorted")
     if not days or any(not isinstance(d, str) or len(d) != 8 or not d.isdigit() or d > END for d in days):
         raise ValueError("unapproved or protected date in calendar")
-    if not START in days or "20250630" not in days or "20251231" not in days or "20260630" not in days:
-        raise ValueError("development calendar is incomplete")
+    if not (any(START <= d <= TRAIN_END for d in days)
+            and any(TRAIN_END < d <= VALIDATION_END for d in days)
+            and any(VALIDATION_END < d <= END for d in days)):
+        raise ValueError("development calendar has no complete train/validation/forward slices")
     for ds in ("limit_up", "limit_down"):
         if set(data[ds]) != set(days):
             raise ValueError(f"{ds} partition coverage does not match calendar")
