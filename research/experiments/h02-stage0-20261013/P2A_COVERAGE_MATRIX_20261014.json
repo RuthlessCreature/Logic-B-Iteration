@@ -11,7 +11,7 @@
     "minute_structural_sample_rows": 1,
     "not_a_recomputed_raw_data_matrix": true,
     "official_price_limit_rows": 0,
-    "overall_gate": "BLOCKED_INCOMPLETE_PROVENANCE_AND_EXECUTION_EVIDENCE",
+    "overall_gate": "BLOCKED_UNVERIFIED_EXECUTION_CERTIFICATION",
     "reason": "D-1 membership and BaoStock status come from archived job evidence. Minute rows were fetched live twice and their normalized hashes matched, but the rows and raw provider response are not persisted. Offline rerun from the same byte-identical input is therefore unavailable; the provider query is required."
   },
   "rows": [
@@ -25,6 +25,7 @@
         "minute publication time and partition digest not retained",
         "minute bars do not prove a fill"
       ],
+      "candidate_date": "2020-01-02",
       "cross_provider_daily_minute": {
         "close_abs_diff": 0.0,
         "high_abs_diff": 0.0,
@@ -119,6 +120,7 @@
         "minute publication time and partition digest not retained",
         "minute bars do not prove a fill"
       ],
+      "candidate_date": "2020-01-02",
       "cross_provider_daily_minute": {
         "close_abs_diff": 0.0,
         "high_abs_diff": 0.0,
@@ -213,6 +215,7 @@
         "minute publication time and partition digest not retained",
         "minute bars do not prove a fill"
       ],
+      "candidate_date": "2020-01-02",
       "cross_provider_daily_minute": {
         "close_abs_diff": 0.0,
         "high_abs_diff": 0.0,
