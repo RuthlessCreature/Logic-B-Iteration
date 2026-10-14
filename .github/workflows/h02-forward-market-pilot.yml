@@ -8,6 +8,14 @@ on:
       - scripts/h02_forward_market_condition_pilot.py
       - tests/test_h02_forward_market_condition_pilot.py
       - research/experiments/h02-stage0-20261013/H02_FIRST_EMPIRICAL_RESULT_20261014.json
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/h02-forward-market-pilot.yml
+      - scripts/h02_forward_market_condition_pilot.py
+      - tests/test_h02_forward_market_condition_pilot.py
+      - research/experiments/h02-stage0-20261013/H02_FIRST_EMPIRICAL_RESULT_20261014.json
   workflow_dispatch:
 
 permissions:
