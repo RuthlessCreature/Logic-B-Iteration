@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import io
 import json
 import zipfile
@@ -9,7 +10,14 @@ from pathlib import Path
 import pandas as pd
 import pytest
 
-from scripts.h02_audit_dev_artifact_coverage import ArtifactAuditError, audit_artifacts
+_AUDITOR_PATH = Path(__file__).parents[1] / "scripts/h02_audit_dev_artifact_coverage.py"
+_AUDITOR_SPEC = importlib.util.spec_from_file_location("h02_dev_artifact_auditor", _AUDITOR_PATH)
+if _AUDITOR_SPEC is None or _AUDITOR_SPEC.loader is None:
+    raise RuntimeError(f"cannot load auditor module: {_AUDITOR_PATH}")
+_AUDITOR = importlib.util.module_from_spec(_AUDITOR_SPEC)
+_AUDITOR_SPEC.loader.exec_module(_AUDITOR)
+ArtifactAuditError = _AUDITOR.ArtifactAuditError
+audit_artifacts = _AUDITOR.audit_artifacts
 
 
 PERIOD_DATES = {
@@ -110,3 +118,4 @@ def test_protected_period_partition_is_rejected_before_reading_data(tmp_path):
         archive.writestr("raw/limit_up/20260701.parquet", b"must not read")
     with pytest.raises(ArtifactAuditError, match="post-development"):
         audit_artifacts([path])
+
