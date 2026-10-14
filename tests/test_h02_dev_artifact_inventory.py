@@ -162,3 +162,12 @@ def test_trusted_archive_preflight_rejects_fake_date_suffix(tmp_path, monkeypatc
     with pytest.raises(ArtifactAuditError, match="invalid raw partition path"):
         audit_artifacts(paths)
 
+
+def test_trusted_archive_preflight_rejects_unapproved_raw_dataset(tmp_path, monkeypatch):
+    paths = make_artifacts(tmp_path)
+    with zipfile.ZipFile(paths[-1], "a") as archive:
+        archive.writestr("raw/limit_up_extra/20260630.parquet", b"synthetic")
+    trust_fixture_archives(monkeypatch, paths)
+    with pytest.raises(ArtifactAuditError, match="unexpected raw dataset/member path"):
+        audit_artifacts(paths)
+

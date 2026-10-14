@@ -376,6 +376,24 @@ def _markdown(report: dict[str, Any]) -> str:
         lines.append(_period_line(group, stats))
     lines += [
         "",
+        "Unweighted daily rates (mean / median, by outcome day):",
+        "",
+        "| Period | Next-day up pool | Next-day down pool | D..D+2 down pool |",
+        "|---|---:|---:|---:|",
+    ]
+    for group, stats in list(report["by_year"].items()) + list(report["by_half_year"].items()):
+        lines.append(
+            f"| {group} | {_daily_cell(stats['continuation'])} | "
+            f"{_daily_cell(stats['next_day_down_event'])} | "
+            f"{_daily_cell(stats['three_day_down_event'])} |"
+        )
+    lines.append("| Overall | " + " | ".join(
+        _daily_cell(overall[key]) for key in (
+            "continuation", "next_day_down_event", "three_day_down_event"
+        )
+    ) + " |")
+    lines += [
+        "",
         "## Provenance, coverage, and interpretation",
         "",
         f"- Source: [H01 artifact run {report['source_run_id']}](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/{report['source_run_id']}); whole ZIP SHA verified {report['coverage']['whole_archive_hashes_verified']}/{report['coverage']['whole_archive_hashes_expected']}; selected calendar/limit_up/limit_down manifest hashes verified {report['coverage']['manifest_hashes_verified']}/{report['coverage']['manifest_hashes_expected']}.",
@@ -403,6 +421,12 @@ def _period_line(group: str, stats: dict[str, Any]) -> str:
     down3 = stats["three_day_down_event"]
     down3_cell = f"{down3['numerator']:,}/{down3['denominator']:,} ({down3['pooled_percent']:.2f}%)" if down3["denominator"] else "—"
     return f"| {group} | {stats['outcome_trade_days']} | {stats['candidate_symbol_days']:,} | {cell('continuation')} | {cell('next_day_down_event')} | {down3_cell} |"
+
+
+def _daily_cell(item: dict[str, Any]) -> str:
+    if item["daily_ratio_mean"] is None:
+        return "—"
+    return f"{item['daily_ratio_mean'] * 100:.2f}% / {item['daily_ratio_median'] * 100:.2f}%"
 
 
 def write_reports(report: dict[str, Any], json_path: Path, markdown_path: Path) -> None:

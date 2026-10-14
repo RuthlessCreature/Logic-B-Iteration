@@ -23,6 +23,19 @@ The three-day risk denominator includes only outcome days with all three subsequ
 | 2025H2 | 126 | 9,015 | 2,240/9,015 (24.85%) | 256/9,015 (2.84%) | 996/9,015 (11.05%) |
 | 2026H1 | 116 | 10,031 | 2,105/10,031 (20.98%) | 300/10,031 (2.99%) | 1,056/9,836 (10.74%) |
 
+Unweighted daily rates (mean / median, by outcome day):
+
+| Period | Next-day up pool | Next-day down pool | D..D+2 down pool |
+|---|---:|---:|---:|
+| 2024 | 32.36% / 30.83% | 4.37% / 2.53% | 18.55% / 13.33% |
+| 2025 | 25.69% / 25.00% | 3.29% / 2.47% | 12.86% / 9.71% |
+| 2026 | 21.24% / 19.58% | 3.19% / 2.04% | 11.04% / 9.53% |
+| 2024H2 | 32.36% / 30.83% | 4.37% / 2.53% | 18.55% / 13.33% |
+| 2025H1 | 26.35% / 25.56% | 3.55% / 2.67% | 14.56% / 11.25% |
+| 2025H2 | 25.07% / 24.76% | 3.04% / 1.82% | 11.28% / 9.52% |
+| 2026H1 | 21.24% / 19.58% | 3.19% / 2.04% | 11.04% / 9.53% |
+| Overall | 25.44% / 24.18% | 3.42% / 2.20% | 13.21% / 10.67% |
+
 ## Provenance, coverage, and interpretation
 
 - Source: [H01 artifact run 38358815302](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38358815302); whole ZIP SHA verified 5/5; selected calendar/limit_up/limit_down manifest hashes verified 1207/1207.
@@ -43,4 +56,23 @@ The three-day risk denominator includes only outcome days with all three subsequ
 - `h01-raw-2026dev.zip`: `7da9da754fb7d976b03a371666fd9d27fec0fcaf4f4f784dbecae01e978e857c`
 
 Daily aggregate counts and partition SHA256 references are in the companion JSON. No symbol-level rows are included.
+
+## Reproduction and engineering evidence
+
+The command below reads only the five named development archives. Each complete ZIP is checked against the embedded allowlist before any ZIP member is opened; the script then verifies selected raw partition SHA256 values and manifest row counts before calculating results.
+
+```powershell
+$ArtifactDir = "$env:TEMP\h02-fastcheck-artifacts-20261014"
+python scripts/h02_first_empirical_result.py `
+  --artifacts `
+    "$ArtifactDir\h01-raw-2024h1.zip" `
+    "$ArtifactDir\h01-raw-2024h2.zip" `
+    "$ArtifactDir\h01-raw-2025h1.zip" `
+    "$ArtifactDir\h01-raw-2025h2.zip" `
+    "$ArtifactDir\h01-raw-2026dev.zip" `
+  --json research/experiments/h02-stage0-20261013/H02_FIRST_EMPIRICAL_RESULT_20261014.json `
+  --markdown research/experiments/h02-stage0-20261013/H02_FIRST_EMPIRICAL_RESULT_20261014.md
+```
+
+The pinned source run and archive SHA256 values are listed above and in the JSON. Do not use the `2026observed` artifact.
 

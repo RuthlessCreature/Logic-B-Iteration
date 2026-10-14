@@ -31,6 +31,16 @@ Progress checkpoint update commit `6dc84dbe7c8239eb7ad35b2dcc6adccf887d94d2` (FA
 
 No main/config change, holdout access, parameter tuning, fabricated historical bars, or real-return claim was made.
 
+## H02 FIRST EMPIRICAL RESULT round
+
+- **R0 trusted archive preflight:** commit `2a106e13f5e377ff4fddc66a3560eec938748d7e`; push [38520152788](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38520152788) and PR [38520157800](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38520157800) passed. The auditor requires the exact five named archives and whole-file SHA256 allowlist before opening ZIP members; tests reject tampered bytes before `ZipFile`, `2026observed`, protected partition dates, and fake date suffixes.
+- **R1/R2 event observations:** P1 commit `607162bef103465361f6e7b10501ec32d2073d59`; push [38521312633](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521312633) and PR [38521318900](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521318900) passed. Reproducible program: `scripts/h02_first_empirical_result.py`; outputs: `H02_FIRST_EMPIRICAL_RESULT_20261014.md` / `.json`.
+- Observed 2024-09-30..2026-06-30 **421/421** outcome sessions and **36,775** prior-pool symbol-days. Next-session same-vendor `limit_up` membership: **9,371/36,775 (25.4820%)**. Next-session `limit_down` membership: **1,230/36,775 (3.3447%)**. At least one `limit_down` pool appearance over D..D+2: **4,801/36,580 (13.1247%)** across 419 complete three-session windows; the two final outcome days whose window would cross 2026-06-30 are excluded.
+- All five ZIP hashes matched the static allowlist; selected calendar/limit_up/limit_down manifest hashes **1,207/1,207** verified. Each dataset has **601/601** calendar partitions. The full inventory auditor separately reverified 3,010/3,010 manifest hashes.
+- The event-pool semantics are not established as close-only versus intraday-touch. Results are same-vendor pool transitions (TIER D), not strategy signal rates, trade win rates, executable returns, or psychology causality. Tier E remains BLOCKED; the 2026observed archive was not accessed.
+- Initial P1 script execution failed closed on a zero-row `limit_down` Parquet with no columns. Inspection found `rows=0`, `columns=[]`; loader now treats only a hash-verified zero-row partition as an empty set and still rejects schema gaps in nonempty partitions. Automated tests cover zero-column empty pools and duplicate up/down rows; final suite count is 246.
+- Exact replay command and report publication SHAs/CI links are recorded in `H02_FIRST_EMPIRICAL_RESULT_20261014.md`.
+
 ## FAST-5 / A2 artifact inventory update
 
 The earlier local-only inventory was extended to existing GitHub Actions artifacts. Five authorized-scope development artifacts (`2024h1`, `2024h2`, `2025h1`, `2025h2`, `2026dev`) were re-read offline from H01 run `38358815302`; the `2026observed` artifact was not downloaded or inspected. Across these five archives, 3,010/3,010 raw partition SHA values match their embedded manifests, candidate partitions cover 601/601 calendar sessions, candidate `limit_up` rows are 48,641/48,641 unique symbol-days, and the provider's own count matches on 601/601 days. This is a TIER D event-list inventory only; source terms and historic `available_at` remain unresolved.

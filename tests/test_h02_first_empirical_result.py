@@ -95,6 +95,12 @@ def test_duplicate_symbol_rows_are_rejected_before_set_conversion(dataset):
         result._date_set(frame, dataset=dataset, partition="20240927")
 
 
+def test_hash_verified_zero_column_empty_event_partition_means_no_events():
+    codes, rows = result._date_set(pd.DataFrame(), dataset="limit_down", partition="20240927")
+    assert codes == set()
+    assert rows == 0
+
+
 def test_year_and_half_year_group_by_outcome_date():
     data = event_data()
     days = ["20241231", "20250102", "20250103", "20250106"]
@@ -142,4 +148,7 @@ def test_report_serialization_is_deterministic(tmp_path):
     result.write_reports(report, json_b, md_b)
     assert json_a.read_bytes() == json_b.read_bytes()
     assert md_a.read_bytes() == md_b.read_bytes()
+    rendered = md_a.read_text(encoding="utf-8")
+    assert "Unweighted daily rates" in rendered
+    assert "2024H2" in rendered
 
