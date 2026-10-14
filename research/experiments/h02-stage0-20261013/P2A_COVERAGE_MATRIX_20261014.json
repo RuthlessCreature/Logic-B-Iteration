@@ -2,14 +2,22 @@
   "aggregate": {
     "PIT_certified_rows": 0,
     "candidate_symbol_days_in_sample": 3,
+    "claimed_PIT_rows": 0,
     "execution_ready_rows": 0,
+    "fill_claimed_rows": 0,
+    "fill_verified_rows": 0,
     "historical_full_day_threshold_denominator": 94,
     "historical_full_day_threshold_note": "Old workflow used >=180 bars and did not apply the current strict exchange-session audit. The direct requery found five 11:31-11:35 bars in 000998.SZ and 000716.SZ; current P0 code blocks both.",
     "historical_full_day_threshold_passed_rows": 89,
     "independent_daily_rows": 3,
+    "independently_verified_PIT_rows": 0,
+    "minute_normalized_sha_claimed_rows": 3,
+    "minute_normalized_sha_verified_rows": 0,
     "minute_partitions_present": 3,
     "minute_structural_sample_rows": 1,
     "not_a_recomputed_raw_data_matrix": true,
+    "official_limit_claimed_rows": 0,
+    "official_limit_verified_rows": 0,
     "official_price_limit_rows": 0,
     "overall_gate": "BLOCKED_UNVERIFIED_EXECUTION_CERTIFICATION",
     "reason": "D-1 membership and BaoStock status come from archived job evidence. Minute rows were fetched live twice and their normalized hashes matched, but the rows and raw provider response are not persisted. Offline rerun from the same byte-identical input is therefore unavailable; the provider query is required."
@@ -36,6 +44,7 @@
       "evidence": {
         "calendar": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": false,
           "provenance_valid": false,
@@ -43,6 +52,7 @@
         },
         "candidate_d_minus_1": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -50,12 +60,14 @@
         },
         "candidate_minute_1m_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "bars": 245,
           "checkpoint_0935": true,
           "direct_hash_repeated_identically": true,
           "direct_normalized_sha256": "9595206d408e675b944f41aafa38d034694d1362daca9d76d5bca024faf4951a",
           "execution_ready": false,
           "fill_certified": false,
+          "fill_claimed": false,
           "first": "09:31:00",
           "historical_workflow_manifest_verified": true,
           "individual_partition_sha256_retained": false,
@@ -77,6 +89,7 @@
         },
         "independent_daily_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -84,6 +97,7 @@
         },
         "official_price_limits_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": false,
           "provenance_valid": false,
@@ -91,6 +105,7 @@
         },
         "reference_halt_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "basis": "BaoStock EOD tradestatus=true",
           "execution_ready": false,
           "present": true,
@@ -100,6 +115,7 @@
         },
         "reference_st_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -131,6 +147,7 @@
       "evidence": {
         "calendar": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": false,
           "provenance_valid": false,
@@ -138,6 +155,7 @@
         },
         "candidate_d_minus_1": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -145,12 +163,14 @@
         },
         "candidate_minute_1m_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "bars": 245,
           "checkpoint_0935": true,
           "direct_hash_repeated_identically": true,
           "direct_normalized_sha256": "8b3504e992b44a2b45d9a49d8ab7e3b6c69d8dd1d0193254332b858e7c0e1af0",
           "execution_ready": false,
           "fill_certified": false,
+          "fill_claimed": false,
           "first": "09:31:00",
           "historical_workflow_manifest_verified": true,
           "individual_partition_sha256_retained": false,
@@ -172,6 +192,7 @@
         },
         "independent_daily_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -179,6 +200,7 @@
         },
         "official_price_limits_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": false,
           "provenance_valid": false,
@@ -186,6 +208,7 @@
         },
         "reference_halt_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "basis": "BaoStock EOD tradestatus=true",
           "execution_ready": false,
           "present": true,
@@ -195,6 +218,7 @@
         },
         "reference_st_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -226,6 +250,7 @@
       "evidence": {
         "calendar": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": false,
           "provenance_valid": false,
@@ -233,6 +258,7 @@
         },
         "candidate_d_minus_1": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -240,12 +266,14 @@
         },
         "candidate_minute_1m_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "bars": 148,
           "checkpoint_0935": true,
           "direct_hash_repeated_identically": true,
           "direct_normalized_sha256": "232392a48e3b0680a3ba24c2074a1efb476c54c040300df8940af0d7efbe92ce",
           "execution_ready": false,
           "fill_certified": false,
+          "fill_claimed": false,
           "first": "09:31:00",
           "historical_workflow_manifest_verified": true,
           "individual_partition_sha256_retained": false,
@@ -260,6 +288,7 @@
         },
         "independent_daily_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,
@@ -267,6 +296,7 @@
         },
         "official_price_limits_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": false,
           "provenance_valid": false,
@@ -274,6 +304,7 @@
         },
         "reference_halt_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "basis": "BaoStock EOD tradestatus=true",
           "execution_ready": false,
           "present": true,
@@ -283,6 +314,7 @@
         },
         "reference_st_d": {
           "PIT_certified": false,
+          "PIT_claimed": false,
           "execution_ready": false,
           "present": true,
           "provenance_valid": true,

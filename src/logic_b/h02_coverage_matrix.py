@@ -49,6 +49,14 @@ def canonicalize_coverage_matrix(report: dict[str, Any]) -> dict[str, Any]:
     trade = _date_token(scope.get("trade_date"), "scope.trade_date")
     if candidate >= trade:
         raise CoverageMatrixInvalid("scope.candidate_date must precede scope.trade_date")
+    declared_size = scope.get("sample_size_symbol_days")
+    declared_symbols = scope.get("sample_symbols")
+    if isinstance(declared_size, bool) or not isinstance(declared_size, int) or declared_size < 0:
+        raise CoverageMatrixInvalid("scope.sample_size_symbol_days must be a non-negative integer")
+    if not isinstance(declared_symbols, list) or any(not isinstance(item, str) for item in declared_symbols):
+        raise CoverageMatrixInvalid("scope.sample_symbols must be a list of symbols")
+    if len(declared_symbols) != len(set(declared_symbols)):
+        raise CoverageMatrixInvalid("scope.sample_symbols must be unique")
     rows = report.get("rows")
     if not isinstance(rows, list):
         raise CoverageMatrixInvalid("rows must be a list")
@@ -84,12 +92,15 @@ def canonicalize_coverage_matrix(report: dict[str, Any]) -> dict[str, Any]:
             for field in STATUS_FIELDS:
                 if field not in state or not isinstance(state[field], bool):
                     raise CoverageMatrixInvalid(f"{layer}.{field} must be boolean")
+            state["PIT_claimed"] = state["PIT_certified"]
+            state["PIT_certified"] = False
             if layer == "candidate_minute_1m_d" and not isinstance(state.get("fill_certified"), bool):
                 raise CoverageMatrixInvalid("candidate_minute_1m_d.fill_certified must be boolean")
             # Coverage is descriptive only; all execution-related upstream
             # claims are forcibly cleared pending independent verification.
             state["execution_ready"] = False
             if layer == "candidate_minute_1m_d":
+                state["fill_claimed"] = state["fill_certified"]
                 state["fill_certified"] = False
             evidence[layer] = state
 
@@ -98,6 +109,11 @@ def canonicalize_coverage_matrix(report: dict[str, Any]) -> dict[str, Any]:
         normalized_rows.append(row)
 
     normalized_rows.sort(key=lambda item: (item["trade_date"], item["symbol"]))
+    row_symbols = {item["symbol"] for item in normalized_rows}
+    if declared_size != len(normalized_rows):
+        raise CoverageMatrixInvalid("scope.sample_size_symbol_days conflicts with rows")
+    if set(declared_symbols) != row_symbols:
+        raise CoverageMatrixInvalid("scope.sample_symbols conflicts with row symbols")
     normalized = dict(report)
     normalized["rows"] = normalized_rows
     n = len(normalized_rows)
@@ -108,7 +124,22 @@ def canonicalize_coverage_matrix(report: dict[str, Any]) -> dict[str, Any]:
         "minute_structural_sample_rows": sum(bool(r["evidence"]["candidate_minute_1m_d"]["structurally_valid"]) for r in normalized_rows),
         "independent_daily_rows": sum(bool(r["evidence"]["independent_daily_d"]["present"]) for r in normalized_rows),
         "official_price_limit_rows": sum(bool(r["evidence"]["official_price_limits_d"]["present"]) for r in normalized_rows),
-        "PIT_certified_rows": sum(all(r["evidence"][layer]["PIT_certified"] for layer in EVIDENCE_LAYERS) for r in normalized_rows),
+        "claimed_PIT_rows": sum(all(r["evidence"][layer]["PIT_claimed"] for layer in EVIDENCE_LAYERS) for r in normalized_rows),
+        "independently_verified_PIT_rows": 0,
+        "PIT_certified_rows": 0,
+        "official_limit_claimed_rows": sum(
+            r["evidence"]["official_price_limits_d"]["present"]
+            and r["evidence"]["official_price_limits_d"]["provenance_valid"]
+            for r in normalized_rows
+        ),
+        "official_limit_verified_rows": 0,
+        "fill_claimed_rows": sum(r["evidence"]["candidate_minute_1m_d"]["fill_claimed"] for r in normalized_rows),
+        "fill_verified_rows": 0,
+        "minute_normalized_sha_claimed_rows": sum(
+            isinstance(r["evidence"]["candidate_minute_1m_d"].get("direct_normalized_sha256"), str)
+            for r in normalized_rows
+        ),
+        "minute_normalized_sha_verified_rows": 0,
         "execution_ready_rows": 0,
         "overall_gate": "BLOCKED_UNVERIFIED_EXECUTION_CERTIFICATION",
     })

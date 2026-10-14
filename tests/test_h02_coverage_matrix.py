@@ -31,7 +31,8 @@ def fixture_report():
     evidence["candidate_minute_1m_d"]["direct_normalized_sha256"] = "0" * 64
     return {
         "schema_version": "h02-coverage-matrix-v1",
-        "scope": {"candidate_date": "2020-01-02", "trade_date": "2020-01-03", "protected_holdout_accessed": False},
+        "scope": {"candidate_date": "2020-01-02", "trade_date": "2020-01-03", "protected_holdout_accessed": False,
+                  "sample_size_symbol_days": 1, "sample_symbols": ["000998.SZ"]},
         "rows": [{"candidate_date": "2020-01-02", "trade_date": "2020-01-03", "symbol": "000998.SZ", "evidence": evidence,
                   "cross_provider_daily_minute": {"status": "MATCH_TICK_TOLERANCE"}}],
     }
@@ -47,6 +48,7 @@ def test_same_matrix_input_has_byte_identical_fixed_schema_output():
     assert normalized["aggregate"]["overall_gate"] == "BLOCKED_UNVERIFIED_EXECUTION_CERTIFICATION"
     assert normalized["rows"][0]["execution_ready"] is False
     assert normalized["rows"][0]["evidence"]["candidate_minute_1m_d"]["fill_certified"] is False
+    assert normalized["aggregate"]["independently_verified_PIT_rows"] == 0
 
 
 def test_bad_official_limit_fixture_cannot_become_execution_ready():
@@ -100,6 +102,16 @@ def test_upstream_claims_and_placeholder_hash_never_certify_execution(claim):
     assert result["rows"][0]["execution_ready"] is False
     assert result["aggregate"]["execution_ready_rows"] == 0
     assert result["aggregate"]["overall_gate"] != "READY"
+    assert result["aggregate"]["independently_verified_PIT_rows"] == 0
+    assert result["aggregate"]["PIT_certified_rows"] == 0
+    assert result["aggregate"]["fill_verified_rows"] == 0
+    assert result["aggregate"]["minute_normalized_sha_verified_rows"] == 0
+    if claim == "PIT_certified":
+        assert result["aggregate"]["claimed_PIT_rows"] == 1
+        assert result["rows"][0]["evidence"]["calendar"]["PIT_claimed"] is True
+        assert result["rows"][0]["evidence"]["calendar"]["PIT_certified"] is False
+    if claim == "fill_certified":
+        assert result["aggregate"]["fill_claimed_rows"] == 1
 
 
 def test_top_level_and_row_dates_must_match():
@@ -113,6 +125,17 @@ def test_scope_candidate_date_is_validated_and_protected():
     report = fixture_report()
     report["scope"]["candidate_date"] = "2026-07-01"
     with pytest.raises(CoverageMatrixInvalid, match="protected holdout"):
+        canonicalize_coverage_matrix(report)
+
+
+@pytest.mark.parametrize("scope_key,value", [
+    ("sample_size_symbol_days", 2),
+    ("sample_symbols", ["600000.SH"]),
+])
+def test_declared_sample_denominator_must_match_rows(scope_key, value):
+    report = fixture_report()
+    report["scope"][scope_key] = value
+    with pytest.raises(CoverageMatrixInvalid, match="conflicts with rows|conflicts with row symbols"):
         canonicalize_coverage_matrix(report)
 
 
