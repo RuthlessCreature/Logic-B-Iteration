@@ -1,0 +1,94 @@
+{
+  "schema_version": "h02-coverage-matrix-v1",
+  "scope": {
+    "trade_date": "2020-01-03",
+    "candidate_date": "2020-01-02",
+    "sample_symbols": ["000998.SZ", "000716.SZ", "600421.SH"],
+    "sample_size_symbol_days": 3,
+    "protected_holdout_accessed": false,
+    "raw_minute_rows_downloaded_locally": false,
+    "earnings_backtest_run": false
+  },
+  "sources": {
+    "candidate_and_minute_probe": {
+      "provider": "XuangubaoMarketProvider",
+      "workflow_run": "https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38384217991",
+      "source_archive": "h01-raw-2020h1",
+      "source_archive_sha256": "09dbc7f75aa7df0789abff863992d61d6ebbee892dc120c6c9a7b942d4af2c9e",
+      "audit_artifact_sha256": "bb00d97fa1ac409cf886f8e79f48905a9601ff5030968f4e55911b0d55b2f9fc",
+      "partition_manifest_checks": "reported_verified_by_workflow; individual digests absent from retained report"
+    },
+    "independent_daily_and_status": {
+      "provider": "BaoStock",
+      "workflow_run": "https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38384941333",
+      "summary_artifact_sha256": "87c62d95d7a314ea325401c97ecfd8c65f07521232c66fa1af9d9fe215bfba9f",
+      "daily_probe_workflow_run": "https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38384622637",
+      "daily_probe_artifact_sha256": "f488eacdbf5712355aad6fd914dd34d811f2e8b3f047cac4c7d64dc7b4556867",
+      "temporal_semantics": "historical EOD reference only; not certified available by 09:35"
+    },
+    "official_price_limits": {
+      "provider": "TushareProvider",
+      "status": "BLOCKED_MISSING_TUSHARE_TOKEN",
+      "permission_probe": "https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38403924915"
+    },
+    "calendar": {
+      "status": "NOT_EVIDENCED_IN_RETAINED_SAMPLE_ARTIFACTS"
+    }
+  },
+  "rows": [
+    {
+      "trade_date": "2020-01-03",
+      "symbol": "000998.SZ",
+      "evidence": {
+        "candidate_d_minus_1": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false},
+        "independent_daily_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false},
+        "reference_st_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "value": false},
+        "reference_halt_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "value": false, "basis": "BaoStock EOD tradestatus=true"},
+        "official_price_limits_d": {"present": false, "structurally_valid": false, "provenance_valid": false, "PIT_certified": false, "execution_ready": false},
+        "candidate_minute_1m_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "bars": 245, "first": "09:31:00", "last": "15:00:00", "checkpoint_0935": true, "partition_manifest_verified": true, "individual_partition_sha256_retained": false, "timestamp_timezone": "naive; exchange-timezone metadata absent"}
+      },
+      "cross_provider_daily_minute": {"status": "MATCH_TICK_TOLERANCE", "open_abs_diff": 0.0, "high_abs_diff": 0.0, "low_abs_diff": 0.0, "close_abs_diff": 0.0},
+      "blockers": ["calendar source not retained", "official per-stock limits missing", "ST/halt are EOD only", "minute publication time and partition digest not retained", "minute bars do not prove a fill"]
+    },
+    {
+      "trade_date": "2020-01-03",
+      "symbol": "000716.SZ",
+      "evidence": {
+        "candidate_d_minus_1": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false},
+        "independent_daily_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false},
+        "reference_st_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "value": false},
+        "reference_halt_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "value": false, "basis": "BaoStock EOD tradestatus=true"},
+        "official_price_limits_d": {"present": false, "structurally_valid": false, "provenance_valid": false, "PIT_certified": false, "execution_ready": false},
+        "candidate_minute_1m_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "bars": 245, "first": "09:31:00", "last": "15:00:00", "checkpoint_0935": true, "partition_manifest_verified": true, "individual_partition_sha256_retained": false, "timestamp_timezone": "naive; exchange-timezone metadata absent"}
+      },
+      "cross_provider_daily_minute": {"status": "REVIEW_DAILY_MINUTE_MISMATCH", "open_abs_diff": 0.02, "high_abs_diff": 0.0, "low_abs_diff": 0.02, "close_abs_diff": 0.0},
+      "blockers": ["unresolved 0.02 CNY open/low source discrepancy", "calendar source not retained", "official per-stock limits missing", "ST/halt are EOD only", "minute publication time and partition digest not retained", "minute bars do not prove a fill"]
+    },
+    {
+      "trade_date": "2020-01-03",
+      "symbol": "600421.SH",
+      "evidence": {
+        "candidate_d_minus_1": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false},
+        "independent_daily_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false},
+        "reference_st_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "value": true},
+        "reference_halt_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "value": false, "basis": "BaoStock EOD tradestatus=true"},
+        "official_price_limits_d": {"present": false, "structurally_valid": false, "provenance_valid": false, "PIT_certified": false, "execution_ready": false},
+        "candidate_minute_1m_d": {"present": true, "structurally_valid": true, "provenance_valid": true, "PIT_certified": false, "execution_ready": false, "bars": 148, "first": "09:31:00", "last": "15:00:00", "checkpoint_0935": true, "partition_manifest_verified": true, "individual_partition_sha256_retained": false, "timestamp_timezone": "naive; exchange-timezone metadata absent"}
+      },
+      "cross_provider_daily_minute": {"status": "MATCH_TICK_TOLERANCE", "open_abs_diff": 0.0, "high_abs_diff": 0.0, "low_abs_diff": 0.0, "close_abs_diff": 0.0},
+      "blockers": ["148 bars do not establish halt, corruption, or fillability", "calendar source not retained", "official per-stock limits missing", "ST/halt are EOD only", "minute publication time and partition digest not retained", "minute bars do not prove a fill"]
+    }
+  ],
+  "aggregate": {
+    "candidate_symbol_days_in_sample": 3,
+    "minute_partitions_present": 3,
+    "minute_structural_sample_rows": 3,
+    "independent_daily_rows": 3,
+    "official_price_limit_rows": 0,
+    "PIT_certified_rows": 0,
+    "execution_ready_rows": 0,
+    "overall_gate": "BLOCKED_INCOMPLETE_PROVENANCE_AND_EXECUTION_EVIDENCE",
+    "not_a_recomputed_raw_data_matrix": true,
+    "reason": "Matrix reconstructed from archived GitHub job output and summary artifacts; raw minute partitions and per-partition hashes were not retained for local deterministic replay."
+  }
+}
