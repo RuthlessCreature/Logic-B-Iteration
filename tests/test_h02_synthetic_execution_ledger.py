@@ -45,3 +45,39 @@ def test_exportable_report_has_no_nonstandard_json_numbers(tmp_path):
     assert "SYNTHETIC_MECHANICS_ONLY" in encoded
     assert report["frozen_b0_config_modified"] is False
     assert report["protected_data_accessed"] is False
+
+
+def test_multiple_locked_sessions_then_resume_and_daily_attempt_limits(tmp_path):
+    result = LEDGER.run_scenario(tmp_path / "multi", "multi_day_locked_resume")
+    assert [f["reason"] for f in result["fills"]] == [
+        "first_openable_post_signal_bar", "locked_limit_down", "locked_limit_down",
+        "suspended", "first_openable_post_signal_bar"]
+    assert all(x["buy_attempts"] <= 1 and x["sell_attempts"] <= 1 for x in result["daily_order_attempts"])
+    assert result["trades"][0]["t_plus_one_compliant"] is True
+
+
+def test_sell_after_checkpoint_blocks_same_day_new_buy_even_with_eligible_candidate(tmp_path):
+    result = LEDGER.run_scenario(tmp_path / "sell", "exit_before_new_candidate")
+    same_day = [f for f in result["fills"] if f["signal_time"].startswith("2099-01-07")]
+    assert [f["side"] for f in same_day] == ["SELL"]
+    assert result["pre_exit_candidate_checkpoint"]["checkpoint_codes"] == ["SYN-B"]
+    assert result["daily_order_attempts"][-1]["buy_attempts"] == 0
+
+
+def test_insufficient_cash_is_recorded_without_portfolio_mutation(tmp_path):
+    result = LEDGER.run_scenario(tmp_path / "cash", "insufficient_cash")
+    assert result["fills"][0]["reason"] == "insufficient_cash"
+    assert result["metrics"]["ending_position"] is None
+    assert result["equity"][-1]["cash"] == result["initial_cash"] == 100.0
+
+
+def test_full_investment_uses_maximum_affordable_round_lot_after_fees(tmp_path):
+    report = LEDGER.build_report(tmp_path)
+    exact = report["account_boundary_checks"]["exact_one_lot_after_fees"]
+    assert exact["shares"] == 100
+    assert exact["cash_remaining"] >= 0
+    assert exact["cannot_afford_next_lot"] is True
+    assert report["account_boundary_checks"]["full_account_max_affordable_lot_check"]["cannot_afford_next_lot"] is True
+    scenarios = report["execution_input_scenarios"]
+    assert all(item["rejected"] for item in scenarios["invalid_inputs"].values())
+    assert all(not item["filled"] for item in scenarios["no_fill_cases"].values())

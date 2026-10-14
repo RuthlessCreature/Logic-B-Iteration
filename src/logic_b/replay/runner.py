@@ -633,17 +633,30 @@ class B0ReplayRunner:
                         limit_up_price=up,
                         model=self.fill_model,
                     )
-                    fills.append(fill)
-
                     if fill.filled:
-                        portfolio.buy_all(
-                            code,
-                            fill.fill_time,
-                            fill.fill_price,
-                        )
-                        last_mark_price=(
-                            fill.fill_price
-                        )
+                        try:
+                            portfolio.buy_all(
+                                code,
+                                fill.fill_time,
+                                fill.fill_price,
+                            )
+                            last_mark_price=(
+                                fill.fill_price
+                            )
+                        except RuntimeError as exc:
+                            if str(exc) != "insufficient cash":
+                                raise
+                            fill=Fill(
+                                ts_code=code,
+                                side="BUY",
+                                signal_time=decision_time,
+                                fill_time=None,
+                                fill_price=None,
+                                filled=False,
+                                reason="insufficient_cash",
+                                model=self.fill_model,
+                            )
+                    fills.append(fill)
 
             mark=None
             if portfolio.position is not None:

@@ -1,0 +1,1180 @@
+{
+  "classification": "SYNTHETIC_MECHANICS_ONLY_NO_REAL_MARKET_EVIDENCE",
+  "frozen_b0_config_modified": false,
+  "protected_data_accessed": false,
+  "scenarios": {
+    "sealed_priority_no_fallback": {
+      "scenario": "sealed_priority_no_fallback",
+      "classification": "SYNTHETIC_MECHANICS_ONLY_NO_REAL_MARKET_EVIDENCE",
+      "strategy_version": "B0-P.1 (frozen)",
+      "fill_model": "realistic",
+      "checkpoint": "09:35 inclusive for signal; fills must occur strictly after checkpoint",
+      "dates": [
+        "20990104",
+        "20990105",
+        "20990106",
+        "20990107",
+        "20990108",
+        "20990111",
+        "20990112"
+      ],
+      "initial_cash": 100000.0,
+      "fills": [
+        {
+          "symbol": "SYN-A",
+          "side": "BUY",
+          "signal_time": "2099-01-06 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "sealed_limit_no_open",
+          "model": "realistic",
+          "synthetic_only": true
+        }
+      ],
+      "signals": [
+        {
+          "date": "20990106",
+          "action": "BUY_CORE",
+          "symbol": "SYN-A",
+          "gate": null,
+          "winner_before_gate": "SYN-A",
+          "candidate_count_after_filters": 60
+        },
+        {
+          "date": "20990107",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990108",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990111",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990112",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        }
+      ],
+      "trades": [],
+      "equity": [
+        {
+          "date": "20990104",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990105",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990106",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990107",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990108",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990111",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990112",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        }
+      ],
+      "metrics": {
+        "total_return": 0.0,
+        "cagr": 0.0,
+        "max_drawdown": 0.0,
+        "calmar": null,
+        "exposure_rate": 0.0,
+        "suspended_exposure_rate": 0.0,
+        "months": 1.0,
+        "positive_month_rate": 0.0,
+        "worst_month_return": 0.0,
+        "best_month_return": 0.0,
+        "median_month_return": 0.0,
+        "fill_model": "realistic",
+        "initial_cash": 100000.0,
+        "closed_trades": 0,
+        "signals": 5,
+        "ending_position": null,
+        "commission_rate": 0.0003,
+        "minimum_commission": 5.0,
+        "transfer_fee_rate": 1e-05,
+        "stamp_rate": 0.0005,
+        "exclude_st": true,
+        "include_boards": null,
+        "exclude_no_limit_ipo_days": false,
+        "suspension_blocks": 0,
+        "buy_attempts": 1,
+        "unfilled_buy_attempts": 1,
+        "unfilled_buy_rate": 1.0,
+        "sell_attempts": 0,
+        "unfilled_sell_attempts": 0,
+        "unfilled_sell_rate": 0.0,
+        "sealed_limit_buy_blocks": 1,
+        "locked_limit_down_sell_blocks": 0
+      },
+      "daily_order_attempts": [
+        {
+          "date": "2099-01-06",
+          "buy_attempts": 1,
+          "sell_attempts": 0
+        }
+      ]
+    },
+    "t1_locked_suspended_resume": {
+      "scenario": "t1_locked_suspended_resume",
+      "classification": "SYNTHETIC_MECHANICS_ONLY_NO_REAL_MARKET_EVIDENCE",
+      "strategy_version": "B0-P.1 (frozen)",
+      "fill_model": "realistic",
+      "checkpoint": "09:35 inclusive for signal; fills must occur strictly after checkpoint",
+      "dates": [
+        "20990104",
+        "20990105",
+        "20990106",
+        "20990107",
+        "20990108",
+        "20990111",
+        "20990112"
+      ],
+      "initial_cash": 100000.0,
+      "fills": [
+        {
+          "symbol": "SYN-A",
+          "side": "BUY",
+          "signal_time": "2099-01-06 09:35:00",
+          "fill_time": "2099-01-06 09:36:00",
+          "fill_price": 10.4,
+          "filled": true,
+          "reason": "first_openable_post_signal_bar",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-07 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "locked_limit_down",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-08 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "suspended",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-11 09:35:00",
+          "fill_time": "2099-01-11 09:36:00",
+          "fill_price": 10.296000000000001,
+          "filled": true,
+          "reason": "first_openable_post_signal_bar",
+          "model": "realistic",
+          "synthetic_only": true
+        }
+      ],
+      "signals": [
+        {
+          "date": "20990106",
+          "action": "BUY_CORE",
+          "symbol": "SYN-A",
+          "gate": null,
+          "winner_before_gate": "SYN-A",
+          "candidate_count_after_filters": 60
+        },
+        {
+          "date": "20990111",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990112",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        }
+      ],
+      "trades": [
+        {
+          "symbol": "SYN-A",
+          "shares": 9600,
+          "round_lot": true,
+          "entry_time": "2099-01-06 09:36:00",
+          "entry_price": 10.4,
+          "buy_gross": 99840.0,
+          "buy_fee_lines": {
+            "commission": 29.951999999999998,
+            "transfer_fee": 0.9984000000000001,
+            "stamp_duty": 0.0
+          },
+          "cash_after_buy": 129.0496,
+          "exit_time": "2099-01-11 09:36:00",
+          "exit_price": 10.296000000000001,
+          "sell_gross": 98841.6,
+          "sell_fee_lines": {
+            "commission": 29.65248,
+            "transfer_fee": 0.9884160000000002,
+            "stamp_duty": 49.42080000000001
+          },
+          "cash_after_exit": 98890.587904,
+          "net_return_after_modelled_fees": -0.011108456378522646,
+          "t_plus_one_compliant": true
+        }
+      ],
+      "equity": [
+        {
+          "date": "20990104",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990105",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990106",
+          "equity": 104769.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 10.9,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990107",
+          "equity": 95169.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 9.9,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990108",
+          "equity": 95169.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 9.9,
+          "holding_suspended": true
+        },
+        {
+          "date": "20990111",
+          "equity": 98890.587904,
+          "cash": 98890.587904,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990112",
+          "equity": 98890.587904,
+          "cash": 98890.587904,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        }
+      ],
+      "metrics": {
+        "total_return": -0.011094120959999954,
+        "cagr": -0.3991119230226813,
+        "max_drawdown": -0.09163011439592172,
+        "calmar": -4.355685089491113,
+        "exposure_rate": 0.42857142857142855,
+        "suspended_exposure_rate": 0.14285714285714285,
+        "months": 1.0,
+        "positive_month_rate": 0.0,
+        "worst_month_return": -0.011094120959999954,
+        "best_month_return": -0.011094120959999954,
+        "median_month_return": -0.011094120959999954,
+        "trades": 1.0,
+        "win_rate": 0.0,
+        "expectancy": -0.011108456378522646,
+        "median_trade_return": -0.011108456378522646,
+        "profit_factor": 0.0,
+        "average_win": null,
+        "average_loss": -0.011108456378522646,
+        "payoff_ratio": null,
+        "max_consecutive_losses": 1.0,
+        "total_transaction_cost": 111.01209600000155,
+        "fill_model": "realistic",
+        "initial_cash": 100000.0,
+        "closed_trades": 1,
+        "signals": 3,
+        "ending_position": null,
+        "commission_rate": 0.0003,
+        "minimum_commission": 5.0,
+        "transfer_fee_rate": 1e-05,
+        "stamp_rate": 0.0005,
+        "exclude_st": true,
+        "include_boards": null,
+        "exclude_no_limit_ipo_days": false,
+        "suspension_blocks": 1,
+        "buy_attempts": 1,
+        "unfilled_buy_attempts": 0,
+        "unfilled_buy_rate": 0.0,
+        "sell_attempts": 3,
+        "unfilled_sell_attempts": 2,
+        "unfilled_sell_rate": 0.6666666666666666,
+        "sealed_limit_buy_blocks": 0,
+        "locked_limit_down_sell_blocks": 1
+      },
+      "daily_order_attempts": [
+        {
+          "date": "2099-01-06",
+          "buy_attempts": 1,
+          "sell_attempts": 0
+        },
+        {
+          "date": "2099-01-07",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        },
+        {
+          "date": "2099-01-08",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        },
+        {
+          "date": "2099-01-11",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        }
+      ]
+    },
+    "multi_day_locked_resume": {
+      "scenario": "multi_day_locked_resume",
+      "classification": "SYNTHETIC_MECHANICS_ONLY_NO_REAL_MARKET_EVIDENCE",
+      "strategy_version": "B0-P.1 (frozen)",
+      "fill_model": "realistic",
+      "checkpoint": "09:35 inclusive for signal; fills must occur strictly after checkpoint",
+      "dates": [
+        "20990104",
+        "20990105",
+        "20990106",
+        "20990107",
+        "20990108",
+        "20990111",
+        "20990112"
+      ],
+      "initial_cash": 100000.0,
+      "fills": [
+        {
+          "symbol": "SYN-A",
+          "side": "BUY",
+          "signal_time": "2099-01-06 09:35:00",
+          "fill_time": "2099-01-06 09:36:00",
+          "fill_price": 10.4,
+          "filled": true,
+          "reason": "first_openable_post_signal_bar",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-07 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "locked_limit_down",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-08 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "locked_limit_down",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-11 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "suspended",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-12 09:35:00",
+          "fill_time": "2099-01-12 09:36:00",
+          "fill_price": 9.2664,
+          "filled": true,
+          "reason": "first_openable_post_signal_bar",
+          "model": "realistic",
+          "synthetic_only": true
+        }
+      ],
+      "signals": [
+        {
+          "date": "20990106",
+          "action": "BUY_CORE",
+          "symbol": "SYN-A",
+          "gate": null,
+          "winner_before_gate": "SYN-A",
+          "candidate_count_after_filters": 60
+        },
+        {
+          "date": "20990112",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        }
+      ],
+      "trades": [
+        {
+          "symbol": "SYN-A",
+          "shares": 9600,
+          "round_lot": true,
+          "entry_time": "2099-01-06 09:36:00",
+          "entry_price": 10.4,
+          "buy_gross": 99840.0,
+          "buy_fee_lines": {
+            "commission": 29.951999999999998,
+            "transfer_fee": 0.9984000000000001,
+            "stamp_duty": 0.0
+          },
+          "cash_after_buy": 129.0496,
+          "exit_time": "2099-01-12 09:36:00",
+          "exit_price": 9.2664,
+          "sell_gross": 88957.44,
+          "sell_fee_lines": {
+            "commission": 26.687231999999998,
+            "transfer_fee": 0.8895744000000001,
+            "stamp_duty": 44.47872
+          },
+          "cash_after_exit": 89014.4340736,
+          "net_return_after_modelled_fees": -0.10999761074067038,
+          "t_plus_one_compliant": true
+        }
+      ],
+      "equity": [
+        {
+          "date": "20990104",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990105",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990106",
+          "equity": 104769.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 10.9,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990107",
+          "equity": 95169.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 9.9,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990108",
+          "equity": 85665.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 8.91,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990111",
+          "equity": 85665.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 8.91,
+          "holding_suspended": true
+        },
+        {
+          "date": "20990112",
+          "equity": 89014.4340736,
+          "cash": 89014.4340736,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        }
+      ],
+      "metrics": {
+        "total_return": -0.10985565926399998,
+        "cagr": -0.9950733354939579,
+        "max_drawdown": -0.18234392764788432,
+        "calmar": -5.457123515599031,
+        "exposure_rate": 0.5714285714285714,
+        "suspended_exposure_rate": 0.14285714285714285,
+        "months": 1.0,
+        "positive_month_rate": 0.0,
+        "worst_month_return": -0.10985565926399998,
+        "best_month_return": -0.10985565926399998,
+        "median_month_return": -0.10985565926399998,
+        "trades": 1.0,
+        "win_rate": 0.0,
+        "expectancy": -0.10999761074067038,
+        "median_trade_return": -0.10999761074067038,
+        "profit_factor": 0.0,
+        "average_win": null,
+        "average_loss": -0.10999761074067038,
+        "payoff_ratio": null,
+        "max_consecutive_losses": 1.0,
+        "total_transaction_cost": 103.00592640000154,
+        "fill_model": "realistic",
+        "initial_cash": 100000.0,
+        "closed_trades": 1,
+        "signals": 2,
+        "ending_position": null,
+        "commission_rate": 0.0003,
+        "minimum_commission": 5.0,
+        "transfer_fee_rate": 1e-05,
+        "stamp_rate": 0.0005,
+        "exclude_st": true,
+        "include_boards": null,
+        "exclude_no_limit_ipo_days": false,
+        "suspension_blocks": 1,
+        "buy_attempts": 1,
+        "unfilled_buy_attempts": 0,
+        "unfilled_buy_rate": 0.0,
+        "sell_attempts": 4,
+        "unfilled_sell_attempts": 3,
+        "unfilled_sell_rate": 0.75,
+        "sealed_limit_buy_blocks": 0,
+        "locked_limit_down_sell_blocks": 2
+      },
+      "daily_order_attempts": [
+        {
+          "date": "2099-01-06",
+          "buy_attempts": 1,
+          "sell_attempts": 0
+        },
+        {
+          "date": "2099-01-07",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        },
+        {
+          "date": "2099-01-08",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        },
+        {
+          "date": "2099-01-11",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        },
+        {
+          "date": "2099-01-12",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        }
+      ]
+    },
+    "exit_before_new_candidate": {
+      "scenario": "exit_before_new_candidate",
+      "classification": "SYNTHETIC_MECHANICS_ONLY_NO_REAL_MARKET_EVIDENCE",
+      "strategy_version": "B0-P.1 (frozen)",
+      "fill_model": "realistic",
+      "checkpoint": "09:35 inclusive for signal; fills must occur strictly after checkpoint",
+      "dates": [
+        "20990104",
+        "20990105",
+        "20990106",
+        "20990107",
+        "20990108",
+        "20990111",
+        "20990112"
+      ],
+      "initial_cash": 100000.0,
+      "fills": [
+        {
+          "symbol": "SYN-A",
+          "side": "BUY",
+          "signal_time": "2099-01-06 09:35:00",
+          "fill_time": "2099-01-06 09:36:00",
+          "fill_price": 10.4,
+          "filled": true,
+          "reason": "first_openable_post_signal_bar",
+          "model": "realistic",
+          "synthetic_only": true
+        },
+        {
+          "symbol": "SYN-A",
+          "side": "SELL",
+          "signal_time": "2099-01-07 09:35:00",
+          "fill_time": "2099-01-07 09:36:00",
+          "fill_price": 11.336,
+          "filled": true,
+          "reason": "first_openable_post_signal_bar",
+          "model": "realistic",
+          "synthetic_only": true
+        }
+      ],
+      "signals": [
+        {
+          "date": "20990106",
+          "action": "BUY_CORE",
+          "symbol": "SYN-A",
+          "gate": null,
+          "winner_before_gate": "SYN-A",
+          "candidate_count_after_filters": 60
+        },
+        {
+          "date": "20990107",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 1
+        },
+        {
+          "date": "20990108",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990111",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990112",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        }
+      ],
+      "trades": [
+        {
+          "symbol": "SYN-A",
+          "shares": 9600,
+          "round_lot": true,
+          "entry_time": "2099-01-06 09:36:00",
+          "entry_price": 10.4,
+          "buy_gross": 99840.0,
+          "buy_fee_lines": {
+            "commission": 29.951999999999998,
+            "transfer_fee": 0.9984000000000001,
+            "stamp_duty": 0.0
+          },
+          "cash_after_buy": 129.0496,
+          "exit_time": "2099-01-07 09:36:00",
+          "exit_price": 11.336,
+          "sell_gross": 108825.6,
+          "sell_fee_lines": {
+            "commission": 32.64768,
+            "transfer_fee": 1.0882560000000001,
+            "stamp_duty": 54.412800000000004
+          },
+          "cash_after_exit": 108866.500864,
+          "net_return_after_modelled_fees": 0.08877957833071748,
+          "t_plus_one_compliant": true
+        }
+      ],
+      "equity": [
+        {
+          "date": "20990104",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990105",
+          "equity": 100000.0,
+          "cash": 100000.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990106",
+          "equity": 104769.0496,
+          "cash": 129.04959999999846,
+          "holding": "SYN-A",
+          "mark_price": 10.9,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990107",
+          "equity": 108866.500864,
+          "cash": 108866.500864,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990108",
+          "equity": 108866.500864,
+          "cash": 108866.500864,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990111",
+          "equity": 108866.500864,
+          "cash": 108866.500864,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990112",
+          "equity": 108866.500864,
+          "cash": 108866.500864,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        }
+      ],
+      "metrics": {
+        "total_return": 0.08866500864000004,
+        "cagr": 47.356376731506,
+        "max_drawdown": 0.0,
+        "calmar": null,
+        "exposure_rate": 0.14285714285714285,
+        "suspended_exposure_rate": 0.0,
+        "months": 1.0,
+        "positive_month_rate": 1.0,
+        "worst_month_return": 0.08866500864000004,
+        "best_month_return": 0.08866500864000004,
+        "median_month_return": 0.08866500864000004,
+        "trades": 1.0,
+        "win_rate": 1.0,
+        "expectancy": 0.08877957833071748,
+        "median_trade_return": 0.08877957833071748,
+        "profit_factor": null,
+        "average_win": 0.08877957833071748,
+        "average_loss": null,
+        "payoff_ratio": null,
+        "max_consecutive_losses": 0.0,
+        "total_transaction_cost": 119.09913600000155,
+        "fill_model": "realistic",
+        "initial_cash": 100000.0,
+        "closed_trades": 1,
+        "signals": 5,
+        "ending_position": null,
+        "commission_rate": 0.0003,
+        "minimum_commission": 5.0,
+        "transfer_fee_rate": 1e-05,
+        "stamp_rate": 0.0005,
+        "exclude_st": true,
+        "include_boards": null,
+        "exclude_no_limit_ipo_days": false,
+        "suspension_blocks": 0,
+        "buy_attempts": 1,
+        "unfilled_buy_attempts": 0,
+        "unfilled_buy_rate": 0.0,
+        "sell_attempts": 1,
+        "unfilled_sell_attempts": 0,
+        "unfilled_sell_rate": 0.0,
+        "sealed_limit_buy_blocks": 0,
+        "locked_limit_down_sell_blocks": 0
+      },
+      "daily_order_attempts": [
+        {
+          "date": "2099-01-06",
+          "buy_attempts": 1,
+          "sell_attempts": 0
+        },
+        {
+          "date": "2099-01-07",
+          "buy_attempts": 0,
+          "sell_attempts": 1
+        }
+      ],
+      "pre_exit_candidate_checkpoint": {
+        "candidate_codes": [
+          "SYN-B"
+        ],
+        "checkpoint_codes": [
+          "SYN-B"
+        ],
+        "all_evidence_is_synthetic": true
+      }
+    },
+    "insufficient_cash": {
+      "scenario": "insufficient_cash",
+      "classification": "SYNTHETIC_MECHANICS_ONLY_NO_REAL_MARKET_EVIDENCE",
+      "strategy_version": "B0-P.1 (frozen)",
+      "fill_model": "realistic",
+      "checkpoint": "09:35 inclusive for signal; fills must occur strictly after checkpoint",
+      "dates": [
+        "20990104",
+        "20990105",
+        "20990106",
+        "20990107",
+        "20990108",
+        "20990111",
+        "20990112"
+      ],
+      "initial_cash": 100.0,
+      "fills": [
+        {
+          "symbol": "SYN-A",
+          "side": "BUY",
+          "signal_time": "2099-01-06 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "insufficient_cash",
+          "model": "realistic",
+          "synthetic_only": true
+        }
+      ],
+      "signals": [
+        {
+          "date": "20990106",
+          "action": "BUY_CORE",
+          "symbol": "SYN-A",
+          "gate": null,
+          "winner_before_gate": "SYN-A",
+          "candidate_count_after_filters": 60
+        },
+        {
+          "date": "20990107",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990108",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990111",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        },
+        {
+          "date": "20990112",
+          "action": "CASH",
+          "symbol": null,
+          "gate": "no_candidates",
+          "winner_before_gate": null,
+          "candidate_count_after_filters": 0
+        }
+      ],
+      "trades": [],
+      "equity": [
+        {
+          "date": "20990104",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990105",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990106",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990107",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990108",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990111",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        },
+        {
+          "date": "20990112",
+          "equity": 100.0,
+          "cash": 100.0,
+          "holding": null,
+          "mark_price": null,
+          "holding_suspended": false
+        }
+      ],
+      "metrics": {
+        "total_return": 0.0,
+        "cagr": 0.0,
+        "max_drawdown": 0.0,
+        "calmar": null,
+        "exposure_rate": 0.0,
+        "suspended_exposure_rate": 0.0,
+        "months": 1.0,
+        "positive_month_rate": 0.0,
+        "worst_month_return": 0.0,
+        "best_month_return": 0.0,
+        "median_month_return": 0.0,
+        "fill_model": "realistic",
+        "initial_cash": 100.0,
+        "closed_trades": 0,
+        "signals": 5,
+        "ending_position": null,
+        "commission_rate": 0.0003,
+        "minimum_commission": 5.0,
+        "transfer_fee_rate": 1e-05,
+        "stamp_rate": 0.0005,
+        "exclude_st": true,
+        "include_boards": null,
+        "exclude_no_limit_ipo_days": false,
+        "suspension_blocks": 0,
+        "buy_attempts": 1,
+        "unfilled_buy_attempts": 1,
+        "unfilled_buy_rate": 1.0,
+        "sell_attempts": 0,
+        "unfilled_sell_attempts": 0,
+        "unfilled_sell_rate": 0.0,
+        "sealed_limit_buy_blocks": 0,
+        "locked_limit_down_sell_blocks": 0
+      },
+      "daily_order_attempts": [
+        {
+          "date": "2099-01-06",
+          "buy_attempts": 1,
+          "sell_attempts": 0
+        }
+      ]
+    }
+  },
+  "account_boundary_checks": {
+    "classification": "SYNTHETIC_ONLY",
+    "cash_too_small": {
+      "initial_cash": 100.0,
+      "fills": [
+        {
+          "symbol": "SYN-A",
+          "side": "BUY",
+          "signal_time": "2099-01-06 09:35:00",
+          "fill_time": null,
+          "fill_price": null,
+          "filled": false,
+          "reason": "insufficient_cash",
+          "model": "realistic",
+          "synthetic_only": true
+        }
+      ],
+      "position": null,
+      "ending_cash": 100.0
+    },
+    "exact_one_lot_after_fees": {
+      "initial_cash": 12350.12345,
+      "shares": 100,
+      "cash_remaining": 0.0,
+      "next_lot_incremental_cost": 12347.53045,
+      "cannot_afford_next_lot": true
+    },
+    "full_account_max_affordable_lot_check": {
+      "initial_cash": 100000.0,
+      "shares": 9600,
+      "cash_after_buy": 129.0496,
+      "next_100_share_incremental_cost": 1040.3224,
+      "cannot_afford_next_lot": true
+    }
+  },
+  "execution_input_scenarios": {
+    "classification": "SYNTHETIC_ONLY",
+    "no_fill_cases": {
+      "missing_minutes": {
+        "filled": false,
+        "reason": "no_minute_data",
+        "synthetic_only": true
+      },
+      "zero_volume": {
+        "filled": false,
+        "reason": "sealed_limit_no_open",
+        "synthetic_only": true
+      },
+      "checkpoint_only": {
+        "filled": false,
+        "reason": "no_bar_after_signal",
+        "synthetic_only": true
+      }
+    },
+    "invalid_inputs": {
+      "nan_price": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "infinite_limit_price": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "zero_price": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "negative_volume": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "inconsistent_ohlc": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "invalid_timestamp": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "duplicate_timestamp": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      },
+      "out_of_order_timestamp": {
+        "rejected": true,
+        "exception": "ValueError",
+        "synthetic_only": true
+      }
+    }
+  },
+  "cost_parameters": {
+    "commission_rate": 0.0003,
+    "minimum_commission": 5.0,
+    "transfer_fee_rate": 1e-05,
+    "sell_stamp_rate": 0.0005
+  },
+  "semantics": [
+    "All inputs, symbols and 2099 dates are synthetic fixtures.",
+    "B0-P.1 and its configured thresholds/cost logic are not changed.",
+    "The ledger verifies code mechanics only; it is not real-data evidence of fills, profit or execution edge."
+  ]
+}

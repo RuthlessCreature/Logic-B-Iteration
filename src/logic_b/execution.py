@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from datetime import datetime
+import math
 import pandas as pd
 
 from .models import Fill, FillModel
@@ -13,8 +14,25 @@ def _prep(minute_bars: pd.DataFrame, signal_time: datetime) -> pd.DataFrame:
     inside that same 09:35 bar.
     """
     bars=minute_bars.copy()
-    bars["trade_time"]=pd.to_datetime(bars["trade_time"])
-    return bars[bars["trade_time"] > signal_time].sort_values("trade_time")
+    required={"trade_time","open","high","low","close","vol"}
+    missing=required-set(bars.columns)
+    if missing:
+        raise ValueError(f"minute bars missing required fields: {sorted(missing)}")
+    bars["trade_time"]=pd.to_datetime(bars["trade_time"],errors="coerce")
+    if bars["trade_time"].isna().any():
+        raise ValueError("minute bars contain invalid timestamps")
+    if bars["trade_time"].duplicated().any() or not bars["trade_time"].is_monotonic_increasing:
+        raise ValueError("minute bar timestamps must be unique and increasing")
+    for col in ("open","high","low","close","vol"):
+        bars[col]=pd.to_numeric(bars[col],errors="coerce")
+    prices=bars[["open","high","low","close"]].to_numpy(dtype=float)
+    volume=bars["vol"].to_numpy(dtype=float)
+    if not (pd.notna(prices).all() and (prices>0).all() and pd.notna(volume).all() and (volume>=0).all()):
+        raise ValueError("minute bar prices must be finite positive and volume finite non-negative")
+    if ((bars["high"] < bars[["open","low","close"]].max(axis=1)) |
+        (bars["low"] > bars[["open","high","close"]].min(axis=1))).any():
+        raise ValueError("minute bar OHLC values are inconsistent")
+    return bars[bars["trade_time"] > signal_time]
 
 
 def _volume(bars: pd.DataFrame) -> pd.Series:
@@ -27,6 +45,8 @@ def simulate_buy_fill(
     *, ts_code: str, signal_time: datetime, minute_bars: pd.DataFrame,
     limit_up_price: float, model: FillModel
 ) -> Fill:
+    if not math.isfinite(float(limit_up_price)) or float(limit_up_price)<=0:
+        raise ValueError("limit_up_price must be finite positive")
     if minute_bars.empty:
         return Fill(ts_code,"BUY",signal_time,None,None,False,"no_minute_data",model)
     bars=_prep(minute_bars,signal_time)
@@ -63,6 +83,8 @@ def simulate_sell_fill(
     *, ts_code: str, signal_time: datetime, minute_bars: pd.DataFrame,
     limit_down_price: float, model: FillModel
 ) -> Fill:
+    if not math.isfinite(float(limit_down_price)) or float(limit_down_price)<=0:
+        raise ValueError("limit_down_price must be finite positive")
     if minute_bars.empty:
         return Fill(ts_code,"SELL",signal_time,None,None,False,"no_minute_data",model)
     bars=_prep(minute_bars,signal_time)
