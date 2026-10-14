@@ -76,3 +76,5 @@ python scripts/h02_first_empirical_result.py `
 
 The pinned source run and archive SHA256 values are listed above and in the JSON. Do not use the `2026observed` artifact.
 
+The statistical implementation and initial generated result are in commit `607162bef103465361f6e7b10501ec32d2073d59` (push CI [38521312633](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521312633); PR CI [38521318900](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521318900)). The completed report tables, verified-empty-pool handling, and additional security/reproducibility tests are in follow-up commit `8589df0968c945d3900c6fef8f0dd1c7078ebe8e` (push CI [38521958036](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521958036); PR CI [38521961824](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521961824)); both pairs passed. Final local suite: 246 tests passed, plus smoke and config validation.
+

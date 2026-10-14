@@ -41,6 +41,12 @@ No main/config change, holdout access, parameter tuning, fabricated historical b
 - Initial P1 script execution failed closed on a zero-row `limit_down` Parquet with no columns. Inspection found `rows=0`, `columns=[]`; loader now treats only a hash-verified zero-row partition as an empty set and still rejects schema gaps in nonempty partitions. Automated tests cover zero-column empty pools and duplicate up/down rows; final suite count is 246.
 - Exact replay command and report publication SHAs/CI links are recorded in `H02_FIRST_EMPIRICAL_RESULT_20261014.md`.
 
+### Final first-result verification
+
+- Follow-up commit `8589df0968c945d3900c6fef8f0dd1c7078ebe8e` adds annual/half-year daily mean/median tables, explicit zero-column empty-pool handling, and the extra negative tests. Matching push CI [38521958036](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521958036) and PR CI [38521961824](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38521961824) both succeeded.
+- Latest observed remote HEAD is `8589df0968c945d3900c6fef8f0dd1c7078ebe8e`; PR #1 is still open Draft against `main`. Local verification: 246 tests passed, smoke passed, config validation passed, and `git diff --check` passed.
+- Failures encountered and repaired: initial audit CI import failure after artifact inventory (`dc36c04` fixed and green); first real loader run rejected a verified zero-column empty down pool (now handled as empty, with explicit test); one newly added fixture assertion expected the wrong year label (corrected and full suite rerun). No test was removed or weakened.
+
 ## FAST-5 / A2 artifact inventory update
 
 The earlier local-only inventory was extended to existing GitHub Actions artifacts. Five authorized-scope development artifacts (`2024h1`, `2024h2`, `2025h1`, `2025h2`, `2026dev`) were re-read offline from H01 run `38358815302`; the `2026observed` artifact was not downloaded or inspected. Across these five archives, 3,010/3,010 raw partition SHA values match their embedded manifests, candidate partitions cover 601/601 calendar sessions, candidate `limit_up` rows are 48,641/48,641 unique symbol-days, and the provider's own count matches on 601/601 days. This is a TIER D event-list inventory only; source terms and historic `available_at` remain unresolved.
