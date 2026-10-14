@@ -92,10 +92,10 @@ python -m pytest -q
 
 如果 `.venv` 已配置可直接沿用。基线 pytest 失败时，记录测试名、日志、当前 HEAD；如属已存在缺陷先定位，不得把它当作本轮补丁引入，也不得直接覆盖。
 
-**C. 对 P0 补丁只读审查**（把本交接目录完整放在仓库外；下面将其保存位置作为环境变量）：
+**C. 对 P0 补丁只读审查**（交接目录已提交到本仓库；以下命令可直接在仓库根目录执行）：
 
 ```powershell
-$Handoff = 'C:\path\to\logicb_h02_handoff_20261014'   # 按本机实际路径修改
+$Handoff = Join-Path (Get-Location).Path 'research\handoffs\h02-20261014'
 $P0 = Join-Path $Handoff 'patches\h02_hardening_v2_20261014.patch'
 git apply --stat $P0
 git apply --check $P0
