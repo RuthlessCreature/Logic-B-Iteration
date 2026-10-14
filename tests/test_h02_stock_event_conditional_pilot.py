@@ -27,7 +27,7 @@ def business_days(start, count):
 
 
 def sample():
-    days=(business_days("2024-09-23",6)+business_days("2025-06-02",25)
+    days=(business_days("2024-09-23",6)+business_days("2025-06-02",21)
           +business_days("2025-07-01",8)+business_days("2026-01-05",8))
     up={}
     down={}
