@@ -23,7 +23,7 @@ Updated: 2026-10-14 (Asia/Shanghai)
 - Y1/Y2/Y3 are vendor event-pool membership labels, not certified official price-limit or return labels. Publication-time/PIT availability at 09:35 is unverified.
 - No independent OHLC, official per-stock limits, certified PIT ST/halt state, minute bars, order book, real fills, or investor feedback/account flow. Real after-cost validation remains blocked.
 
-## Preliminary interpretation
+## Final interpretation
 
 - Fixed joint logistic forecasts lower candidate-weighted Brier than the train-prevalence baseline in exposed validation and forward development windows for all three vendor event labels. This is narrow predictive evidence only.
 - None of A–G passes the predeclared paired decision gate requiring both Y2 and Y3 risk differences vs the full pool to have 95% 5-session block intervals wholly below zero. Higher continuation concentration is accompanied by higher downside-event concentration and/or substantial missed Y1 events.
@@ -32,8 +32,13 @@ Updated: 2026-10-14 (Asia/Shanghai)
 
 ## Remaining completion work
 
-1. Rerun the full suite after the final source edits and record exact collected/passed count.
-2. Generate and review `FINAL_RESEARCH_AND_STRATEGY_VERDICT.md`, reproduction instructions and all machine-readable artifacts.
-3. Commit/push the research analysis stage to the permitted branch and verify CI for that SHA.
-4. Commit/push the execution hardening stage and verify CI for that SHA.
-5. Recheck PR #1 head/status and protected invariants; report any CI/auth/data-source barrier without making unsupported claims.
+All authorized local stages are complete. Real-data execution validation remains blocked by the research source/PIT stop conditions above; the required next action is acquisition and independent approval of licensed PIT sources.
+
+## Engineering delivery
+
+- Analysis commit on branch: `099c99944694ad89f1b95d888ad462e96c11a1d8`; Actions `test` run [38549295074](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38549295074) and `h02-forward-market-pilot` run [38549294907](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38549294907), both success.
+- Execution commit on branch: `16a402bf24b49d8787be546f9e29afc70d4b7597`; Actions `test` run [38550275360](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38550275360) and `h02-forward-market-pilot` run [38550275359](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38550275359), both success.
+- Local full suite: `python -m pytest --override-ini='addopts=' -q` → **286 passed**, three warnings (two existing pandas B0 warnings and one invalid-timestamp fixture parsing warning). `logic-b smoke` and `logic-b validate-config config/b0.yaml` both returned `status=ok`.
+- The normal HTTPS Git push for the second stage was blocked by a transient `curl 28` connection reset/timeout. The same seven-file tree was committed through the connected GitHub Git Database API with fast-forward expected-head `099c999...`; the resulting branch commit `16a402bf...` has the same tree SHA as the local execution snapshot `c88c9c9...`. No force update was used.
+- PR #1 was rechecked after the second stage: `open`, `draft=true`, `merged=false`, base `main`, head `research/behavioral-edge-20261013` at `16a402bf...`.
+- Main was not modified; B0 frozen config/costs were not modified; holdout was not accessed.
