@@ -8,18 +8,25 @@ python -m logic_b --dataset examples/toy_history.json --out runs/toy
 ```
 `examples/toy_history.json` 只用于合成撮合测试，收益数字没有市场意义。
 
-## 2. 免费历史数据：从2020年1月开始的小样本
+## 2. 免费历史数据：现在只需要一条命令
 
 ```bash
-python -m logic_b.collect calendar --start 2020-01-01 --end 2020-01-31
-python -m logic_b.collect events --start 2020-01-01 --end 2020-01-31 --max-days 16
-python -m logic_b.collect daily --start 2020-01-01 --end 2020-01-31 --max-days 16
-python -m logic_b.collect minute --start 2020-01-01 --end 2020-01-31 --max-days 16 --exit-lookahead-sessions 16
-python -m logic_b.collect dataset --start 2020-01-01 --end 2020-01-31 --max-days 16
-python -m logic_b --dataset data/replay_dataset.json --out runs/jan2020
+# 2020年初历史行情，最多50个交易日
+python -m logic_b.pipeline --start 2020-01-01 --end 2020-03-31 \
+  --max-sessions 50 --out runs/2020q1
 ```
 
-缓存位于 `data/raw`，不会提交 Git；断点续采默认读取缓存。这是**明确限量的历史K线模拟**，不是实盘成交。扩大期间先确认数据缺口、API响应、分钟历史是否可取得、公司行动处理；上文 `--max-days` 限制采集规模，不是全期回测开关。2019年以前数据或2026年7月以后的市场数据不在新研究范围。
+这一入口自动依次读取/缓存选股宝历史事件和BaoStock不复权日K，并且**只下载当天真正需要买入的核心票或需要退出的持仓的5分钟K**，不会针对每只曾入选股票批量下载所有未来K线。
+
+- 本地缓存：`data/raw/`。真实原始市场行不得提交GitHub。
+- 详细可复核账本：`runs/2020q1/private_trade_ledger.json`（仅本地，自动被Git忽略）。
+- 公开的非原始统计：`runs/2020q1/aggregate.json`。
+- 标记`PARTIAL`代表尚未覆盖2020—2026全部交易日；不能拿这段试跑算长期收益。
+- 除权/送股及行情过期导致账户值无法准确计算时，`return_pct=null`，不得强行使用未调整账面值宣传收益。
+- 缺少真实源字段时清楚记录缺失，不用想象价格补齐历史。
+- 想扩大到全2020年，可改 `--end 2020-12-31 --max-sessions 250`，再按年份滚动到2026-06-30；长数据窗口请利用本地缓存和接口限速，不能将每年分别从1万元重新初始化的结果直接拼成跨年复利曲线。跨年度必须连续账户状态运行。
+
+如果需要低级调试或单独采集原始池、分钟K，依然可使用 `python -m logic_b.collect`；这不再是日常主要执行入口。
 
 ## 3. 大模型辅助可证伪实验
 
