@@ -1,0 +1,37 @@
+name: luna-goal-2025-2026-demo
+on:
+  push:
+    branches: [research/behavioral-edge-20261013]
+    paths:
+      - src/logic_b/goal.py
+      - src/logic_b/replay.py
+      - src/logic_b/research.py
+      - config/goal_2025_2026.json
+      - examples/goal_toy_2025_2026.json
+      - tests/test_goal.py
+      - .github/workflows/luna-goal-2025-2026.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  dashboard-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - run: python -m pip install -e ".[dev]"
+      - run: python -m pytest -q tests/test_goal.py
+      - name: Generate visible synthetic iteration / curves / size diagnostics
+        run: |
+          python -m logic_b.goal --dataset examples/goal_toy_2025_2026.json \
+            --proposals examples/proposal_example.json \
+            --out runs/goal_2025_2026_demo --data-root data
+      - name: Upload charts and synthetic, explicitly not historical results
+        uses: actions/upload-artifact@v4
+        with:
+          name: luna-goal-synthetic-demo-not-market-performance
+          path: runs/goal_2025_2026_demo/
+          retention-days: 30

@@ -1,0 +1,438 @@
+{
+  "classification": "SYNTHETIC_FIXTURE_NOT_REAL_MARKET",
+  "coverage_complete": false,
+  "days": [
+    {
+      "date": "2025-01-02",
+      "market": {
+        "market_temperature": 20
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 1,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10,
+          "preclose": 10,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10,
+            "high": 10,
+            "low": 10,
+            "close": 10,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2025-01-03",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.1,
+          "preclose": 10,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.1,
+            "high": 10.1,
+            "low": 10.1,
+            "close": 10.1,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2025-01-06",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 3,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 9.9,
+          "preclose": 10.1,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 9.9,
+            "high": 9.9,
+            "low": 9.9,
+            "close": 9.9,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2025-01-07",
+      "market": {
+        "market_temperature": 20
+      },
+      "limit_up": [],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.2,
+          "preclose": 9.9,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.2,
+            "high": 10.2,
+            "low": 10.2,
+            "close": 10.2,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2025-01-08",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 2,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.4,
+          "preclose": 10.2,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.4,
+            "high": 10.4,
+            "low": 10.4,
+            "close": 10.4,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2025-12-30",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.3,
+          "preclose": 10.4,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.3,
+            "high": 10.3,
+            "low": 10.3,
+            "close": 10.3,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2025-12-31",
+      "market": {
+        "market_temperature": 20
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 1,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.5,
+          "preclose": 10.3,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.5,
+            "high": 10.5,
+            "low": 10.5,
+            "close": 10.5,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-01-02",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10,
+          "preclose": 10.5,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10,
+            "high": 10,
+            "low": 10,
+            "close": 10,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-01-05",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 3,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.1,
+          "preclose": 10,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.1,
+            "high": 10.1,
+            "low": 10.1,
+            "close": 10.1,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-01-06",
+      "market": {
+        "market_temperature": 20
+      },
+      "limit_up": [],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 9.6,
+          "preclose": 10.1,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 9.6,
+            "high": 9.6,
+            "low": 9.6,
+            "close": 9.6,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-01-07",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 2,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 9.9,
+          "preclose": 9.6,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 9.9,
+            "high": 9.9,
+            "low": 9.9,
+            "close": 9.9,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-01-08",
+      "market": {
+        "market_temperature": 50
+      },
+      "limit_up": [],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.05,
+          "preclose": 9.9,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.05,
+            "high": 10.05,
+            "low": 10.05,
+            "close": 10.05,
+            "volume": 5000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2026-01-09",
+      "market": {
+        "market_temperature": 20
+      },
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 1,
+          "break_limit_up_times": 0
+        }
+      ],
+      "limit_down": [],
+      "limit_broken": [],
+      "daily": {
+        "600001.SH": {
+          "close": 10.2,
+          "preclose": 10.05,
+          "is_st": false,
+          "tradestatus": 1,
+          "volume": 100000
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.2,
+            "high": 10.2,
+            "low": 10.2,
+            "close": 10.2,
+            "volume": 5000
+          }
+        ]
+      }
+    }
+  ]
+}

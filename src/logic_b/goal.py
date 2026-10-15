@@ -190,7 +190,8 @@ def execute_goal(dataset, config, proposals, out_dir:Path, storage_root:Path):
     val_rows=[]
     val_curves=[]
     for version in dict.fromkeys(["V0_BASELINE",selected] if selected else ["V0_BASELINE"]):
-        result=replay({"days":va,"coverage_complete":dataset.get("coverage_complete") is True},
+        result=replay({"days":va,"prior_completed_day":tr[-1],
+                       "coverage_complete":dataset.get("coverage_complete") is True},
                       conf_by_version[version])
         val_rows.append({"version":version,"validation":_stats(result)})
         val_curves.append((version,_curve(result)))

@@ -158,6 +158,9 @@ def replay(dataset: dict, config: dict) -> dict:
         raise ValueError("trading days must be strictly sorted and unique")
     if any(not (bounds[0] <= d <= bounds[1]) for d in dates):
         raise ValueError("protected or outside-range day")
+    prior_seed=dataset.get("prior_completed_day")
+    if prior_seed is not None and (not dates or not (bounds[0] <= prior_seed.get("date","") < dates[0])):
+        raise ValueError("invalid prior completed seed date")
     commission = float(config["commission_rate"])
     minimum = float(config["minimum_commission"])
     size = int(config["lot_size"])
@@ -178,7 +181,7 @@ def replay(dataset: dict, config: dict) -> dict:
     account_value_unreliable = False
     for i, day in enumerate(snapshots):
         trade_day = day["date"]
-        prior = snapshots[i - 1] if i else None
+        prior = snapshots[i - 1] if i else prior_seed
         if not isinstance(day.get("daily", {}), dict):
             raise ValueError("daily must be a map")
         for code, row in _snapshot_map(day, "daily").items():
