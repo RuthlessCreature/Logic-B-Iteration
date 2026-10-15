@@ -1,0 +1,27 @@
+{
+  "schema_version": "llm-provider-registry-v1",
+  "primary": "openai",
+  "provider_selection_policy": "single_primary_no_silent_fallback",
+  "providers": {
+    "openai": {
+      "enabled": true,
+      "implementation": "existing_research_ask_llm_for_hypothesis",
+      "credential_env": "OPENAI_API_KEY",
+      "model": null,
+      "model_from_cli": true,
+      "network_requires_explicit_call": true
+    },
+    "deepseek": {
+      "enabled": false,
+      "implementation": "reserved_not_connected",
+      "credential_env": "DEEPSEEK_API_KEY",
+      "base_url": "https://api.deepseek.com",
+      "chat_path": "/chat/completions",
+      "models_path": "/models",
+      "model": null,
+      "allow_external_calls": false,
+      "execution_status": "RESERVED_DISABLED_NOT_CONNECTED_NOT_BILLED",
+      "fallback_allowed": false
+    }
+  }
+}
