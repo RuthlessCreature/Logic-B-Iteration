@@ -39,6 +39,7 @@ class DecisionRequest:
     asof: str
     state: dict[str, Any]
     task: str = "advisory_market_regime"
+    scope: str = "historical_replay"  # forward_live reserved for post-protected future trading
 
 
 @dataclass(frozen=True)
@@ -82,8 +83,16 @@ def validate_decision_request(req: DecisionRequest) -> None:
     if t.tzinfo is None:
         raise ValueError("asof timestamp must carry timezone")
     trade_date = t.date().isoformat()
-    if not FIRST <= trade_date <= LAST:
-        raise ValueError("asof beyond authorized 2020-2026 history")
+    if req.scope == "historical_replay":
+        if not FIRST <= trade_date <= LAST:
+            raise ValueError("asof beyond authorized 2020-2026 history")
+    elif req.scope == "forward_live":
+        # Future online production has a *different* time domain from backtest.
+        # This NEVER unlocks the original protected historical 2026Q3 holdout.
+        if trade_date <= "2026-09-28":
+            raise ValueError("forward runtime cannot replay protected or historical dates")
+    else:
+        raise ValueError("unknown decision scope")
     if req.task not in ALLOWED_TASKS or not isinstance(req.state, dict):
         raise ValueError("unknown decision task or state")
     # Explicit allowlist prevents passing future bars, private holdings,

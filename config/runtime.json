@@ -27,14 +27,20 @@
       "enabled": false,
       "network_calls_allowed": false,
       "transport": "NOT_CONNECTED",
-      "on_error": "NO_FOLLOW"
+      "on_error": "NO_FOLLOW",
+      "credential_env": "DEEPSEEK_API_KEY",
+      "endpoint": "https://api.deepseek.com/chat/completions",
+      "model": null
     },
     "jev_typesafe": {
       "stage": "RUNTIME_TYPED_DECISION",
       "enabled": false,
       "network_calls_allowed": false,
       "transport": "NOT_CONNECTED",
-      "on_error": "NO_FOLLOW"
+      "on_error": "NO_FOLLOW",
+      "credential_env": "TYPESAFE_API_KEY",
+      "endpoint": "https://api.typesafe.ai/v1/systemone",
+      "model": null
     }
   },
   "promotion": {
