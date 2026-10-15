@@ -2,6 +2,7 @@
 from __future__ import annotations
 import argparse
 from collections import Counter
+import hashlib
 import json
 from pathlib import Path
 import time
@@ -71,8 +72,20 @@ def run_pilot(start,end,max_sessions,cache,config):
         dataset,coverage=prepare_demand_driven(
             calendar,events,daily,lambda sym,d:fetch_5m(sym,d,cache,bs),config)
     result=replay(dataset,config)
+    # Fingerprints bind market inputs and frozen account assumptions to every
+    # result without distributing price rows in public GitHub artifacts.
+    stable_days=[{k:day.get(k) for k in ("date","limit_up","limit_down",
+                     "limit_broken","market","daily","bars_5m")}
+                 for day in dataset["days"]]
+    digest=lambda value:hashlib.sha256(json.dumps(
+        value,ensure_ascii=False,sort_keys=True,allow_nan=False,
+        separators=(",",":")).encode("utf-8")).hexdigest()
+    input_sha256=digest(stable_days)
+    config_sha256=digest(config)
     audit={"classification":"REAL_PRICE_PARTIAL_SIMULATION_NOT_EXECUTABLE_RETURN",
            "period":[calendar[0],calendar[-1]],"coverage":coverage,
+           "input_sha256":input_sha256,"config_sha256":config_sha256,
+           "yearly_account_table":result["yearly"],
            "account":{"initial_cash":result["initial_cash"],
                       "final_equity":result["final_equity"],
                       "return_pct":result["return_pct"],
