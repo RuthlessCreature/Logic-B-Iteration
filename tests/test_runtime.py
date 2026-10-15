@@ -68,7 +68,8 @@ def test_2026_protected_historical_window_and_runtime_distinguished():
     # even though historical training dataset ends in June.
     r=decide_runtime(snapshot(historical_replay=False,
        decision_at="2027-01-04T09:35:00+08:00",
-       evidence_available_at="2027-01-04T09:34:59+08:00",source_day="2026-12-31"),
+       evidence_available_at="2027-01-04T09:34:59+08:00",source_day="2026-12-31",
+       previous_day_events={"date":"2026-12-31","limit_up":EVENTS["limit_up"]}),
        research_strategy=STRATEGY,config=RUNTIME)
     assert r["review_status"]=="NO_FOLLOW"
 
@@ -86,3 +87,8 @@ def test_unsafe_config_rejected():
     c=copy.deepcopy(RUNTIME);c["orders_transmitted"]=1
     with pytest.raises(ValueError,match="unsafe policy"):
         decide_runtime(snapshot(),research_strategy=STRATEGY,config=c)
+
+
+def test_prior_day_vendor_event_label_must_match_source_date():
+    with pytest.raises(ValueError,match="vendor prior-day events"):
+        decide_runtime(snapshot(source_day="2020-01-07"),research_strategy=STRATEGY,config=RUNTIME)
