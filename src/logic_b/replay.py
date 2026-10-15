@@ -84,7 +84,12 @@ def _bar(day: dict, code: str, execution_time: str) -> tuple[dict | None, str]:
             return None, "INVALID_BAR_OHLC"
         if at >= execution_time:
             eligible.append(bar)
-    return (eligible[0], "BAR_READY") if eligible else (None, "NO_COMPLETED_EXECUTION_BAR")
+    if not eligible:
+        return None, "NO_COMPLETED_EXECUTION_BAR"
+    chosen = eligible[0]
+    if _numeric(chosen.get("volume", 0)) <= 0:
+        return None, "ZERO_VOLUME_BAR"
+    return chosen, "BAR_READY"
 
 
 def _tradeable(day: dict, prev: dict, code: str, execution_time: str, side: str):
@@ -94,7 +99,22 @@ def _tradeable(day: dict, prev: dict, code: str, execution_time: str, side: str)
         return None, "MISSING_DAILY", None
     if daily.get("tradestatus") in (0, "0", False):
         return None, "SUSPENDED", None
+    if daily.get("tradestatus") not in (1, "1", True):
+        return None, "TRADE_STATUS_UNKNOWN", None
     previous_close = _numeric(prev_daily.get("close", 0))
+    if previous_close <= 0:
+        return None, "INVALID_PREVIOUS_CLOSE", None
+    ref = daily.get("preclose")
+    if ref is not None:
+        reference_close = _numeric(ref)
+        if reference_close <= 0:
+            return None, "INVALID_REFERENCE_CLOSE", None
+        # We cannot adjust owned shares/cash for splits, dividends or other
+        # actions yet. Reject new fills rather than manufacture profitability.
+        if abs(reference_close - previous_close) > 0.011:
+            return None, "CORPORATE_ACTION_UNRECONCILED", None
+    else:
+        reference_close = previous_close
     previous_st = prev_daily.get("is_st", None)
     current_st = daily.get("is_st", None)
     if not isinstance(previous_st, bool) or not isinstance(current_st, bool):
@@ -106,7 +126,7 @@ def _tradeable(day: dict, prev: dict, code: str, execution_time: str, side: str)
         return None, "LIMIT_BAND_UNKNOWN", None
     if daily.get("no_price_limit", False) or prev_daily.get("no_price_limit", False):
         return None, "IPO_LIMIT_UNKNOWN", None
-    upper, lower = _limit_prices(previous_close, ratio)
+    upper, lower = _limit_prices(reference_close, ratio)
     bar, reason = _bar(day, code, execution_time)
     if bar is None:
         return None, reason, (upper, lower)
@@ -151,15 +171,24 @@ def replay(dataset: dict, config: dict) -> dict:
     entry_cost = 0.
     orders, fills, equity, round_trips = [], [], [], []
     last_mark = {}
+    unadjusted_action_days = []
+    previous_daily_close = {}
     for i, day in enumerate(snapshots):
         trade_day = day["date"]
         prior = snapshots[i - 1] if i else None
         if not isinstance(day.get("daily", {}), dict):
             raise ValueError("daily must be a map")
         for code, row in _snapshot_map(day, "daily").items():
-            v = _numeric(row.get("close", 0))
+            v = _numeric(row.get("close")) if row.get("close") is not None else 0.0
+            observed_reference = row.get("preclose")
+            if observed_reference is not None and code in previous_daily_close:
+                if abs(_numeric(observed_reference) - previous_daily_close[code]) > 0.011:
+                    unadjusted_action_days.append({"day": trade_day, "symbol": code,
+                        "prior_unadjusted_close": previous_daily_close[code],
+                        "provider_reference_close": _numeric(observed_reference)})
             if v > 0:
                 last_mark[code] = v
+                previous_daily_close[code] = v
 
         if stock and bought_on != trade_day and prior is not None:
             price, reason, limits = _tradeable(day, prior, stock, execution_time, "SELL")
@@ -211,7 +240,11 @@ def replay(dataset: dict, config: dict) -> dict:
         value = shares * last_mark.get(stock, 0) if stock else 0.
         stale = bool(stock and stock not in _snapshot_map(day, "daily"))
         equity.append({"day": trade_day, "cash": round(cash, 6), "symbol": stock, "shares": shares,
-                       "mark_stale": stale, "equity": round(cash + value, 6)})
+                       "mark_stale": stale,
+                       "corporate_action_unreconciled": bool(stock and any(
+                           x["symbol"] == stock and bought_on is not None and x["day"] >= bought_on
+                           for x in unadjusted_action_days)),
+                       "equity": round(cash + value, 6)})
 
     last_equity = equity[-1]["equity"] if equity else cash
     peak = starting
@@ -230,8 +263,10 @@ def replay(dataset: dict, config: dict) -> dict:
         yearly.append({"year": yr, "days": len(rows), "starting_equity": prev, "ending_equity": ending,
                        "return_pct": round((ending / prev - 1) * 100, 4) if prev else None})
         prev = ending
+    account_incomplete = bool(unadjusted_action_days or any(x["mark_stale"] or x["corporate_action_unreconciled"] for x in equity))
     return {"classification": "BAR_CLOSE_SIMULATION_NOT_REAL_FILL",
-            "status": "PARTIAL" if dataset.get("coverage_complete") is not True else "SIMULATED_FULL_COVERAGE",
+            "status": "PARTIAL" if dataset.get("coverage_complete") is not True or account_incomplete else "SIMULATED_FULL_COVERAGE",
+            "account_unresolved_corporate_actions": unadjusted_action_days,
             "initial_cash": starting, "final_equity": last_equity, "return_pct": round((last_equity / starting - 1) * 100, 4),
             "max_drawdown_pct": round(max_drawdown * 100, 4),
             "orders": orders, "fills": fills, "closed_trades": round_trips, "daily_equity": equity,

@@ -26,12 +26,14 @@ def test_daily_and_minute_provider_normalization(tmp_path):
         def historical(self, code, start, end, *, freq):
             if freq == "d":
                 return [{"date": "2020-01-02", "open": "10", "high": "10.2", "low": "9.8",
-                         "close": "10", "isST": "1", "tradestatus": "1"}]
+                         "close": "10", "preclose": "9.95", "volume": "12345", "isST": "1", "tradestatus": "1"}]
             return [{"date": "2020-01-03", "time": "20200103094500000", "open": "10.1",
                      "high": "10.2", "low": "10", "close": "10.1", "volume": "1500"}]
     a = fetch_daily("600001.SH", tmp_path, Fake(), start="2020-01-01", end="2020-01-10")
     b = fetch_5m("600001.SH", "2020-01-03", tmp_path, Fake())
     assert a["records"]["2020-01-02"]["is_st"] is True
+    assert a["records"]["2020-01-02"]["preclose"] == 9.95
+    assert a["records"]["2020-01-02"]["volume"] == 12345
     assert b["bars"][0]["time"] == "09:45"
     assert b["bar_timestamp"] == "END"
 

@@ -167,6 +167,10 @@ def fetch_daily(code: str, root: Path, client: BaoStockClient, *, start=FIRST, e
             "high": float(r["high"]) if r["high"] else None,
             "low": float(r["low"]) if r["low"] else None,
             "close": float(r["close"]) if r["close"] else None,
+            # BaoStock's historical reference price may differ from the last
+            # unadjusted close on corporate-action days. Preserve both.
+            "preclose": float(r["preclose"]) if r.get("preclose") else None,
+            "volume": float(r["volume"]) if r.get("volume") else None,
             "is_st": (st == "1") if st in ("0", "1") else None,
             "tradestatus": int(r["tradestatus"]) if r.get("tradestatus") in ("0", "1") else None,
         }
