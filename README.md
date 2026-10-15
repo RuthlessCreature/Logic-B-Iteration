@@ -27,3 +27,23 @@ python -m logic_b --dataset examples/toy_history.json --out runs/smoke
 上述是**合成回归样本**，不是2020—2026真实市场收益。使用真实数据须构建同格式的历史日线/5分钟K线数据集；不能把事件池的延续概率当作收益。
 
 详情见 [研究合同](docs/RESEARCH_LOOP.md)。
+## 真实数据和AI研究的入口
+
+```bash
+# 2020年1月16个交易日的免费源试跑（缓存到data/，不会公开提交原始数据）
+python -m logic_b.collect calendar --start 2020-01-01 --end 2020-01-31
+python -m logic_b.collect events --start 2020-01-01 --end 2020-01-31 --max-days 16
+python -m logic_b.collect daily --start 2020-01-01 --end 2020-01-31 --max-days 16
+python -m logic_b.collect minute --start 2020-01-01 --end 2020-01-31 --max-days 16
+python -m logic_b.collect dataset --start 2020-01-01 --end 2020-01-31 --max-days 16
+python -m logic_b --dataset data/replay_dataset.json --out runs/jan2020
+
+# 用冻结的离线提案复核策略；也可提供 --llm-model 连接自己已授权的大模型
+python -m logic_b.research_cli --dataset data/replay_dataset.json --proposal examples/proposal_example.json
+# 仅人工审阅的Follow清单，未验证策略默认NO_FOLLOW
+python -m logic_b.follow --dataset data/replay_dataset.json
+```
+
+以上命令在本地有网络且免费接口仍可用时运行。分钟K报价来自**已结束的09:45五分钟Bar**，是保守模拟而不是实盘真实成交。**目前`strategy.select_core`只是可审计的昨日涨停事件排序v0，不代表已经忠实复原完整逻辑A。** 对真实市场未完成日期、公司行动和源缺失，不得给出完整历史回报结论。
+
+查看 [完整中文操作指南](docs/QUICKSTART.md) 及 [Goal执行约定](AGENTS.md)。
