@@ -108,7 +108,9 @@ def compare_candidate(dataset: dict, config: dict, proposal: dict) -> dict:
                 "unfilled": sum(x.get("reason", "").startswith(("NO_FILL", "LIMIT_BAND", "MISSING"))
                                 for x in res["orders"])}
     valid = rows["validation"]
-    credible = (dataset.get("coverage_complete") is True and
+    reconciled = (all(r["return_pct"] is not None and r["max_drawdown_pct"] is not None
+                      for period in rows.values() for r in period.values()))
+    credible = (reconciled and dataset.get("coverage_complete") is True and
                 len(valid_days) >= 100 and len(rows["train"] and train_days) >= 100 and
                 valid["proposal"]["closed_trades"] >= 30 and
                 valid["proposal"]["return_pct"] > 0 and

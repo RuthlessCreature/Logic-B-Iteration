@@ -54,3 +54,15 @@ def test_unknown_current_still_preserves_identity_but_blocks_fill():
     d["daily"]["600001.SH"]["is_st"] = None
     r = replay({"days":[snap("2020-01-02",candidate=True),d]}, CONFIG)
     assert r["orders"][0]["reason"] == "LIMIT_BAND_UNKNOWN"
+
+def test_corporate_action_held_makes_net_return_unverifiable():
+    # Entry before an ex-rights day followed by a reference-price discontinuity.
+    r = replay({"days":[snap("2020-01-02",candidate=True),
+                        snap("2020-01-03",price=10,preclose=10),
+                        snap("2020-01-06",price=5,preclose=5)]}, CONFIG)
+    assert r["fills"][0]["side"] == "BUY"
+    assert r["orders"][-1]["reason"] == "CORPORATE_ACTION_UNRECONCILED"
+    assert r["economically_reconciled"] is False
+    assert r["return_pct"] is None
+    assert r["max_drawdown_pct"] is None
+    assert r["daily_equity"][-1]["economically_reconciled"] is False

@@ -173,6 +173,7 @@ def replay(dataset: dict, config: dict) -> dict:
     last_mark = {}
     unadjusted_action_days = []
     previous_daily_close = {}
+    account_value_unreliable = False
     for i, day in enumerate(snapshots):
         trade_day = day["date"]
         prior = snapshots[i - 1] if i else None
@@ -190,6 +191,11 @@ def replay(dataset: dict, config: dict) -> dict:
                 last_mark[code] = v
                 previous_daily_close[code] = v
 
+        # A split/dividend while holding needs a share-count/cash adjustment.
+        # Until available, equity and annual return are not economically valid.
+        if stock and any(x["day"] == trade_day and x["symbol"] == stock
+                         for x in unadjusted_action_days):
+            account_value_unreliable = True
         if stock and bought_on != trade_day and prior is not None:
             price, reason, limits = _tradeable(day, prior, stock, execution_time, "SELL")
             attempt = {"day": trade_day, "time": execution_time, "side": "SELL", "symbol": stock, "shares": shares,
@@ -239,8 +245,11 @@ def replay(dataset: dict, config: dict) -> dict:
                 orders.append({"day": trade_day, "side": "CASH", "symbol": None, "reason": reason})
         value = shares * last_mark.get(stock, 0) if stock else 0.
         stale = bool(stock and stock not in _snapshot_map(day, "daily"))
+        if stale:
+            account_value_unreliable = True
         equity.append({"day": trade_day, "cash": round(cash, 6), "symbol": stock, "shares": shares,
                        "mark_stale": stale,
+                       "economically_reconciled": not account_value_unreliable,
                        "corporate_action_unreconciled": bool(stock and any(
                            x["symbol"] == stock and bought_on is not None and x["day"] >= bought_on
                            for x in unadjusted_action_days)),
@@ -261,14 +270,16 @@ def replay(dataset: dict, config: dict) -> dict:
     for yr, rows in grouped.items():
         ending = rows[-1]["equity"]
         yearly.append({"year": yr, "days": len(rows), "starting_equity": prev, "ending_equity": ending,
-                       "return_pct": round((ending / prev - 1) * 100, 4) if prev else None})
+                       "return_pct": round((ending / prev - 1) * 100, 4) if prev and not account_value_unreliable else None})
         prev = ending
-    account_incomplete = bool(unadjusted_action_days or any(x["mark_stale"] or x["corporate_action_unreconciled"] for x in equity))
+    account_incomplete = account_value_unreliable or any(x["mark_stale"] for x in equity)
     return {"classification": "BAR_CLOSE_SIMULATION_NOT_REAL_FILL",
             "status": "PARTIAL" if dataset.get("coverage_complete") is not True or account_incomplete else "SIMULATED_FULL_COVERAGE",
             "account_unresolved_corporate_actions": unadjusted_action_days,
-            "initial_cash": starting, "final_equity": last_equity, "return_pct": round((last_equity / starting - 1) * 100, 4),
-            "max_drawdown_pct": round(max_drawdown * 100, 4),
+            "economically_reconciled": not account_value_unreliable,
+            "initial_cash": starting, "final_equity": last_equity,
+            "return_pct": None if account_value_unreliable else round((last_equity / starting - 1) * 100, 4),
+            "max_drawdown_pct": None if account_value_unreliable else round(max_drawdown * 100, 4),
             "orders": orders, "fills": fills, "closed_trades": round_trips, "daily_equity": equity,
             "yearly": yearly, "warnings": ["Daily unadjusted close requires corporate-action accounting for accurate long holds.",
                 "5-minute completed-bar close is a model assumption, not actual queue execution.",
