@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+.pytest_cache/
+.env
+*.pyc
+
+# Local research data
+data/raw/
+data/processed/
+cache/
+runs/
+
+# Keep small fixtures/manifests
+!data/raw/.gitkeep
+!data/processed/.gitkeep
