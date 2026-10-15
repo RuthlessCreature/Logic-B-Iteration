@@ -49,3 +49,15 @@
 ## 2026-10-15 用户再次明确：**离线研究与生产Runtime不是一回事**
 
 现在优先读 [Codex研究→Runtime上线架构](../docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。OpenAI Codex负责**离线探索、训练、回测、优化、规则版本冻结**。**DeepSeek与Jev将来用于实际生产系统的日常运行时推理**，前者分析结构化市场上下文与风险线索，后者做类型化状态分类、尾部风险、负反馈评分，均不能突破确定性MarketGate/成交规则。现在均 DISABLED / NOT_CONNECTED，用户未授权费用和API，不可擅自调用。已建立 `config/runtime.json`、`src/logic_b/runtime.py`、`tests/test_runtime.py` 作为无网络骨架。Luna要以 *研究发布包→shadow→paper→人工Follow* 为工程目标，不允许将两者当作两个可随时替换的聊天模型。历史研究只到2026-06-30，实时生产日期独立前进，不得触碰2026-07-01..09-28的历史受保护样本。
+
+## 2026-10-15 最终分层工程校验（后续Luna务必读）
+
+- **当前真正入口**：`docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md`；Codex离线历史训练/研究/实验/回测/策略版本发布 vs DeepSeek/Jev**将来真正部署的生产Runtime推理**，不是三个科研Agent。
+- `config/runtime.json` / `src/logic_b/runtime.py` / `src/logic_b/runtime_cli.py`：离线运行时影子决策，确定性MarketGate、合法证据时间、事件前日约束、模型默认禁用、策略未批准返回NO_FOLLOW。演示：
+  `python -m logic_b.runtime_cli --snapshot examples/runtime_shadow_snapshot.json --out runs/runtime-shadow/decision.json`。
+- `src/logic_b/runtime_deepseek.py`：**独立于research.py**的未来生产上下文推理协议，输入仅许可的实时状态、输出严格的标签/证据ID/风险/解释，默认禁用且无真实HTTP传输/不产生调用费。
+- `src/logic_b/decision_providers.py`：Jev类型化Runtime适配，额外支持 `scope=forward_live` 日期域；原2026-07-01..09-28历史保护不变。Jev尚未连接API。
+- `src/logic_b/llm_providers.py` 的旧研究提案形状**不能当生产Runtime的DeepSeek协议**；OpenAI仍是Codex主研究通道。
+- 已通过 [GitHub Actions #38704176111](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38704176111)：**65 tests passed**，历史合成账户烟测通过，Runtime dry-run输出`NO_FOLLOW / STRATEGY_NOT_PROMOTED / model_calls_executed=0 / orders_transmitted=0`。
+- **不要误报“DeepSeek/Jev已经实用”**：两者只是接口、未来运行角色及离线mock，可选真实网络激活尚未授权；后续在策略历史验证/心理市场状态构建之后，按Shadow→Paper→人工Follow逐步兑现Runtime职责。
+- 仍须优先处理 BaoStock 10002007、持久数据存储、真实全期回测、市场心理/状态机的可验证特征，不能因为Runtime骨架单测通过就停止主工程。
