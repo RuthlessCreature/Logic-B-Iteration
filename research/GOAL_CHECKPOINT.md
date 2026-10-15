@@ -1,48 +1,32 @@
-# Logic-B Goal checkpoint — 2025 TRAIN / 2026H1 VALIDATION
+# Logic-B Goal checkpoint — 2025 TRAIN / 2026H1 DEVELOPMENT VALIDATION
 
 **Updated:** 2026-10-15 (Asia/Shanghai)
-**Active rule:** `docs/LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md`; 2025 only for training and selection, 2026H1 is not read until a training freeze exists. Protected 2026-07-01..2026-09-28 data remains untouched.
-**Working base before this checkpoint's commit:** `c73b0c15cafbfa4074d496e07321bfb0fa401e5a` on `research/behavioral-edge-20261013`; that HEAD's core Actions run [38716185269](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38716185269) succeeded. PR #1 is open, Draft, base `main`; no main/PR mutation.
+**Active boundary:** 2025-01-01..2025-12-31 is training; 2026-01-01..2026-06-30 is development validation only after the freeze CI passed. 2026-07-01..2026-09-28 remains untouched. PR #1 remains open and Draft; no main update, merge, live order, paid API or R2 operation occurred.
 
-## 2025 source coverage and measured storage
+## Remote branch and exact-HEAD CI
 
-- BaoStock calendar: **243/243** 2025 trading sessions; Xuangubao event partitions: **243/243**. Event partition failures: 0. Full-year input SHA256: `475f5a64d0c1971104483e2f35a4a48af93acc5614bf9deb4efd1d395500ac7f`.
-- The price universe is a **candidate-path proxy**, not the whole market. Across V0/V1/V2 there are 117 daily symbols, 28,315 month-partitioned daily symbol-days, and 322 unique 5m files/15,264 bars. Xuangubao event pools contain 31,779 event rows. V0 requests 236/236 non-suspended target 5m partitions; V1 192/192; V2 187/187. These are path-complete only; all target missing counts are zero. V0/V1/V2 suspensions: 6/3/4. BaoStock query retries/errors: 0/0 on the instrumented reruns.
-- Current local physical cache: **2,130 files / 19,077,530 bytes / 18.19375 MiB**, including normalized Parquet and 100 older unpartitioned annual daily files (4,970,363 bytes) retained on disk. Month-partitioned JSON: 12,712,775 bytes; normalized month Parquet: 1,393,997 bytes (10.96% of JSON size). The 100 annual files overlap monthly rows and are counted in disk usage but not the monthly coverage totals. Per-type/month file count, rows, bytes and manifest SHA256 are in `research/goal_2025_2026/coverage_by_month.csv` and `storage_inventory.json`.
-- R2/D1 are **NOT_CONNECTED**; `r2_actual_bytes=null`. The initial full-range cache download happened before byte counters existed; exact counters for that original run are unavailable. Instrumented incremental reruns report exact reused/new bytes, queries, retries and failures per version. R2 bytes are never inferred from local bytes.
-- The legacy Xuangubao cache and current monthly caches are private/local only. Raw supplier records and detailed symbol-level ledgers stay ignored under `data/` and `runs/`; only aggregates/curves/hashes are staged for GitHub.
+- Research branch: `research/behavioral-edge-20261013`.
+- Training freeze tree is on branch commit `051b3c52ba4e2a2ad5028f7f65834f71aa7feebf`; its exact-head `logic-b-core` run [38723737497](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38723737497) passed. Aggregate upload run [38723733055](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38723733055) passed and published `luna-goal-2025-2026-research-aggregates`. Demo workflow run [38723732942](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38723732942) also passed; demo output is explicitly synthetic.
+- First API fallback commit `ef6baba542af94f2917577151aa84bac562120a6` had truncated Base64 file content and failed CI at TOML parsing. It was corrected by ordinary expected-SHA fast-forward in `051b3c52…`; the corrected exact-head checks above passed. No force update was used.
 
-## 2025 training iterations (exploratory bar-close simulation only)
+## 2025 training and immutable freeze
 
-All three runs use separate CNY10,000 accounts, the active fee model, 243 sessions, T+1, one position, 100-share buys, price-limit rejects and 09:45 completed-bar-close fills. Price bands are inferred, not official; this is not broker execution or trustworthy after-cost market performance.
+- BaoStock trading calendar and Xuangubao event partitions: 243/243 sessions; 31,779 Xuangubao event rows. V0/V1/V2 use candidate-path prices, not the full market. Target 5m: V0 236/236, V1 192/192, V2 187/187; zero target gaps in those paths. Cache before validation: 2,130 files / 19,077,530 bytes, including normalized Parquet and 100 overlapping legacy annual daily files.
+- Separate CNY10,000 exploratory accounts, active fee model, T+1, one symbol, 100-share lots, limit/suspension rejection, simulated completed 09:45 bar close. V0 return -76.9218%, MDD -78.0509%, 65 round trips, CNY767.18 fees. V1 MarketGate return -80.6120%, MDD -81.2785%, 52 round trips, CNY598.20 fees. V2 adds break-feedback veto: return -60.7934%, MDD -62.3941%, 48 round trips, CNY601.34 fees. All remain severe losses under unverified execution assumptions; V1/V2 rejected and V0 retained as reference only.
+- Freeze: **NO_CANDIDATE**, SHA256 `365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45`. V2 was least negative on the predeclared score but failed promotion gates: full-market coverage, official historical price limits, 09:35 point-in-time availability, corporate actions and actual fills. Freeze was committed before any 2026H1 cache access; exact-head CI passed before validation collection began.
+- 2025 artifacts and reproduction logic: [dashboard](goal_2025_2026/dashboard.html), [training report](goal_2025_2026/goal_report.json), [frozen selection](goal_2025_2026/frozen_selection.json), [monthly storage evidence](goal_2025_2026/coverage_by_month.csv), [training equity CSV](goal_2025_2026/training_equity.csv), [market-state activity](goal_2025_2026/market_state_activity.csv). The full suite before the training freeze passed; latest full suite after validation tooling: **91 passed**.
 
-| Version | Change | Return | MDD | Round trips | Fees CNY | Cash days | No-fill up/down | Decision |
-|---|---|---:|---:|---:|---:|---:|---:|---|
-| V0_SIMPLE_STREAK | Frozen original event-streak baseline | -76.9218% | -78.0509% | 65 | 767.18 | 163 | 85 / 15 | Keep as reference |
-| V1_MARKET_STATE_GATE | Gate entries when lagged vendor temperature < 40 | -80.6120% | -81.2785% | 52 | 598.20 | 178 | 69 / 13 | Reject; worse return and MDD |
-| V2_BREAK_FEEDBACK_VETO | V1 plus candidate break-count <= 1 | -60.7934% | -62.3941% | 48 | 601.34 | 187 | 81 / 8 | Reject as strategy; exploratory loss smaller, but still severe and unverified |
+## 2026H1 data and V0-reference result
 
-Precommitted exploratory score is `net_return_pct + 0.5 * signed_MDD_pct`. V2 scores best among the three, but all scores are negative and the full-market price universe, official per-security limits, 09:35 PIT, corporate actions and real-fill gates are unmet. Therefore the training freeze is **`NO_CANDIDATE`**, SHA256 `365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45`, recorded in `research/goal_2025_2026/frozen_selection.json`. V0 remains a reference only. The state series is a lagged vendor-pool proxy; it does not establish investor psychology. Sector/core labels are `UNKNOWN` where the source lacks legal historical labels.
+- Collected only 2026-01-01..2026-06-30; the actual trading dates are 2026-01-05..2026-06-30, 116/116 calendar sessions. Xuangubao event days 116/116, 0 failures, 16,876 event-pool rows. BaoStock demand-driven V0 path covers 63 candidate symbols, 7,229 daily symbol-days and 92/92 requested 5m target partitions (4,416 bars); 23 suspensions correctly needed no 5m request. No daily/minute gaps, no retries and no provider API failures in the completed run.
+- Independent CNY10,000 V0 reference account: ending marked equity CNY2,025.54514, return **-79.7445%**, max drawdown **-82.3428%**, 22 round trips, CNY276.45486 total fees (commission 220.00, stamp 54.20950, transfer 2.24536), 60 cash days, 29 upper-limit no-fills, 13 lower-limit no-fills, 23 suspended days, 11 corporate-action flags, 0 stale/unreconciled held marks. Execution is a simulated 09:45 completed-bar close, never queue fill evidence.
+- Since the frozen strategy is null, the 2026 outcome is **INSUFFICIENT** as a candidate validation and **NO_FOLLOW**. V0 is a reference-only curve; no comparison against a fictitious frozen strategy and no validation tuning occurred. The period is development-exposed, not blind. Market labels are lagged vendor-pool proxies; publication-time PIT and investor psychology are not certified.
+- 2026H1 physical local JSON: **4,483,122 bytes / 592 files**: Xuangubao events 2,270,973 B / 116 files / 16,876 rows; BaoStock daily 1,563,546 B / 378 files / 7,229 rows; BaoStock 5m 645,093 B / 92 files / 4,416 bars; calendar 3,510 B / 6 files / 116 days. Normalized Parquet: **503,629 B** (11.23% of JSON bytes, measured). All-years current local cache after H1: 2,745 files / 24,064,281 bytes. R2/D1 remain **NOT_CONNECTED**, actual cloud bytes null.
+- Monthly JSON additions measured on disk (files/bytes): Jan 101 / 808,508; Feb 92 / 516,363; Mar 106 / 772,860; Apr 105 / 778,876; May 82 / 666,173; Jun 106 / 940,342. Cumulative growth is in [storage_growth_2026H1.csv](goal_2025_2026/storage_growth_2026H1.csv) and SVG. Per-source/type/month rows, files, bytes and hashes are in [storage_2026H1_by_month.csv](goal_2025_2026/storage_2026H1_by_month.csv).
+- The first collection attempt was interrupted before its activity counters were saved; its byte counters cannot be reconstructed as download-vs-reuse. The completed rerun measured 6 calendar months reused (3,510 B), 116 Xuangubao event files reused (2,270,973 B), daily 290 months reused (1,193,945 B) / 88 downloaded (369,601 B), and 92 new 5m files (645,093 B). These instrumented counters are the completed rerun only; physical month/type totals are fully measured and do not depend on those counters.
+- Validation aggregate files: [validation report](goal_2025_2026/validation_report.json), [V0 curve CSV](goal_2025_2026/validation_v0_equity.csv), [V0 curve SVG](goal_2025_2026/validation_v0_equity.svg), [2026 market state CSV/SVG](goal_2025_2026/market_state_2026H1.csv), [state chart](goal_2025_2026/market_state_2026H1.svg), [2026 market/action mapping](goal_2025_2026/market_state_activity_2026H1.csv), [2026 monthly storage](goal_2025_2026/storage_2026H1_by_month.csv), [2026 cumulative capacity](goal_2025_2026/storage_growth_2026H1.svg). Private supplier rows and symbol-level ledgers remain ignored under `data/` and `runs/`.
 
-The new one-pass demand planner reproduces the prior V0 2025 private snapshot byte-for-byte at canonical input SHA `475f5a64...500ac7f`, with the same account metrics, while removing repeated full-prefix replays. The old run, the streaming rerun and private ledgers are local/ignored.
+## Remaining limits / next
 
-## Artifacts generated
-
-- `research/goal_2025_2026/dashboard.html`
-- `iteration_history.csv/json`, `training_equity.csv/svg`
-- `market_state_2025.csv/svg`, `market_state_activity.csv`, `market_state_summary.csv`
-- `coverage_by_month.csv`, `storage_inventory.json`, `storage_growth.csv/svg`
-- `frozen_selection.json`, `run_manifest.json`, `goal_report.json`
-- Synthetic harness separately writes an explicitly synthetic dashboard under ignored `runs/goal_2025_2026_demo/`; it is not market evidence.
-
-## Engineering and verification
-
-- Collector supports monthly calendar/daily caches, Xuangubao error isolation, bounded BaoStock retry/re-login for `10002007`, legacy-cache migration and no repeat request for cached partitions. `LocalStore` and injectable/mockable `R2Store` are implemented; no client, secret, upload, paid API or live order was used.
-- Full local suite: **89 passed**. `logic_b` synthetic replay smoke returned `PARTIAL` with +0.7036% on toy data; explicitly not a market result. Synthetic Goal dashboard generated successfully and is marked `NOT_FULLY_VALIDATED`. The repository has no `validate-config` CLI subcommand; frozen base-account invariants are covered by active config/replay tests.
-- No Goal-stage commit or push has been made yet. After staging this training/freeze package, verify the new-head Actions run before any 2026H1 cache request.
-
-## Next actions
-
-1. Review aggregate outputs for raw supplier rows or local-path leakage, run full tests/smokes, commit and fast-forward push this training freeze to the research branch, then verify exact-HEAD CI and PR remains Draft.
-2. Only after that freeze commit and CI, collect 2026-01-01..2026-06-30 Xuangubao/BaoStock data in month partitions, measure exact incremental bytes and missing days, and evaluate V0 reference only because selection is `NO_CANDIDATE`.
-3. Label validation `INSUFFICIENT` for economic conclusions if official price limits, PIT availability, company actions or executable-price evidence remain absent. Never inspect dates after 2026-06-30.
+- The validation report, script, tests, charts, monthly storage table and this checkpoint are prepared locally. Run the latest full suite/smokes, inspect only aggregate staged files, then commit and push the validation package with a normal expected-head fast-forward. Verify exact-HEAD core and aggregate-upload Actions, artifact availability, and PR #1 still Draft. After those checks, update this checkpoint with the final validation commit SHA and CI URLs in a small documentation commit, and verify that new head's Actions too.
+- No strategy qualifies for artificial promotion. Economic usefulness remains unproven; final recommendation is **NO_FOLLOW**. Official price-limit histories, 09:35 source availability, company-action completeness and order-queue fills remain unresolved. No post-2026-06-30 data were read.

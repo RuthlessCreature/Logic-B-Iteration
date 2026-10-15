@@ -1,0 +1,38 @@
+{
+  "freeze_sha256": "3f4dadc26549874220b5cccd18e0c0f13edae0713b9e91ca131f5567a2f4bb20",
+  "validation_input_sha256": "d203fcb5ecf7c90f91552e3ca8ee0048141bf107c9a12cdda829d264a683f774",
+  "code_head_before_validation": "051b3c52ba4e2a2ad5028f7f65834f71aa7feebf",
+  "window": [
+    "2026-01-01",
+    "2026-06-30"
+  ],
+  "validation_accessed_after_freeze_ci": true,
+  "artifacts_sha256": {
+    "coverage_by_month.csv": "3a1365e3c862a3a935227cf426aaa7cdeb9addbc9db1170f2484a291a1f7de67",
+    "dashboard.html": "e619edb981c6635f430b3f9113d1bf4b7754622b1e091b5765c59263fc59da21",
+    "frozen_selection.json": "3f4dadc26549874220b5cccd18e0c0f13edae0713b9e91ca131f5567a2f4bb20",
+    "goal_report.json": "d6e98c7334fccf2ff102c0a3e08c1d24c964fa2b5f38dcc708395869b43eac35",
+    "iteration_history.csv": "d2ef31141d3ed37e04b65cb72e9a871bbcecf34d32b4c6ee71003fa3cef3622f",
+    "iteration_history.json": "16da8982fe3fc65cccb54b9680f458aff6896e0cf5035e2bc4353674a3e2ddc1",
+    "market_state_2025.csv": "5b588b7a4918f7034fef8551b9c40e8b49206e7373e0e8cde39a70fa38b0fe65",
+    "market_state_2025.svg": "cc45e90192a9234e120b4ebc218e8df2e8284c56f4353de1f4a67a24abf6c4f8",
+    "market_state_2026H1.csv": "ec1f9d2149ac48916e89eadb574b2beef2a202d82c2f51bf1e32ae5cf626503c",
+    "market_state_2026H1.svg": "4fe9fa8efa56c33bd032b7ecf1486c6426c7f7385df6fcd50b1e6f7e91051c53",
+    "market_state_activity.csv": "0bb0e68c401dff2e0c778b1c73d0605d30f5a83ae88834a48b8a1d335ffc46d9",
+    "market_state_activity_2026H1.csv": "0228a0ab7da01b0fa319cfc473b7d2bf6ec791664a4236f3ea57a47f0544563b",
+    "market_state_summary.csv": "789d222622848997b1c11ec8e7556c408886e52005c7bd927b3a5fd7c59867fe",
+    "run_manifest.json": "4827a36de850396658d9ee2a4f435118c7ec17f7ace9ffdf767752a4a1f757f3",
+    "storage_2026H1_by_month.csv": "a8b88099b2fc057bd78f0f9a9a74faf8a12dc72cf8247d201c42a2ee8af63664",
+    "storage_growth.csv": "8391b85b7564995134d8b0e1c5966397c64351e669eda46a6fa806fece7e2951",
+    "storage_growth.svg": "b9fff06be9cb213d9a4fab3ffd608041b7793468b28a34f81d4e77f9c0575a57",
+    "storage_growth_2026H1.csv": "1dce81d61b44742d504b21c053d26bcfc67eb4f4e019f2dbc31f9fe801c9199b",
+    "storage_growth_2026H1.svg": "7ec7108699766bec1d398ed25e6ccbca201a75710053a774d3be7a67c3fc636e",
+    "storage_inventory.json": "41962029aa4f377a1d7e29cbaf7c6df9b4f826b76fa614179fecf03519d3dc97",
+    "training_equity.csv": "5575a1eb712069e28d4e12ee2b13b7ebac0e6818204a6191d2990cd76dcc5ee4",
+    "training_equity.svg": "f1afce080ea3dfafbb46c19d367fdf2102035ed08d67e3a2307071d662c7ada1",
+    "validation_report.json": "63403914de3aed30737169d9ca9a7dae73110aa81289433f4a6aed2eac2c818e",
+    "validation_v0_equity.csv": "1ed61a7893acba77b0e765db50be1f782998c14521e4871af324d3ae3cf5918a",
+    "validation_v0_equity.svg": "319bcc5ec983cd8e783206762d6e4641ecdb0d8700b2fed672e0b0de28196872"
+  },
+  "generated_utc": "2026-10-15T11:14:56.743224+00:00"
+}
