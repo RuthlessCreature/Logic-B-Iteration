@@ -177,4 +177,62 @@ def _month_parquet_rows(root: Path):
             if path.parent != daily_root and path.parent.name == month:
                 # Monthly partition is authoritative for its covered month.
                 pass
-            elif path.parent == daily_root and month in monthly_by_code
+            elif path.parent == daily_root and month in monthly_by_code.get(path.stem, set()):
+                continue
+            result["daily"][month].append({"trade_date": day, "symbol": value.get("code"),
+                **item, "source_sha256": source_hash, "provider": value.get("provider")})
+
+    minute_root = root / "minute"
+    for path in sorted(minute_root.rglob("*.json")) if minute_root.exists() else []:
+        value = _read_json(path)
+        if value is None:
+            continue
+        day = value.get("day", path.stem)
+        month = _month_from_day(day)
+        source_hash = sha256(path.read_bytes()).hexdigest()
+        for bar in value.get("bars") or []:
+            result["minute"][month].append({"trade_date": day, "symbol": value.get("code"),
+                **bar, "source_sha256": source_hash, "bar_timestamp": value.get("bar_timestamp")})
+
+    for path in sorted((root / "calendar").glob("*.json")) if (root / "calendar").exists() else []:
+        value = _read_json(path)
+        if value is None:
+            continue
+        source_hash = sha256(path.read_bytes()).hexdigest()
+        for day in value.get("days") or []:
+            result["calendar"][_month_from_day(day)].append({"trade_date": day,
+                "provider": value.get("provider"), "source_sha256": source_hash})
+    return result
+
+
+def export_normalized_parquet(root: Path, *, compression="zstd"):
+    """Write deterministic month-partitioned normalized Parquet files locally."""
+    root = Path(root)
+    try:
+        import pandas as pd
+    except ImportError:
+        return {"status": "PARQUET_WRITER_UNAVAILABLE", "files": [], "error": "pandas is not installed"}
+    try:
+        import pyarrow  # noqa: F401
+    except ImportError:
+        return {"status": "PARQUET_WRITER_UNAVAILABLE", "files": [], "error": "pyarrow is not installed"}
+    rows = _month_parquet_rows(root)
+    created = []
+    for dataset, month_rows in rows.items():
+        for month, records in sorted(month_rows.items()):
+            if month == "UNPARTITIONED" or not records:
+                continue
+            path = root / "parquet" / dataset / (month + ".parquet")
+            path.parent.mkdir(parents=True, exist_ok=True)
+            temp = path.with_name(path.name + ".tmp")
+            frame = pd.DataFrame.from_records(records).sort_values(
+                [key for key in ("trade_date", "pool", "symbol", "time") if key in records[0]],
+                kind="mergesort", na_position="last")
+            frame.to_parquet(temp, index=False, compression=compression)
+            os.replace(temp, path)
+            created.append({"dataset": dataset, "month": month,
+                            "rows": len(frame), "physical_bytes": path.stat().st_size,
+                            "path": path.relative_to(root).as_posix()})
+    return {"status": "COMPLETE" if created else "EMPTY", "compression": compression,
+            "files": created, "file_count": len(created),
+            "total_bytes": sum(row["physical_bytes"] for row in created)}

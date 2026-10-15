@@ -254,4 +254,65 @@ def execute_goal(dataset, config, proposals, out_dir:Path, storage_root:Path):
     train_plot=_svg(snapshots,"2025 训练集 · 各迭代版本资金曲线")
     val_plot=_svg(val_curves,"2026上半年验证集 · 冻结冠军 vs V0")
     (out_dir/"training_equity.svg").write_text(train_plot,encoding="utf-8")
-    (out_dir/"validation_equity.svg").write_text(val_pl
+    (out_dir/"validation_equity.svg").write_text(val_plot,encoding="utf-8")
+    rows_html="".join(
+        "<tr>"+"".join(f"<td>{escape(str(v))}</td>" for v in (
+            r["iteration"],r["version"],r["train"]["return_pct"],
+            r["train"]["max_drawdown_pct"],r["train_score"],r["train"]["completed_trades"]
+        ))+"</tr>" for r in train_rows)
+    storage_html="".join(
+        "<tr>"+"".join(f"<td>{escape(str(v))}</td>" for v in (
+            x["provider"],x["year"],x["files"],x["bytes"]
+        ))+"</tr>" for x in inventory["by_provider_year"])
+    html=f"""<!doctype html><html lang="zh"><meta charset="utf-8"><title>Logic-B Luna Goal · 实验仪表板</title>
+<style>body{{font:15px system-ui,sans-serif;max-width:1200px;margin:30px auto;padding:0 20px;color:#1f2937}}table{{border-collapse:collapse;width:100%}}td,th{{padding:9px;border-bottom:1px solid #ddd;text-align:left}}.warn{{background:#fff7ed;padding:15px;border-radius:8px}}.meta{{color:#64748b}}h1{{font-size:26px}}</style>
+<h1>Logic-B · Luna Goal 迭代仪表板</h1><p class=warn>此看板{"只含合成演示数据，没有真实市场收益。" if synthetic else "含历史价格Bar模拟，并非实盘成交记录。"} 当前状态：{escape(report["status"])}，不可据此自动Follow。</p>
+<p>训练：2025-01-01 ~ 2025-12-31；验证：2026-01-01 ~ 2026-06-30；初始资金均为 ¥10,000（两个独立评估账户）。</p>
+<p class=meta>数据SHA256：{data_fingerprint}；配置SHA256：{config_hash}</p>
+<h2>训练期：迭代资金曲线</h2>{train_plot}
+<h2>训练期：版本变更结果</h2><table><thead><tr><th>轮次</th><th>版本</th><th>收益%</th><th>最大回撤%</th><th>固定训练评分</th><th>平仓笔数</th></tr></thead><tbody>{rows_html}</tbody></table>
+<p>训练期优选：{escape(str(selected))}；版本在查看验证结果前冻结。无法可靠估值时收益/评分为null，不可据此认定改善。</p>
+<h2>验证期：冻结版本 vs 原始V0</h2>{val_plot}
+<h2>数据真实物理存储（本地/工作机）</h2>
+<p>扫描根目录：{escape(str(storage_root))}；文件：{inventory["total_files"]}；合计：{inventory["total_bytes"]:,} bytes（{inventory.get("total_mib",0)} MiB）。R2当前：{escape(inventory["r2_status"])}。</p>
+<table><thead><tr><th>分区/来源</th><th>年份</th><th>文件</th><th>实际字节</th></tr></thead><tbody>{storage_html}</tbody></table>
+<h3>按来源、类型、月份的实际容量</h3><p><a href="coverage_by_month.csv">coverage_by_month.csv</a> · <a href="storage_growth.csv">storage_growth.csv</a></p>
+{Path(out_dir/"storage_growth.svg").read_text(encoding="utf-8")}
+<p>输入数据序列化长度：{inventory["snapshot_bytes"]:,} bytes，非真实存储收费容量。原始数据及详细账本不应直接提交公开GitHub。</p>
+</html>"""
+    (out_dir/"dashboard.html").write_text(html,encoding="utf-8")
+    artifact_hashes={}
+    for path in sorted(out_dir.iterdir()):
+        if path.is_file() and path.name!="run_manifest.json":
+            artifact_hashes[path.name]={"bytes":path.stat().st_size,
+                                        "sha256":sha256(path.read_bytes()).hexdigest()}
+    (out_dir/"run_manifest.json").write_text(json.dumps({
+        "data_sha256":data_fingerprint,"config_sha256":config_hash,
+        "classification":report["classification"],"status":report["status"],
+        "selection":selected,"artifacts":artifact_hashes,
+        "local_storage_root":str(storage_root),"r2_status":inventory["r2_status"],
+        "r2_actual_bytes":None},ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+    return report
+
+def main():
+    parser=argparse.ArgumentParser(description="2025 train/2026H1 validation Goal dashboard")
+    parser.add_argument("--dataset",type=Path,required=True)
+    parser.add_argument("--config",type=Path,default=Path("config/goal_2025_2026.json"))
+    parser.add_argument("--proposals",type=Path,nargs="*",default=[])
+    parser.add_argument("--data-root",type=Path,default=Path("data"))
+    parser.add_argument("--out",type=Path,default=Path("runs/goal_2025_2026"))
+    arg=parser.parse_args()
+    dataset=json.loads(arg.dataset.read_text(encoding="utf-8"))
+    config=json.loads(arg.config.read_text(encoding="utf-8"))
+    props=[json.loads(p.read_text(encoding="utf-8")) for p in arg.proposals]
+    result=execute_goal(dataset,config,props,arg.out,arg.data_root)
+    print(json.dumps({"status":result["status"],"train_sessions":result["observed_sessions"]["train"],
+                      "validation_sessions":result["observed_sessions"]["validation"],
+                      "selected":result["frozen_selection"]["selected_from_training_only"],
+                      "iterations":len(result["train_iterations"]),
+                      "stored_files":result["storage"]["total_files"],
+                      "physical_bytes":result["storage"]["total_bytes"],
+                      "dashboard":str(arg.out/"dashboard.html")},ensure_ascii=False,indent=2))
+
+if __name__=="__main__":
+    main()

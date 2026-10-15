@@ -35,4 +35,12 @@ def test_fixed_version_schedule_is_finite():
 
 def test_market_state_proxies_are_lagged_for_next_session_only():
     rows = TRAIN._market_state([
-        {"date": "2025-01-02", "mar
+        {"date": "2025-01-02", "market": {"market_temperature": 50},
+         "limit_up": [{"symbol": "600001.SH"}], "limit_down": [], "limit_broken": []},
+        {"date": "2025-01-03", "market": {"market_temperature": 30},
+         "limit_up": [], "limit_down": [{"symbol": "600001.SH"}], "limit_broken": []},
+    ])
+    assert rows[0]["signal_eligible_on"] == "2025-01-03"
+    assert rows[1]["strong_to_down_feedback_count"] == 1
+    assert rows[1]["signal_eligible_on"] is None
+    assert rows[1]["publication_time_certified"] is False

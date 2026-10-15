@@ -89,4 +89,26 @@ class R2Store:
     def put_bytes(self, key: str, body: bytes) -> None:
         self._require_client()
         if not isinstance(body, bytes):
-            raise Type
+            raise TypeError("body must be bytes")
+        self.client.put_object(Bucket=self.bucket, Key=self._object_key(key), Body=body)
+
+    def get_bytes(self, key: str) -> bytes:
+        self._require_client()
+        response = self.client.get_object(Bucket=self.bucket, Key=self._object_key(key))
+        return response["Body"].read()
+
+    def actual_bytes(self) -> int:
+        self._require_client()
+        total = 0
+        token = None
+        while True:
+            request = {"Bucket": self.bucket, "Prefix": self.prefix.strip("/")}
+            if token:
+                request["ContinuationToken"] = token
+            response = self.client.list_objects_v2(**request)
+            total += sum(int(row["Size"]) for row in response.get("Contents", []))
+            if not response.get("IsTruncated"):
+                return total
+            token = response.get("NextContinuationToken")
+            if not token:
+                raise RuntimeError("truncated R2 listing did not provide a continuation token")

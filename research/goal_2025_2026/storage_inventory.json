@@ -1366,4 +1366,499 @@
       "partition_manifest_sha256": "ee0331c175db9b74623e1d4bd0975697d83c6e462afba50bc8954065c9f51612",
       "r2_actual_bytes": null
     },
-  
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-08",
+      "format": "parquet",
+      "files": 1,
+      "physical_bytes": 28365,
+      "mib": 0.027051,
+      "rows": 2457,
+      "trading_days": 21,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "6e14f56eb2fb4ecb068f2876d9b79041de7ecf07377e9f7e4482e701cab14e94",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-09",
+      "format": "json",
+      "files": 22,
+      "physical_bytes": 337196,
+      "mib": 0.321575,
+      "rows": 2498,
+      "trading_days": 22,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "1a77d41a7582bea80f65add7ba218fe0dc1954a7265d2786e645e9079656b66f",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-09",
+      "format": "parquet",
+      "files": 1,
+      "physical_bytes": 28139,
+      "mib": 0.026835,
+      "rows": 2520,
+      "trading_days": 22,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "4575efdba22607f7b823740e85a7a17193170dfe7f24f677b15cadb170f4fd52",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-10",
+      "format": "json",
+      "files": 17,
+      "physical_bytes": 254884,
+      "mib": 0.243076,
+      "rows": 1887,
+      "trading_days": 17,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "c78eade9467839c96a2e126a7c2439684d4fdbb1c77e702b31e9a6ee920eb72f",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-10",
+      "format": "parquet",
+      "files": 1,
+      "physical_bytes": 22896,
+      "mib": 0.021835,
+      "rows": 1904,
+      "trading_days": 17,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "529e19041b556119835ecf69f1c383ea73beb3e49869cb633f7fdb116d9e2029",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-11",
+      "format": "json",
+      "files": 20,
+      "physical_bytes": 340250,
+      "mib": 0.324488,
+      "rows": 2533,
+      "trading_days": 20,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "2391559f50c0aa64af93a22a9e93c50e745c04b0ff527dda6f739c67fb781ce0",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-11",
+      "format": "parquet",
+      "files": 1,
+      "physical_bytes": 26703,
+      "mib": 0.025466,
+      "rows": 2553,
+      "trading_days": 20,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "94d8cd7381b67730be89dcc7e61ca7c3a06ed544b4b26629452d0ce46e0f331e",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-12",
+      "format": "json",
+      "files": 23,
+      "physical_bytes": 340687,
+      "mib": 0.324904,
+      "rows": 2518,
+      "trading_days": 23,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "95ae11628d9120461428c19939eababdcadbb2ffc6ffcc10aa6402aa541855b9",
+      "r2_actual_bytes": null
+    },
+    {
+      "provider": "xuangubao",
+      "dataset": "events",
+      "year": "2025",
+      "month": "2025-12",
+      "format": "parquet",
+      "files": 1,
+      "physical_bytes": 27459,
+      "mib": 0.026187,
+      "rows": 2541,
+      "trading_days": 23,
+      "partition_status": "MONTH_PARTITIONED",
+      "partition_manifest_sha256": "51e7e56942b68e53d0c696641c3ab7439ac56c9e1e2f781041a32a38a0d0aa66",
+      "r2_actual_bytes": null
+    }
+  ],
+  "r2_status": "NOT_CONNECTED",
+  "r2_actual_bytes": null,
+  "storage_note": "Measured local file sizes; R2 is separate and not connected",
+  "parquet_export": {
+    "status": "COMPLETE",
+    "compression": "zstd",
+    "files": [
+      {
+        "dataset": "events",
+        "month": "2025-01",
+        "rows": 2386,
+        "physical_bytes": 25721,
+        "path": "parquet/events/2025-01.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-02",
+        "rows": 2387,
+        "physical_bytes": 27316,
+        "path": "parquet/events/2025-02.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-03",
+        "rows": 2443,
+        "physical_bytes": 27657,
+        "path": "parquet/events/2025-03.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-04",
+        "rows": 5920,
+        "physical_bytes": 58429,
+        "path": "parquet/events/2025-04.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-05",
+        "rows": 2475,
+        "physical_bytes": 25192,
+        "path": "parquet/events/2025-05.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-06",
+        "rows": 2100,
+        "physical_bytes": 24298,
+        "path": "parquet/events/2025-06.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-07",
+        "rows": 2336,
+        "physical_bytes": 27588,
+        "path": "parquet/events/2025-07.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-08",
+        "rows": 2457,
+        "physical_bytes": 28365,
+        "path": "parquet/events/2025-08.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-09",
+        "rows": 2520,
+        "physical_bytes": 28139,
+        "path": "parquet/events/2025-09.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-10",
+        "rows": 1904,
+        "physical_bytes": 22896,
+        "path": "parquet/events/2025-10.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-11",
+        "rows": 2553,
+        "physical_bytes": 26703,
+        "path": "parquet/events/2025-11.parquet"
+      },
+      {
+        "dataset": "events",
+        "month": "2025-12",
+        "rows": 2541,
+        "physical_bytes": 27459,
+        "path": "parquet/events/2025-12.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-01",
+        "rows": 2106,
+        "physical_bytes": 57057,
+        "path": "parquet/daily/2025-01.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-02",
+        "rows": 2106,
+        "physical_bytes": 57764,
+        "path": "parquet/daily/2025-02.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-03",
+        "rows": 2457,
+        "physical_bytes": 65092,
+        "path": "parquet/daily/2025-03.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-04",
+        "rows": 2457,
+        "physical_bytes": 64408,
+        "path": "parquet/daily/2025-04.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-05",
+        "rows": 2223,
+        "physical_bytes": 60768,
+        "path": "parquet/daily/2025-05.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-06",
+        "rows": 2340,
+        "physical_bytes": 63880,
+        "path": "parquet/daily/2025-06.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-07",
+        "rows": 2679,
+        "physical_bytes": 71273,
+        "path": "parquet/daily/2025-07.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-08",
+        "rows": 2436,
+        "physical_bytes": 66703,
+        "path": "parquet/daily/2025-08.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-09",
+        "rows": 2552,
+        "physical_bytes": 69413,
+        "path": "parquet/daily/2025-09.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-10",
+        "rows": 1972,
+        "physical_bytes": 56483,
+        "path": "parquet/daily/2025-10.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-11",
+        "rows": 2320,
+        "physical_bytes": 65417,
+        "path": "parquet/daily/2025-11.parquet"
+      },
+      {
+        "dataset": "daily",
+        "month": "2025-12",
+        "rows": 2667,
+        "physical_bytes": 72674,
+        "path": "parquet/daily/2025-12.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-01",
+        "rows": 1104,
+        "physical_bytes": 16873,
+        "path": "parquet/minute/2025-01.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-02",
+        "rows": 1008,
+        "physical_bytes": 17733,
+        "path": "parquet/minute/2025-02.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-03",
+        "rows": 1488,
+        "physical_bytes": 24175,
+        "path": "parquet/minute/2025-03.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-04",
+        "rows": 1584,
+        "physical_bytes": 22747,
+        "path": "parquet/minute/2025-04.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-05",
+        "rows": 1248,
+        "physical_bytes": 19714,
+        "path": "parquet/minute/2025-05.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-06",
+        "rows": 1248,
+        "physical_bytes": 22218,
+        "path": "parquet/minute/2025-06.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-07",
+        "rows": 1440,
+        "physical_bytes": 24590,
+        "path": "parquet/minute/2025-07.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-08",
+        "rows": 1296,
+        "physical_bytes": 24594,
+        "path": "parquet/minute/2025-08.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-09",
+        "rows": 1344,
+        "physical_bytes": 16300,
+        "path": "parquet/minute/2025-09.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-10",
+        "rows": 1008,
+        "physical_bytes": 14362,
+        "path": "parquet/minute/2025-10.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-11",
+        "rows": 1152,
+        "physical_bytes": 16188,
+        "path": "parquet/minute/2025-11.parquet"
+      },
+      {
+        "dataset": "minute",
+        "month": "2025-12",
+        "rows": 1344,
+        "physical_bytes": 21647,
+        "path": "parquet/minute/2025-12.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-01",
+        "rows": 18,
+        "physical_bytes": 2672,
+        "path": "parquet/calendar/2025-01.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-02",
+        "rows": 18,
+        "physical_bytes": 2672,
+        "path": "parquet/calendar/2025-02.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-03",
+        "rows": 21,
+        "physical_bytes": 2682,
+        "path": "parquet/calendar/2025-03.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-04",
+        "rows": 21,
+        "physical_bytes": 2683,
+        "path": "parquet/calendar/2025-04.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-05",
+        "rows": 19,
+        "physical_bytes": 2676,
+        "path": "parquet/calendar/2025-05.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-06",
+        "rows": 20,
+        "physical_bytes": 2680,
+        "path": "parquet/calendar/2025-06.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-07",
+        "rows": 23,
+        "physical_bytes": 2689,
+        "path": "parquet/calendar/2025-07.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-08",
+        "rows": 21,
+        "physical_bytes": 2682,
+        "path": "parquet/calendar/2025-08.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-09",
+        "rows": 22,
+        "physical_bytes": 2686,
+        "path": "parquet/calendar/2025-09.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-10",
+        "rows": 17,
+        "physical_bytes": 2670,
+        "path": "parquet/calendar/2025-10.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-11",
+        "rows": 20,
+        "physical_bytes": 2679,
+        "path": "parquet/calendar/2025-11.parquet"
+      },
+      {
+        "dataset": "calendar",
+        "month": "2025-12",
+        "rows": 23,
+        "physical_bytes": 2690,
+        "path": "parquet/calendar/2025-12.parquet"
+      }
+    ],
+    "file_count": 48,
+    "total_bytes": 1393997
+  },
+  "data_date_window": [
+    "2025-01-01",
+    "2025-12-31"
+  ],
+  "storage_summary": {
+    "monthly_json_bytes": 12712775,
+    "normalized_parquet_bytes": 1393997,
+    "parquet_to_monthly_json_ratio": 0.109653,
+    "parquet_size_reduction_pct": 89.03,
+    "legacy_unpartitioned_physical_bytes": 0,
+    "legacy_note": "100 legacy annual BaoStock daily files overlap month-partitioned rows; included in physical disk total, excluded from monthly coverage row totals."
+  }
+}

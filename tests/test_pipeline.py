@@ -74,4 +74,23 @@ def test_suspended_symbol_does_not_create_a_missing_minute_failure():
 def test_unavailable_previous_event_source_fails_closed_without_crashing():
     days=["2020-01-02","2020-01-03"]
     missing={"date":days[0],"limit_up":None,"limit_down":None,"limit_broken":None,
-       
+             "market":None,"source_status":"MISSING"}
+    ds,cov=prepare_demand_driven(days,[missing,events(days[1])],{},
+                                 lambda *_:pytest.fail("missing source must not produce a candidate"),CFG)
+    assert cov["event_source_complete"] is False
+    assert cov["coverage_complete"] is False
+    assert replay(ds,CFG)["orders"][0]["reason"]=="SOURCE_UNAVAILABLE"
+
+def test_target_planning_tracks_portfolio_in_one_pass(monkeypatch):
+    import logic_b.pipeline as pipeline
+    days=["2020-01-02","2020-01-03"]
+    daily={"600001.SH":{"records":dict(zip(days,[record(10),record(10)]))}}
+    def forbidden_replay(*_args,**_kwargs):
+        pytest.fail("target planning must not replay every historical prefix")
+    monkeypatch.setattr(pipeline,"replay",forbidden_replay)
+    dataset,coverage=pipeline.prepare_demand_driven(
+        days,[events(days[0],True),events(days[1])],daily,
+        lambda *_:{"bars":[{"time":"09:45","open":10,"high":10,"low":10,
+                             "close":10,"volume":1000}]},CFG)
+    assert coverage["minute_requested"]==1
+    assert dataset["days"][1]["date"]==days[1]

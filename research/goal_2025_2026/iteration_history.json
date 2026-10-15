@@ -212,4 +212,84 @@
       "sessions": 243,
       "initial_cash": 10000.0,
       "final_equity": 3920.65574,
-      "return_pct": 
+      "return_pct": -60.7934,
+      "max_drawdown_pct": -62.3941,
+      "economic_reconciliation": true,
+      "coverage_status": "SIMULATED_FULL_COVERAGE",
+      "buy_fills": 48,
+      "sell_fills": 48,
+      "completed_trades": 48,
+      "order_reasons": {
+        "MARKET_GATE": 51,
+        "SIMULATED_BAR_CLOSE_FILL": 96,
+        "NO_FILL_LIMIT_DOWN": 8,
+        "NO_FILL_LIMIT_UP": 81,
+        "SUSPENDED": 4,
+        "INSUFFICIENT_CASH_FOR_100_SHARES": 2
+      },
+      "fees_total": 601.34426,
+      "fee_commission": 480.0,
+      "fee_transfer": 4.71976,
+      "fee_stamp": 116.6245,
+      "turnover_cny": 471976.0,
+      "cash_days": 187,
+      "locked_or_unfilled_limit_up": 81,
+      "locked_or_unfilled_limit_down": 8,
+      "corporate_action_flags": 37,
+      "classification": "BAR_CLOSE_SIMULATION_NOT_REAL_FILL"
+    },
+    "train_score": -91.99045,
+    "decision": "REJECT",
+    "decision_reason": "所有版本只作探索性价格条模拟；官方价限、09:35 PIT、公司行动及全市场候选覆盖门禁未通过，不能成为交易候选。",
+    "next_train_experiment": "保留 V0 对照；只有补齐可得性/价格限制证据后才考虑额外版本。",
+    "source_coverage": {
+      "event_days": 243,
+      "xuangubao_event_rows": 31779,
+      "unique_daily_symbols": 84,
+      "daily_symbol_days": 20296,
+      "minute_symbol_days": 187,
+      "minute_bars": 8976,
+      "coverage_complete_for_version_path_only": true,
+      "missing_daily_target_days": 0,
+      "missing_minute_target_days": 0,
+      "suspended_target_days": 4,
+      "unknown_trade_status_target_days": 0,
+      "event_failures": 0,
+      "daily_failures": 0,
+      "baostock_retries": 0,
+      "baostock_api_failures": 0,
+      "baostock_queries": 0,
+      "calendar_cache": {
+        "cache_reused_bytes": 7218,
+        "cache_reused_months": 12,
+        "downloaded_bytes": 0,
+        "downloaded_months": 0
+      },
+      "events_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_files": 0,
+        "reused_bytes": 4264997,
+        "reused_files": 243
+      },
+      "minute_cache": {
+        "cache_reused_bytes": 1301319,
+        "cache_reused_files": 187,
+        "downloaded_bytes": 0,
+        "downloaded_files": 0
+      },
+      "daily_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_months": 0,
+        "reused_bytes": 4453601,
+        "reused_months": 1008
+      },
+      "classification": "CANDIDATE_POOL_PROXY_NOT_FULL_MARKET_PRICE_COVERAGE"
+    },
+    "data_snapshot_sha256": "f5575ceb4034a4c95f431b7ea30ebc7ed510cea85846738d134d1762eae58f87",
+    "date_window": [
+      "2025-01-02",
+      "2025-12-31"
+    ],
+    "session_count": 243
+  }
+]

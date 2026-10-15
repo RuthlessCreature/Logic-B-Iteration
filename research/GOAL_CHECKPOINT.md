@@ -33,4 +33,16 @@ The new one-pass demand planner reproduces the prior V0 2025 private snapshot by
 - `market_state_2025.csv/svg`, `market_state_activity.csv`, `market_state_summary.csv`
 - `coverage_by_month.csv`, `storage_inventory.json`, `storage_growth.csv/svg`
 - `frozen_selection.json`, `run_manifest.json`, `goal_report.json`
-- Synthetic harness separately writes an explicitly synthetic das
+- Synthetic harness separately writes an explicitly synthetic dashboard under ignored `runs/goal_2025_2026_demo/`; it is not market evidence.
+
+## Engineering and verification
+
+- Collector supports monthly calendar/daily caches, Xuangubao error isolation, bounded BaoStock retry/re-login for `10002007`, legacy-cache migration and no repeat request for cached partitions. `LocalStore` and injectable/mockable `R2Store` are implemented; no client, secret, upload, paid API or live order was used.
+- Full local suite: **89 passed**. `logic_b` synthetic replay smoke returned `PARTIAL` with +0.7036% on toy data; explicitly not a market result. Synthetic Goal dashboard generated successfully and is marked `NOT_FULLY_VALIDATED`. The repository has no `validate-config` CLI subcommand; frozen base-account invariants are covered by active config/replay tests.
+- No Goal-stage commit or push has been made yet. After staging this training/freeze package, verify the new-head Actions run before any 2026H1 cache request.
+
+## Next actions
+
+1. Review aggregate outputs for raw supplier rows or local-path leakage, run full tests/smokes, commit and fast-forward push this training freeze to the research branch, then verify exact-HEAD CI and PR remains Draft.
+2. Only after that freeze commit and CI, collect 2026-01-01..2026-06-30 Xuangubao/BaoStock data in month partitions, measure exact incremental bytes and missing days, and evaluate V0 reference only because selection is `NO_CANDIDATE`.
+3. Label validation `INSUFFICIENT` for economic conclusions if official price limits, PIT availability, company actions or executable-price evidence remain absent. Never inspect dates after 2026-06-30.

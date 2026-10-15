@@ -37,4 +37,9 @@ jobs:
         run: |
           {
             echo "## Logic-B Goal research aggregate package"
-          
+            echo ""
+            echo "This artifact contains aggregate reports, SVG/CSV/JSON, hashes, and dashboard only."
+            echo "It does not contain raw provider data, symbol-level ledgers, credentials, or R2 objects."
+            echo ""
+            echo "Training status: $(python -c 'import json; print(json.load(open("research/goal_2025_2026/goal_report.json", encoding="utf-8"))["status"])')"
+          } >> "$GITHUB_STEP_SUMMARY"

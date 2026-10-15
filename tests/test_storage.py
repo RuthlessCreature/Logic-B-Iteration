@@ -38,4 +38,15 @@ def test_parquet_export_writes_measured_compressed_month_files(tmp_path):
     minute=tmp_path/"minute"/"600001.SH"/"2025-01-02.json"
     minute.parent.mkdir(parents=True)
     minute.write_text(json.dumps({"code":"600001.SH","day":"2025-01-02","bar_timestamp":"END",
-        "bars":[{"time":"09:45","open
+        "bars":[{"time":"09:45","open":10,"high":11,"low":9,"close":10,"volume":100}]}),encoding="utf-8")
+    calendar=tmp_path/"calendar"/"2025-01.json"
+    calendar.parent.mkdir(parents=True)
+    calendar.write_text(json.dumps({"days":["2025-01-02"],"provider":"baostock"}),encoding="utf-8")
+    result=export_normalized_parquet(tmp_path)
+    assert result["status"]=="COMPLETE"
+    assert result["file_count"]==4
+    assert result["total_bytes"]==sum((tmp_path/f["path"]).stat().st_size for f in result["files"])
+    inv=physical_cache_inventory(tmp_path)
+    assert inv["total_bytes"] > result["total_bytes"]
+    assert any(row["format"]=="parquet" and row["physical_bytes"]>0
+               for row in inv["by_source_type_month"])

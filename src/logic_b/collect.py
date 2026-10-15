@@ -372,4 +372,124 @@ def fetch_5m(code: str, day: str, root: Path, client: BaoStockClient):
         if r.get("date") != day or len(timestamp) < 12 or timestamp[:8] != day.replace("-", ""):
             raise ValueError("minute timestamp does not match requested date")
         bars.append({"time": timestamp[8:10] + ":" + timestamp[10:12],
-                     "
+                     "open": float(r["open"]), "high": float(r["high"]),
+                     "low": float(r["low"]), "close": float(r["close"]),
+                     "volume": float(r.get("volume") or 0)})
+    value = {"code": canon, "day": day, "frequency": "5", "bars": bars,
+             "provider": "baostock", "bar_timestamp": "END",
+             "retrieved_utc": datetime.now(timezone.utc).isoformat()}
+    _atomic_json(path, value)
+    return dict(value, cache_hit=False, source_file_bytes=path.stat().st_size)
+
+
+def make_dataset(root: Path, calendar: list[str], *, save_to: Path):
+    if calendar != sorted(set(calendar)):
+        raise ValueError("calendar not sorted/unique")
+    if calendar:
+        _check_dates(calendar[0], calendar[-1])
+    raw = []
+    selection = set()
+    prior = None
+    for day in calendar:
+        event = _cached(root / "events" / (day + ".json"))
+        if event is None:
+            raise FileNotFoundError(f"missing Xuangubao date partition: {day}")
+        chosen, _ = select_core(prior, {}) if prior is not None else (None, "WARMUP")
+        if chosen:
+            selection.add(chosen)
+        raw.append(dict(event))
+        prior = event
+    daily = {code: _cached(root / "daily" / (code + ".json")) for code in selection}
+    for day in raw:
+        d = day["date"]
+        day["daily"] = {
+            code: value["records"][d] for code, value in daily.items()
+            if value is not None and d in value.get("records", {})
+        }
+        day["bars_5m"] = {
+            code: data["bars"] for code in selection
+            if (data := _cached(root / "minute" / code / (d + ".json"))) is not None
+        }
+    out = {"classification": "REAL_PROVIDER_PARTIAL_REPLAY_INPUT",
+           "coverage_complete": False,
+           "coverage": {"calendar_sessions": len(calendar),
+                        "event_sessions": len(raw),
+                        "distinct_baseline_selections": len(selection),
+                        "codes_with_daily_cache": sum(x is not None for x in daily.values()),
+                        "symbol_day_5m_cached": sum(len(day["bars_5m"]) for day in raw)},
+           "days": raw}
+    _atomic_json(save_to, out)
+    return out
+
+
+def main():
+    p = argparse.ArgumentParser(description="Bounded data ingest; writes ignored local cache only.")
+    p.add_argument("action", choices=["calendar", "events", "daily", "minute", "dataset"])
+    p.add_argument("--start", default=FIRST)
+    p.add_argument("--end", default=LAST)
+    p.add_argument("--cache", type=Path, default=Path("data/raw"))
+    p.add_argument("--out", type=Path, default=Path("data/replay_dataset.json"))
+    p.add_argument("--max-days", type=int, default=5, help="bounded first pilot")
+    p.add_argument("--max-codes", type=int, default=20)
+    p.add_argument("--exit-lookahead-sessions", type=int, default=10)
+    args = p.parse_args()
+    _check_dates(args.start, args.end)
+    if args.max_days < 1 or args.max_codes < 1 or args.exit_lookahead_sessions < 1:
+        raise ValueError("limits must be >= 1")
+    calendar_file = args.cache / "calendar.json"
+    if args.action == "calendar":
+        with BaoStockClient() as client:
+            calendar = fetch_calendar(args.start, args.end, args.cache, client)
+        days = calendar["days"]
+        _atomic_json(calendar_file, {"days": days, "range": [args.start, args.end],
+                                     "partitions": calendar["partitions"],
+                                     "provider": "baostock"})
+        print(f"calendar sessions={len(days)}")
+        return
+    cal = _cached(calendar_file)
+    if cal is None:
+        raise FileNotFoundError("fetch calendar first")
+    days = [day for day in cal["days"] if args.start <= day <= args.end]
+    if args.action == "events":
+        for day in days[:args.max_days]:
+            fetch_xgb_day(day, args.cache)
+            print("cached event", day)
+            time.sleep(.25)
+        return
+    if args.action == "dataset":
+        d = make_dataset(args.cache, days[:args.max_days], save_to=args.out)
+        print(json.dumps(d["coverage"], indent=2))
+        return
+    codes = set()
+    prior = None
+    chosen_by_date = {}
+    for day in days[:args.max_days]:
+        event = _cached(args.cache / "events" / (day + ".json"))
+        if event is None:
+            raise FileNotFoundError("event partitions missing; run events action first")
+        if prior is not None:
+            core, _ = select_core(prior, {})
+            if core:
+                chosen_by_date[day] = core
+                codes.add(core)
+        prior = event
+    with BaoStockClient() as client:
+        if args.action == "daily":
+            for code in sorted(codes)[:args.max_codes]:
+                fetch_daily(code, args.cache, client, start=args.start, end=args.end)
+                print("cached daily", code)
+        else:
+            # Download enough subsequent sessions to attempt T+1 exits,
+            # including several consecutive days with locked lower bands.
+            work = set()
+            positions = {day: pos for pos, day in enumerate(days[:args.max_days])}
+            for day, code in list(chosen_by_date.items())[:args.max_codes]:
+                i = positions[day]
+                for exit_day in days[i:i+args.exit_lookahead_sessions]:
+                    work.add((code, exit_day))
+            for code, day in sorted(work):
+                fetch_5m(code, day, args.cache, client)
+                print("cached five minute", day, code)
+
+if __name__ == "__main__":
+    main()

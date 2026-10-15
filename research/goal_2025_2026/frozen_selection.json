@@ -25,4 +25,11 @@
   "gates": {
     "full_market_candidate_universe": false,
     "official_per_security_price_limits": false,
-    "historical_0935_pi
+    "historical_0935_pit_certified": false,
+    "corporate_actions_fully_reconciled": false,
+    "broker_fill_evidence": false
+  },
+  "reason": "2025 rows support exploratory bar-price simulations only. No strategy qualifies for promotion to 2026 validation economics.",
+  "version_digest": "64d7c3a5f090ae8f15e65b04354ca91edbb9aaa730126d2d594af235025e7c85",
+  "selection_sha256": "365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45"
+}

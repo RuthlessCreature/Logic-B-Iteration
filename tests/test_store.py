@@ -37,4 +37,14 @@ class FakeR2:
                 if bucket == Bucket and key.startswith(Prefix)]
         self.calls += 1
         if self.calls == 1 and len(rows) > 1:
-            return {"Contents": rows[:1], "IsTrunca
+            return {"Contents": rows[:1], "IsTruncated": True, "NextContinuationToken": "page2"}
+        return {"Contents": rows[1:] if self.calls > 1 else rows, "IsTruncated": False}
+
+
+def test_r2_adapter_uses_object_metadata_and_paginates():
+    client = FakeR2()
+    store = R2Store("market", client, "goal")
+    store.put_bytes("2025/a", b"123")
+    store.put_bytes("2025/b", b"12345")
+    assert store.get_bytes("2025/a") == b"123"
+    assert store.actual_bytes() == 8

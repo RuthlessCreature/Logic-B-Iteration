@@ -197,4 +197,58 @@ def run_pilot(start,end,max_sessions,cache,config):
             "downloaded_months":daily_downloaded_months,"reused_bytes":daily_cache_reused_bytes,
             "downloaded_bytes":daily_downloaded_bytes}
         coverage["minute_cache"]=minute_stats
-        coverage["baostock_r
+        coverage["baostock_retries"]=bs.query_retry_count
+        coverage["baostock_queries"]=bs.query_count
+        coverage["baostock_api_failures"]=len(bs.query_failures)
+    result=replay(dataset,config)
+    # Fingerprints bind market inputs and frozen account assumptions to every
+    # result without distributing price rows in public GitHub artifacts.
+    stable_days=[{k:day.get(k) for k in ("date","limit_up","limit_down",
+                     "limit_broken","market","daily","bars_5m")}
+                 for day in dataset["days"]]
+    digest=lambda value:hashlib.sha256(json.dumps(
+        value,ensure_ascii=False,sort_keys=True,allow_nan=False,
+        separators=(",",":")).encode("utf-8")).hexdigest()
+    input_sha256=digest(stable_days)
+    config_sha256=digest(config)
+    audit={"classification":"REAL_PRICE_PARTIAL_SIMULATION_NOT_EXECUTABLE_RETURN",
+           "period":[calendar[0],calendar[-1]],"coverage":coverage,
+           "input_sha256":input_sha256,"config_sha256":config_sha256,
+           "yearly_account_table":result["yearly"],
+           "account":{"initial_cash":result["initial_cash"],
+                      "final_equity":result["final_equity"],
+                      "return_pct":result["return_pct"],
+                      "max_drawdown_pct":result["max_drawdown_pct"],
+                      "closed_trades":len(result["closed_trades"]),
+                      "fills_buy":sum(x["side"]=="BUY" for x in result["fills"]),
+                      "fills_sell":sum(x["side"]=="SELL" for x in result["fills"]),
+                      "held_at_end":bool(result["daily_equity"][-1]["symbol"]),
+                      "corporate_action_flags":len(result["account_unresolved_corporate_actions"]),
+                      "unreliable_marks":sum(x["mark_stale"] or x["corporate_action_unreconciled"]
+                                            for x in result["daily_equity"]),
+                      "order_reasons":dict(Counter(x["reason"] for x in result["orders"]))},
+           "warnings":["Only v0 historical baseline-selected securities loaded.",
+                       "Source prices are genuine, executions are simulated at a completed 5m bar.",
+                       "Incomplete period, corporate actions and 09:35 signal availability not fully verified."]}
+    return dataset,result,audit
+
+def main():
+    p=argparse.ArgumentParser()
+    p.add_argument("--start",default="2025-01-01")
+    p.add_argument("--end",default="2025-01-31")
+    p.add_argument("--max-sessions",type=int,default=20)
+    p.add_argument("--cache",type=Path,default=Path("data/raw"))
+    p.add_argument("--out",type=Path,default=Path("runs/smart-pilot"))
+    p.add_argument("--config",type=Path,default=Path("config/goal_2025_2026.json"))
+    args=p.parse_args()
+    cfg=json.loads(args.config.read_text(encoding="utf-8"))
+    ds,r,a=run_pilot(args.start,args.end,args.max_sessions,args.cache,cfg)
+    args.out.mkdir(parents=True,exist_ok=True)
+    # These detailed files stay inside ignored runner storage, never artifact-uploaded.
+    _atomic_json(args.out/"private_replay_input.json",ds)
+    _atomic_json(args.out/"private_trade_ledger.json",r)
+    _atomic_json(args.out/"aggregate.json",a)
+    print(json.dumps(a,ensure_ascii=False,indent=2))
+
+if __name__=="__main__":
+    main()

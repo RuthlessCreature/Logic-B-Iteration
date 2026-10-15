@@ -378,4 +378,96 @@ def build_training(v0_path: Path, v1_path: Path, v2_path: Path, config_path: Pat
                          "stamp_and_transfer": "from repository date-based fee model"},
                 "fill_assumption": "completed 09:45 five-minute bar close; simulated, not queue execution",
                 "r2_status": "NOT_CONNECTED", "generated_utc": datetime.now(timezone.utc).isoformat()}
- 
+    (public_dir / "run_manifest.json").write_text(json.dumps(manifest, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+
+    report = {"classification": "REAL_VENDOR_DATA_CANDIDATE_POOL_PROXY_NOT_EXECUTABLE_RETURN",
+              "status": "NOT_FULLY_VALIDATED", "training": {"window": ["2025-01-01", "2025-12-31"],
+                    "sessions": len(datasets[0]["days"]), "iterations": public_iterations},
+              "data_evidence": {"calendar_sessions": len(cached_sessions),
+                    "xuangubao_event_days": len(datasets[0]["days"]),
+                    "xuangubao_event_rows": iterations[0]["source_coverage"]["xuangubao_event_rows"],
+                    "daily_symbol_days": iterations[0]["source_coverage"]["daily_symbol_days"],
+                    "daily_symbol_count": iterations[0]["source_coverage"]["unique_daily_symbols"],
+                    "minute_symbol_days": iterations[0]["source_coverage"]["minute_symbol_days"],
+                    "minute_bars": iterations[0]["source_coverage"]["minute_bars"],
+                    "monthly_json_bytes": month_json, "normalized_parquet_bytes": month_parquet,
+                    "legacy_unpartitioned_bytes": legacy_bytes,
+                    "local_total_physical_bytes": inventory["total_bytes"],
+                    "cache_failure_counts": {"event": sum(r["source_coverage"]["event_failures"] for r in iterations),
+                        "daily": sum(r["source_coverage"]["daily_failures"] for r in iterations),
+                        "minute_target": sum(r["source_coverage"]["missing_minute_target_days"] or 0 for r in iterations),
+                        "baostock_api": sum(r["source_coverage"]["baostock_api_failures"] or 0 for r in iterations)},
+                    "baostock_retries": sum(r["source_coverage"]["baostock_retries"] or 0 for r in iterations),
+                    "incremental_cache_activity_by_version": {r["version"]: {
+                        "calendar": r["source_coverage"]["calendar_cache"],
+                        "events": r["source_coverage"]["events_cache"],
+                        "daily": r["source_coverage"]["daily_cache"],
+                        "minute": r["source_coverage"]["minute_cache"],
+                        "baostock_queries": r["source_coverage"]["baostock_queries"],
+                        "baostock_retries": r["source_coverage"]["baostock_retries"],
+                        "baostock_failures": r["source_coverage"]["baostock_api_failures"]}
+                        for r in iterations},
+                    "initial_base_collection_download_counters": "NOT_RECORDED; initial full-range cache predated byte-counter instrumentation.",
+                    "r2_status": "NOT_CONNECTED", "r2_actual_bytes": None,
+                    "scope": "CANDIDATE_POOL_PROXY_NOT_FULL_MARKET_PRICE_COVERAGE"},
+              "validation": {"window": ["2026-01-01", "2026-06-30"], "accessed": False,
+                    "status": "NOT_OPENED_BEFORE_TRAINING_FREEZE"},
+              "frozen_selection": frozen, "storage": {"physical_bytes": inventory["total_bytes"],
+                    "r2_status": "NOT_CONNECTED", "r2_actual_bytes": None},
+              "follow": "NO_FOLLOW", "known_limits": [
+                  "Data universe is prior-day V0-selected candidate symbols plus vendor-wide event pool summaries, not complete market price universe.",
+                  "Xuangubao EOD publication time and 09:35 availability are not certified.",
+                  "Price limits are inferred from code/ST rules, not official per-security historical values.",
+                  "Corporate actions and real queue fills are not fully verified; 09:45 completed-bar close is a model assumption.",
+                  "MarketState labels are observable vendor-data proxies, not investor-psychology measurements."],
+              "outputs": ["iteration_history.csv", "iteration_history.json", "training_equity.csv", "training_equity.svg",
+                          "market_state_2025.csv", "market_state_2025.svg", "market_state_activity.csv",
+                          "market_state_summary.csv", "storage_inventory.json",
+                          "coverage_by_month.csv", "storage_growth.svg", "frozen_selection.json", "run_manifest.json"]}
+    (public_dir / "goal_report.json").write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+    body = ["<!doctype html><meta charset='utf-8'><title>Logic-B 2025 Goal</title>",
+        "<h1>Logic-B · 2025 TRAIN</h1>",
+        "<p><b>NOT_FULLY_VALIDATED · NO_FOLLOW.</b> Real vendor input, partial candidate-price universe; 2026H1 not accessed before freeze.</p>",
+        f"<p>Training sessions: {len(datasets[0]['days'])}; calendar/event days: {len(cached_sessions)}/{len(datasets[0]['days'])}; private snapshot SHA256: {hashes[0]}.</p>",
+        f"<p>Measured local disk: {inventory['total_bytes']:,} bytes ({inventory['total_mib']} MiB), month JSON {month_json:,} bytes, normalized Parquet {month_parquet:,} bytes (ratio {inventory['storage_summary']['parquet_to_monthly_json_ratio']}), legacy duplicate annual cache {legacy_bytes:,} bytes. R2: NOT_CONNECTED / null.</p>",
+        "<h2>2025 training iterations</h2><table border='1'><tr><th>Version</th><th>Return %</th><th>MDD %</th><th>Trades</th><th>Fees CNY</th><th>Cash days</th><th>Decision</th></tr>"]
+    for row in iterations:
+        s = row["train"]
+        body.append(f"<tr><td>{html.escape(row['version'])}</td><td>{s['return_pct']}</td><td>{s['max_drawdown_pct']}</td><td>{s['completed_trades']}</td><td>{s['fees_total']}</td><td>{s['cash_days']}</td><td>{row['decision']}</td></tr>")
+    body += ["</table><h2>Training equity</h2><img src='training_equity.svg' width='100%'>",
+             "<h2>Observable market-state proxy</h2><img src='market_state_2025.svg' width='100%'>",
+             "<p>市场心理仅以供应商涨跌停/炸板、延续、强转弱/修复行为做代理；特征在源日期收盘后形成，只可能用于下一交易日，供应商实际发布时间未认证。板块主线/容量核心没有完整历史标签，标记 UNKNOWN。</p>",
+             "<h2>Measured local storage growth</h2><img src='storage_growth.svg' width='100%'>",
+             "<p><a href='coverage_by_month.csv'>Monthly source/format coverage CSV</a> · <a href='storage_inventory.json'>Measured inventory and partition hashes</a></p>",
+             "<h2>Validation</h2><p>Selection frozen as NO_CANDIDATE before 2026H1 retrieval. Validation may be reported INSUFFICIENT if source/execution gates fail.</p>",
+             "<h2>Provenance</h2><ul><li>Xuangubao event pools and BaoStock unadjusted daily/5-minute bars.</li><li>Completed 09:45 5m bar-close simulation, never actual queue fills.</li><li>Full-market price coverage, official bands, PIT, corporate actions and broker execution not certified.</li></ul>",
+             "</body></html>"]
+    (public_dir / "dashboard.html").write_text("\n".join(body), encoding="utf-8")
+    return {"report": report, "iterations": iterations, "frozen_selection": frozen,
+            "inventory": inventory}
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--v0", type=Path, required=True)
+    parser.add_argument("--v1", type=Path, required=True)
+    parser.add_argument("--v2", type=Path, required=True)
+    parser.add_argument("--config", type=Path, default=Path("config/goal_2025_2026.json"))
+    parser.add_argument("--cache", type=Path, default=Path("data/raw"))
+    parser.add_argument("--private-out", type=Path, default=Path("runs/goal_2025_2026"))
+    parser.add_argument("--public-out", type=Path, default=Path("research/goal_2025_2026"))
+    args = parser.parse_args()
+    result = build_training(args.v0, args.v1, args.v2, args.config, args.cache,
+                            args.private_out, args.public_out)
+    print(json.dumps({"status": result["report"]["status"],
+                      "sessions": result["report"]["training"]["sessions"],
+                      "versions": [{"id": r["version"], "return_pct": r["train"]["return_pct"],
+                                   "mdd_pct": r["train"]["max_drawdown_pct"], "decision": r["decision"]}
+                                  for r in result["iterations"]],
+                      "frozen_selection": result["frozen_selection"]["status"],
+                      "training_sha256": result["frozen_selection"]["training_data_sha256_by_version"],
+                      "physical_bytes": result["inventory"]["total_bytes"]}, ensure_ascii=False, indent=2))
+
+
+if __name__ == "__main__":
+    main()

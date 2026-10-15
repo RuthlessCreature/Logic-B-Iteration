@@ -22,4 +22,13 @@
     "event": "Xuangubao",
     "daily_and_5m": "BaoStock"
   },
-  "model_provider": "Codex offline research; no ex
+  "model_provider": "Codex offline research; no external LLM API",
+  "fees": {
+    "commission_rate": 0.00025,
+    "minimum_commission_cny": 5,
+    "stamp_and_transfer": "from repository date-based fee model"
+  },
+  "fill_assumption": "completed 09:45 five-minute bar close; simulated, not queue execution",
+  "r2_status": "NOT_CONNECTED",
+  "generated_utc": "2026-10-15T10:44:30.278098+00:00"
+}

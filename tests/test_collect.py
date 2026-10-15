@@ -128,4 +128,58 @@ def test_xgb_failed_endpoint_records_recoverable_partition(tmp_path):
     assert failure["attempts"] == 3
 
 def test_baostock_network_receive_error_relogs_in_and_retries(monkeypatch):
-    
+    from logic_b.collect import BaoStockClient
+    import logic_b.collect as collect
+    monkeypatch.setattr(collect.time, "sleep", lambda _: None)
+    class Result:
+        fields = ["date", "code"]
+        error_msg = "network receive error"
+        def __init__(self, error_code):
+            self.error_code = error_code
+            self.done = False
+        def next(self):
+            if self.error_code != "0" or self.done:
+                return False
+            self.done = True
+            return True
+        def get_row_data(self):
+            return ["2025-01-02", "sh.600001"]
+    class FakeBaoStock:
+        def __init__(self):
+            self.query_count = 0
+            self.login_count = 0
+        def login(self):
+            self.login_count += 1
+            return type("Login", (), {"error_code": "0"})()
+        def logout(self):
+            return None
+        def query_history_k_data_plus(self, *args, **kwargs):
+            self.query_count += 1
+            return Result("10002007" if self.query_count == 1 else "0")
+    fake = FakeBaoStock()
+    client = BaoStockClient()
+    client.bs = fake
+    client.query_retry_count = 0
+    client.query_failures = []
+    client.query_count = 0
+    assert client.historical("600001.SH", "2025-01-01", "2025-01-31", freq="d") == [
+        {"date": "2025-01-02", "code": "sh.600001"}]
+    assert fake.query_count == 2
+    assert fake.login_count == 1
+    assert client.query_retry_count == 1
+
+def test_trade_calendar_uses_month_partitions_and_cache(tmp_path):
+    class Fake:
+        def __init__(self): self.calls=[]
+        def trade_calendar(self,start,end):
+            self.calls.append((start,end))
+            return ["2025-01-02"] if start.startswith("2025-01") else ["2025-02-03"]
+    client=Fake()
+    result=fetch_calendar("2025-01-01","2025-02-28",tmp_path,client)
+    assert result["days"] == ["2025-01-02","2025-02-03"]
+    assert client.calls == [("2025-01-01","2025-01-31"),("2025-02-01","2025-02-28")]
+    assert len(result["partitions"]) == 2
+    again=fetch_calendar("2025-01-01","2025-02-28",tmp_path,client)
+    assert again["days"] == result["days"]
+    assert again["cache_reused_months"] == 2
+    assert len(client.calls) == 2
