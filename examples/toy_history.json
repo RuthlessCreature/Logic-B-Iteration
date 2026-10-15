@@ -1,0 +1,90 @@
+{
+  "classification": "SYNTHETIC_TEST_FIXTURE_NOT_REAL_MARKET",
+  "coverage_complete": false,
+  "days": [
+    {
+      "date": "2020-01-02",
+      "limit_up": [
+        {
+          "symbol": "600001.SH",
+          "limit_up_days": 1,
+          "break_limit_up_times": 0
+        }
+      ],
+      "market": {
+        "market_temperature": 55
+      },
+      "daily": {
+        "600001.SH": {
+          "close": 10,
+          "is_st": false,
+          "tradestatus": 1
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10,
+            "high": 10,
+            "low": 10,
+            "close": 10,
+            "volume": 1000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2020-01-03",
+      "limit_up": [],
+      "market": {
+        "market_temperature": 50
+      },
+      "daily": {
+        "600001.SH": {
+          "close": 10.2,
+          "is_st": false,
+          "tradestatus": 1
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.2,
+            "high": 10.2,
+            "low": 10.2,
+            "close": 10.2,
+            "volume": 1000
+          }
+        ]
+      }
+    },
+    {
+      "date": "2020-01-06",
+      "limit_up": [],
+      "market": {
+        "market_temperature": 45
+      },
+      "daily": {
+        "600001.SH": {
+          "close": 10.3,
+          "is_st": false,
+          "tradestatus": 1
+        }
+      },
+      "bars_5m": {
+        "600001.SH": [
+          {
+            "time": "09:45",
+            "open": 10.3,
+            "high": 10.3,
+            "low": 10.3,
+            "close": 10.3,
+            "volume": 1000
+          }
+        ]
+      }
+    }
+  ]
+}
