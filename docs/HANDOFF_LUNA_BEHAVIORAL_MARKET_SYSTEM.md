@@ -1,6 +1,8 @@
 # Logic-B / Luna 终局 Handoff：市场参与者心理 → 市场情绪状态 → 交易系统 → AI 自迭代
 
 **交接日期**：2026-10-15  
+> **2026-10-15 研发/运行时角色纠正（高优先级）：** [Codex Offline Research vs DeepSeek/Jev Daily Runtime](RESEARCH_VS_RUNTIME_ARCHITECTURE.md) 是当前工程分工的权威文档。**Codex负责离线训练/研究/回测/优化/策略版本发布；DeepSeek和Jev是未来正式生产运行时要使用的API推理组件**，不是两个备用研究Agent。两者暂未上线、当前只预留，后续需明确授权和影子验证后作为日常推理服务使用；确定性规则仍保留最终硬风险否决。与本文较早“DeepSeek备用研究”“Jev只供研究”的描述冲突之处，以本纠正与新架构为准。
+
 **受众**：Luna / Codex / 下一任开发代理（必须独立理解并实施，不要只复述方案）  
 **Repository**：https://github.com/RuthlessCreature/Logic-B-Iteration  
 **唯一工作分支**：research/behavioral-edge-20261013；PR #1 保持 Draft，不能修改 main、合并 PR 或 force-push  
@@ -22,7 +24,7 @@
 6. `pipeline.prepare_demand_driven` 为确定持仓而重复 replay 历史前缀，有潜在 O(N²) 放大；全期运行前应该改为真正的逐日增量账户引擎。
 7. 旧的2026-07-01至2026-09-28数据是**受保护的历史留出集**，**不访问、不解锁、不传给大模型、不偷偷改成验证集**。
 8. 曾讨论 **Cloudflare R2 存行情 + D1 存研究元数据**，但**尚未在本项目实际部署或得到凭据**。不可声称原始数据已经永久保存在Cloudflare；GitHub Actions默认临时磁盘，原始行情不会天然持久化。
-9. **DeepSeek 需要提前预留接口，但当前默认禁用**，见第9章。主研究仍用一个高推理模型；不需要先花钱启用两个模型，更不需要多模型投票。
+9. **DeepSeek 需要提前预留生产运行时上下文推理API，Jev预留生产运行时结构化决策API；当前二者默认禁用。** Codex/OpenAI用于前期历史研究、回测、版本迭代；不可将DeepSeek/Jev理解为主研究者的fallback。详见 [双阶段架构](RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。
 
 ## 1. 用户最关心的系统行为
 
@@ -288,9 +290,9 @@ order_transmitted=0`。
 - **数据安全**：凭据从env/secrets加载、从不提交或输出；原始行情不上传公开repo，R2/D1没有授权前只做mock。
 - **实盘边界**：用户人工审核后才能Follow；任何自动交易/付费连接都需单独明确授权。
 
-## 9. 重要新增要求：预留 DeepSeek Provider，但现在绝不使用
+## 9. DeepSeek 预留（修订：**未来 Runtime Provider**，当前禁用；本章旧研究适配器仅为兼容）
 
-用户已明确：**今后可能接入 DeepSeek，但暂时不用。现在必须把接口与配置位置留好，不影响现有唯一主研究模型。**
+用户最终明确：**Codex/OpenAI 做离线研究/训练与策略版本优化；DeepSeek 是未来日常工程 Runtime 推理服务的一部分**。当前仍禁用且不产生费用。本节原有研究提案式 `LLMProvider` 不应被当作未来盘中真实 RuntimeLLM 接口；应依据 [运行时分工文件](RESEARCH_VS_RUNTIME_ARCHITECTURE.md) 新建独立结构化推理协议。
 
 ### 9.1 不要混淆“预留接口”和“已经接通服务”
 
@@ -382,7 +384,7 @@ test_count, errors, unresolved_flags, next_action`。
 
 ## 12. 用户新增要求：TypeSafe AI Jev 作为 **独立 DecisionProvider** 预留
 
-**特别重要：Jev/TypeSafe 不等于 DeepSeek，更不是普通聊天LLM的另一个 model 名称。** 这是2026-10-15用户追加的第三类模型能力：Jev 是 TypeSafe AI 的 **System One 模型**，用于返回指定类型的结构化决策及概率，不负责长篇研究推理和写自然语言。不能将它随意接到 `research.py` 的 OpenAI / DeepSeek 文本提案接口。
+**特别重要：Jev/TypeSafe 不等于 DeepSeek，更不是普通聊天LLM的另一个 model 名称。Jev 是未来每日 Runtime 的类型化判断组件，而不是只能做离线研究的实验工具。** 这是2026-10-15用户追加的第三类模型能力：Jev 是 TypeSafe AI 的 **System One 模型**，用于返回指定类型的结构化决策及概率，不负责长篇研究推理和写自然语言。不能将它随意接到 `research.py` 的 OpenAI / DeepSeek 文本提案接口。
 
 官方来源（2026-10-15核对）：  
 - TypeSafe 官网：https://typesafe.ai/  
@@ -412,3 +414,17 @@ test_count, errors, unresolved_flags, next_action`。
 - 与 DeepSeek 一样，**“接口预留”不是已接入**；DeepSeek属可选语言模型Provider；Jev属独立结构化DecisionProvider；当前实际决策还是确定性规则与主研究LLM。
 
 Luna 未来不要把“Jev直接输出5状态”当成模型已验证或已可跟随。它适合做大量、便宜、格式统一的判断任务的**候选工具**，先离线实验再判断能否提供额外经济价值。
+
+
+---
+
+## 13. **最高优先级**：策略研究 Agent 与工程应用 Runtime 分阶段，参见正式架构文件
+
+此节覆盖早期对 DeepSeek / Jev 作为“备用研究模型/仅研究性辅助”的含糊理解。**用户确认的最终角色**：
+
+- **Offline Research / Training / Backtesting / Iteration**：OpenAI Codex 负责探索参与者心理和市场情绪假设、完成2020—2026历史研究、自动回测和迭代、版本冻结及升级建议；不是每天09:35实盘同步依赖。
+- **Runtime Inference / Daily Operation**：DeepSeek 应承担低成本、低延迟的**结构化市场语境分析/解释或异常提示**；Jev TypeSafe 承担**固定 schema 的市场情绪分类、风险评分、负反馈概率估计**。它们是未来真正的**工程应用运行时组成部分**，不能被当作Codex研究失败时替换的大模型，也不能因为现在关闭就永不接入。
+- **Deterministic / Hard Risk Engine**：人类审核过的策略版本、真实时间可得数据、MarketGate、T+1、手续费/资金/限价锁单仍由确定性代码掌控。AI结果只能进入已冻结且经过影子/前向验证的策略使用路径，不能临时改变买卖规则或越过红灯。
+- **Deployment**：研究仓库发布只产生可审计的策略包，不能直接等于生产批准。Shadow → Paper → Human Live Review，实盘自动下单另需单独授权和风控审核。API启用、付费和凭据授权也需用户明确行动。
+
+现在已创建 `config/runtime.json` + `src/logic_b/runtime.py` + `tests/test_runtime.py` 的**无联网、无委托影子运行时骨架**。它**不是**已连通的DeepSeek/Jev生产系统。明确分工与未来接口详见 [docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md](RESEARCH_VS_RUNTIME_ARCHITECTURE.md)，接下来 Luna 首先修复历史行情和账户，之后按冻结版本设计实时特征与生产接口，不可因模板完成就停止。

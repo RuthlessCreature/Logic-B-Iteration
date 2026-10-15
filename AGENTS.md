@@ -1,6 +1,9 @@
 # IMPORTANT — Read the authoritative Luna handoff first
 
-**New reservation (2026-10-15):** TypeSafe AI Jev uses a **separate typed DecisionProvider** (choice/score/noul), not the DeepSeek/OpenAI generative LLM interface. Read [docs/JEV_TYPESAFE_RESERVED_API.md](docs/JEV_TYPESAFE_RESERVED_API.md) and Handoff §12. Official API `https://api.typesafe.ai/v1/systemone`. Both JEV and DeepSeek are **disabled/unconnected/not billed**, no auto model/key discovery or network calls. Jev is *advisory only*, never allowed to override MarketGate or transmit orders.
+**Critical 2026-10-15 role correction:** [Offline Codex research vs Daily DeepSeek/Jev runtime architecture](docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md) controls. Codex/OpenAI researches/trains/backtests/iterates/freeze strategy. **DeepSeek and TypeSafe Jev are intended for future actual production runtime inference** (distinct contextual LLM vs typed decision inference), not fallback research Agents. Build a deployable bounded, frozen-version runtime with explicit as-of, cost/timeouts and hard gates. They remain currently DISABLED/unconnected with no real API traffic. [Runtime scaffold](src/logic_b/runtime.py) is mock-only, not a live deployment. Future activation requires user authorization and shadow/paper verification. Do not conflate strategy validation with external provider billing or automatic broker orders.
+
+
+**New reservation (2026-10-15):** TypeSafe AI Jev uses a **separate typed DecisionProvider** (choice/score/noul), not the DeepSeek/OpenAI generative LLM interface. Read [docs/JEV_TYPESAFE_RESERVED_API.md](docs/JEV_TYPESAFE_RESERVED_API.md) and Handoff §12. Official API `https://api.typesafe.ai/v1/systemone`. Both JEV and DeepSeek are **currently** disabled/unconnected/not billed, but are intended to be active runtime inference components after strategy validation and explicit authorization, no premature calls. Jev is *advisory only*, never allowed to override MarketGate or transmit orders.
 
 
 **Handoff:** [docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md](docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md).
@@ -8,7 +11,7 @@
 
 This project MUST study **participant psychology proxies, market emotion/earning-loss feedback, ATTACK/TRIAL/NEUTRAL/RETREAT/ICE states and risk vetoes** as a central, testable research layer connecting historical market data to practical after-cost trading decisions. This is not merely a consecutive-limit-up probability project. Read the linked handoff before altering any research architecture, treating its current project instructions as higher priority than archived H01/H02 design.
 
-**LLM-provider reservation:** OpenAI remains the single active high-reasoning research path; `src/logic_b/llm_providers.py` and `config/llm_providers.json` reserve DeepSeek as **disabled/unconnected/no billed usage**. Never silently switch, call DeepSeek, request a token, or claim connected before explicit user approval.
+**Offline/Runtime distinction:** OpenAI Codex is the primary research/training and backtest Agent. DeepSeek and Jev are planned for *actual daily runtime inference* (separate adapters, limited budget, strict time cutoff), both not yet activated. See `config/runtime.json`. No premature external calls, silent fallbacks, model activation, or claimed production connectivity.
 
 **Immediate tasks:** fix BaoStock 10002007 partial request failure and prevent re-fetch, implement incremental replay state, build timestamped market negative-feedback and regime V1, then paired fee-inclusive V0 vs V1 replay with failures preserved. Do not treat successful CI, 2020 January -22.98% v0 result, or story-based psychology labels as proof of a tradable edge. Protected 2026-07-01..09-28 remains inaccessible.
 

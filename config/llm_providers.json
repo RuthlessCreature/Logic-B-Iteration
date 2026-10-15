@@ -9,7 +9,8 @@
       "credential_env": "OPENAI_API_KEY",
       "model": null,
       "model_from_cli": true,
-      "network_requires_explicit_call": true
+      "network_requires_explicit_call": true,
+      "stage": "OFFLINE_RESEARCH_TRAINING"
     },
     "deepseek": {
       "enabled": false,
@@ -21,7 +22,10 @@
       "model": null,
       "allow_external_calls": false,
       "execution_status": "RESERVED_DISABLED_NOT_CONNECTED_NOT_BILLED",
-      "fallback_allowed": false
+      "fallback_allowed": false,
+      "intended_stage": "DAILY_RUNTIME_CONTEXTUAL_INFERENCE",
+      "runtime_interface": "planned_separate_runtime_llm_provider",
+      "deprecated_use": "do_not_use_as_automatic_offline_codex_research_fallback"
     }
   }
 }

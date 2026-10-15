@@ -44,3 +44,8 @@
 ## 2026-10-15 追加：Jev / TypeSafe DecisionProvider
 
 用户明确要预留 **Jev by TypeSafe AI**。官方 `POST https://api.typesafe.ai/v1/systemone`（`choice/score/noul`）；官方 `GET /v1/models`，不是第三方托管的 `decide` 网关。已建立 `config/decision_providers.json` + `src/logic_b/decision_providers.py` + `tests/test_decision_providers.py`，状态 **RESERVED / DISABLED / NOT_CONNECTED / NOT_BILLED**。它与禁用的DeepSeek文本Provider相互独立。决策主路径仍是确定性证据+MarketGate；Jev未来也只能作为研究性辅助，不允许买卖下单/放开风险硬否决。详见 `docs/JEV_TYPESAFE_RESERVED_API.md` 和 Handoff 第12章。
+
+
+## 2026-10-15 用户再次明确：**离线研究与生产Runtime不是一回事**
+
+现在优先读 [Codex研究→Runtime上线架构](../docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。OpenAI Codex负责**离线探索、训练、回测、优化、规则版本冻结**。**DeepSeek与Jev将来用于实际生产系统的日常运行时推理**，前者分析结构化市场上下文与风险线索，后者做类型化状态分类、尾部风险、负反馈评分，均不能突破确定性MarketGate/成交规则。现在均 DISABLED / NOT_CONNECTED，用户未授权费用和API，不可擅自调用。已建立 `config/runtime.json`、`src/logic_b/runtime.py`、`tests/test_runtime.py` 作为无网络骨架。Luna要以 *研究发布包→shadow→paper→人工Follow* 为工程目标，不允许将两者当作两个可随时替换的聊天模型。历史研究只到2026-06-30，实时生产日期独立前进，不得触碰2026-07-01..09-28的历史受保护样本。

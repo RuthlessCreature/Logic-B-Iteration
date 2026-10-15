@@ -1,7 +1,9 @@
 """Explicit optional LLM provider boundary. DeepSeek RESERVED and DISABLED.
 
-The existing research_cli continues using its current explicit OpenAI path;
-this module prepares a typed provider interface for future migration. There is
+The existing research_cli remains an OFFLINE Codex/OpenAI research pathway.
+DeepSeek is intended for a SEPARATE FUTURE DAILY RUNTIME contextual inference
+adapter (see runtime.py and docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md); the old
+proposal-style reservation below is not a production runtime implementation.
 NO implicit fallback, automatic credential acquisition or background usage.
 """
 from __future__ import annotations

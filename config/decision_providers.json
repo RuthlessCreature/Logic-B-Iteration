@@ -6,7 +6,8 @@
     "deterministic": {
       "enabled": true,
       "implementation": "market_evidence_and_hard_gates",
-      "requires_network": false
+      "requires_network": false,
+      "stage": "DAILY_RUNTIME_REQUIRED"
     },
     "jev_typesafe": {
       "enabled": false,
@@ -25,7 +26,9 @@
       ],
       "decision_authority": "ADVISORY_ONLY_NO_ORDER_NO_MARKET_GATE_OVERRIDE",
       "execution_status": "RESERVED_DISABLED_NOT_CONNECTED_NOT_BILLED",
-      "official_openapi": "https://api.typesafe.ai/openapi.json"
+      "official_openapi": "https://api.typesafe.ai/openapi.json",
+      "intended_stage": "DAILY_RUNTIME_TYPED_DECISION",
+      "activation_path": "SHADOW_THEN_PAPER_THEN_MANUAL_FOLLOW"
     }
   }
 }

@@ -4,7 +4,7 @@
 
 ## 1. 定位：它不是 OpenAI/DeepSeek 文本生成接口
 
-TypeSafe AI Jev System One 是返回类型约束的**智能决策**：`choice` 多选分类、`score` 等级评分、`noul` 是/否概率。OpenAI 仍承担主要高推理假设与研究设计；DeepSeek 是另一个默认禁用的文本提案Provider；Jev 是另外的 **DecisionProvider**。
+TypeSafe AI Jev System One 是返回类型约束的**智能决策**：`choice` 多选分类、`score` 等级评分、`noul` 是/否概率。OpenAI 仍承担主要高推理假设与研究设计；DeepSeek 是**未来生产运行时的上下文推理 Provider**（当前禁用，既有研究提案接口只是早期预留实现）；Jev 是**未来生产运行时的类型化 DecisionProvider**。Codex/OpenAI 独立负责离线历史研究和策略迭代。
 
 官方接口：
 - `POST https://api.typesafe.ai/v1/systemone`，Bearer `TYPESAFE_API_KEY`
@@ -22,7 +22,7 @@ TypeSafe AI Jev System One 是返回类型约束的**智能决策**：`choice` �
 | 隔日跌停/锁仓风险辅助分级 | `score` | 尾部极端事件召回、离线校准、拒单后实际费后净值 |
 | 高位负反馈外溢提示 | `noul` | 历史对照概率误差、错误拒绝机会成本 |
 
-**未来 JEV 输出不等于真实市场心理**：它是基于历史信息的可测试辅助分类，不是真实投资者数据，供应商声称的校准概率也不能替代针对市场时段的独立校准检验。
+**未来 JEV 将在经过 Shadow/Paper 及历史对照验证后参与工程应用的日常决策链；不只是研究工具。JEV 输出不等于真实市场心理**：它是基于历史信息的可测试辅助分类，不是真实投资者数据，供应商声称的校准概率也不能替代针对市场时段的独立校准检验。
 
 ## 3. 安全和数据协议
 
@@ -53,3 +53,8 @@ python -m pytest -q tests/test_decision_providers.py
 6. 状态 `CONNECTED` 仅在已验证真实调用、录入日志和费用后可用；否则保持 `RESERVED`。
 
 优先级：先修BaoStock采集、行情长期存储、增量回放、真正MarketState的确定性基线。Jev adapter已留足扩展口，不应抢占主工程资源。
+
+
+## 6. 正式角色修订（2026-10-15）
+
+在生产系统中，Jev可以成为日常运行时的**已验证类型化推理组件**，而非只是保存一份离线研究评分。Codex负责开发和冻结策略；Jev负责在真实09:35截止时刻基于合法特征给出 choice/score/noul；DeepSeek承担互补的Runtime上下文信号。Jev的响应允许参与**经过用户批准、训练/前向验证的既定组合规则**，但不允许凭即时评分临时改变规则或撤销硬风险门。上线前需要先进行Shadow→Paper→人工Follow对照，保证超时、API失败、上游数据缺失时按冻结降级策略处理。详见 [双阶段架构](RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。
