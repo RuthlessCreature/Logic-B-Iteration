@@ -85,6 +85,9 @@ def _validate(snapshot: RuntimeSnapshot):
     source = date.fromisoformat(snapshot.source_day)
     if source >= now.date():
         raise ValueError("previous-day pool must strictly predate decision day")
+    event_day = snapshot.previous_day_events.get("date")
+    if event_day is not None and event_day != snapshot.source_day:
+        raise ValueError("vendor prior-day events do not match declared source_day")
     if snapshot.market_regime not in REGIMES:
         raise ValueError("unknown market regime")
     if snapshot.held_symbol and snapshot.core_confirmed_asof and not snapshot.previous_day_events:

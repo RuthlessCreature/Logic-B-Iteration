@@ -97,3 +97,18 @@ def test_typed_question_shapes_match_official_contract():
     assert build_jev_questions("advisory_market_regime")["market_regime"]["type"]=="choice"
     assert build_jev_questions("advisory_tail_risk_score")["tail_risk"]["type"]=="score"
     assert build_jev_questions("advisory_negative_feedback")["negative_feedback"]["type"]=="noul"
+
+def test_jev_has_separate_forward_live_domain_after_protected_window():
+    from logic_b.decision_providers import DecisionRequest, validate_decision_request
+    new_state=dict(STATE, trade_date="2027-01-04",
+                   evidence_asof="2027-01-04T09:34:59+08:00")
+    validate_decision_request(DecisionRequest(
+        "2027-01-04T09:35:00+08:00",new_state,scope="forward_live"))
+    with pytest.raises(ValueError,match="authorized 2020-2026"):
+        validate_decision_request(DecisionRequest(
+            "2027-01-04T09:35:00+08:00",new_state))
+    protected=dict(STATE,trade_date="2026-07-01",
+                   evidence_asof="2026-07-01T09:34:59+08:00")
+    with pytest.raises(ValueError,match="cannot replay protected"):
+        validate_decision_request(DecisionRequest(
+            "2026-07-01T09:35:00+08:00",protected,scope="forward_live"))

@@ -57,3 +57,11 @@ python -m logic_b.follow --dataset runs/smart-pilot/private_replay_input.json
 以上命令在本地有网络且免费接口仍可用时运行。分钟K报价来自**已结束的09:45五分钟Bar**，是保守模拟而不是实盘真实成交。**目前`strategy.select_core`只是可审计的昨日涨停事件排序v0，不代表已经忠实复原完整逻辑A。** 对真实市场未完成日期、公司行动和源缺失，不得给出完整历史回报结论。
 
 查看 [完整中文操作指南](docs/QUICKSTART.md) 及 [Goal执行约定](AGENTS.md)。
+
+## Runtime Dry-run：模拟每日运行（不是实盘）
+
+```bash
+python -m logic_b.runtime_cli --snapshot examples/runtime_shadow_snapshot.json --out runs/runtime-shadow/decision.json
+```
+
+这是人工合成的已知09:35证据；策略尚未正式批准时输出 `NO_FOLLOW`，Codex无运行时依赖，Jev/DeepSeek均不发出API请求，无券商订单。上线应另行部署定时服务、接入真实时间可得行情、冻结策略发布包和受批准的模型API预算。详细见 [Offline Codex vs Runtime DeepSeek/Jev](docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。
