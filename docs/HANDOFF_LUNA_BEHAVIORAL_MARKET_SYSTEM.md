@@ -1,5 +1,7 @@
 # Logic-B / Luna 终局 Handoff：市场参与者心理 → 市场情绪状态 → 交易系统 → AI 自迭代
 
+> **当前 Goal 数据窗口最高优先级（2026-10-15用户更新）：TRAIN=2025-01-01..2025-12-31，VALIDATION=2026-01-01..2026-06-30；旧本文2020-2026全期描述仅保留为历史背景，不能用于活动训练和参数筛选。** [唯一当前Goal规格](LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md) 与 [Goal完整执行提示词](LUNA_GOAL_PROMPT_2025_2026.md)。用户必须能看到真实已占存储字节、每轮策略变化及训练曲线、训练冻结后的验证曲线。DeepSeek/Jev仍是未来工程运行时，不替代Codex训练。
+
 **交接日期**：2026-10-15  
 > **2026-10-15 研发/运行时角色纠正（高优先级）：** [Codex Offline Research vs DeepSeek/Jev Daily Runtime](RESEARCH_VS_RUNTIME_ARCHITECTURE.md) 是当前工程分工的权威文档。**Codex负责离线训练/研究/回测/优化/策略版本发布；DeepSeek和Jev是未来正式生产运行时要使用的API推理组件**，不是两个备用研究Agent。两者暂未上线、当前只预留，后续需明确授权和影子验证后作为日常推理服务使用；确定性规则仍保留最终硬风险否决。与本文较早“DeepSeek备用研究”“Jev只供研究”的描述冲突之处，以本纠正与新架构为准。
 

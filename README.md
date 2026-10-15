@@ -1,67 +1,46 @@
-# Luna 新研究交接：心理驱动的市场状态识别 + 个人交易系统
+# Logic-B · Luna Goal（当前训练/验证窗口）
 
-**明确分层（用户最新定义）**：[Codex离线研发 vs DeepSeek/Jev未来线上Runtime架构](docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。Codex负责策略假设、2020—2026历史回测与反复优化；策略成熟后，日常09:35工程运行由**确定性风控 + DeepSeek上下文推理 + Jev类型化状态/评分**完成，Codex并非线上同步依赖。DeepSeek/Jev目前仍默认关闭，需获得授权、Shadow验证后才能正式调用。已提交[不联网Runtime骨架](src/logic_b/runtime.py)与[配置](config/runtime.json)。
+**最新 Goal 唯一使用：2025全年训练（2025-01-01—2025-12-31），2026上半年开发验证（2026-01-01—2026-06-30）。** 旧2020年测试记录和`config/research.json`保留用于历史回归，不属于本轮模型训练或策略选择。历史受保护区间2026-07-01—09-28不得访问。
 
-**TypeSafe AI Jev 接口也已预留：** [独立 DecisionProvider API 说明](docs/JEV_TYPESAFE_RESERVED_API.md)，配置 `config/decision_providers.json`，实现 `src/logic_b/decision_providers.py`，默认关闭、未联网、未计费。它可在未来做类型约束的市场状态/风险评估，不与DeepSeek文本研究接口混用，不直接下单或覆盖风险硬否决。
+[**Luna 新 Goal 执行规范**](docs/LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md) · [**可直接复制的 Goal 提示词**](docs/LUNA_GOAL_PROMPT_2025_2026.md) · [心理和Logic A交接](docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md) · [离线Codex / 未来Runtime DeepSeek+Jev架构](docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md)
 
+**研究系统**：Codex/OpenAI探索赚钱/亏钱效应、冰点修复、市场情绪和Logic A核心交易逻辑；使用选股宝事件和BaoStock日K/5分钟K，按真实日期/T+1/费用/涨跌停拒单模拟1万元账户。每轮保存假设、参数差异、训练权益曲线、最大回撤与失败原因。训练完冻结一版，2026H1只用于评价，不得反向调参。
 
-**当前权威执行文档：** [Logic-B / Luna 完整 Handoff](docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md)；[长期执行检查点](research/GOAL_CHECKPOINT.md)。Luna 必须先阅读它们再动工。研究应理解参与者心理与赚钱/亏钱反馈，以可观测的 MarketState/SectorState/CoreState 构建 MarketGate 和核心筛选，然后用真实价格、单票1万元、T+1、全部税费进行版本化资金回测，最终输出人类可审阅的 Follow 或 NO_FOLLOW。
+**未来工程Runtime**：DeepSeek负责结构化盘中语境，TypeSafe Jev负责分类/风险评分，确定性引擎负责硬闸和Follow。二者目前DISABLED、未连接、未付费，不进行自动实盘交易。R2/D1也尚未连接，GitHub Actions磁盘为临时的。
 
-**大模型架构：** 当前用OpenAI/Codex进行离线研究；未来DeepSeek承担生产Runtime上下文推理而不是研究替补。已预留DeepSeek的 `config/llm_providers.json` + `src/logic_b/llm_providers.py`，**默认禁用、尚未联网、不产生收费**。不得暗中切换模型或把心理理论说成已经识别真实交易者心理。
-
----
-
-# Logic-B · 自主量化研究与回测
-
-**新项目从这里开始。** 用选股宝的每日涨停/跌停/炸板和市场情绪、BaoStock的历史K线，在2020-01-01—2026-06-30进行可复现交易回测；用大模型提出可被证伪的改进建议；最终生成供本人自主判断的跟随清单。**不自动下单，不保证盈利。**
-
-- 本金：人民币 **10,000**；买卖佣金各 **万2.5，最低每笔5元**；印花税及过户费按历史日期单列。
-- A股T+1、100股买入整数手、最多一只持仓；涨停价默认买不到、跌停价默认卖不出。
-- 历史证券身份以交易所+六位代码确定；ST、*ST和更名仅是逐日属性。
-- 策略和结果必须版本化，训练/验证按时间隔离，逐笔账本比漂亮的模型分数更重要。
-- 默认不读取2026-07-01—2026-09-28的旧受保护数据。**新回测仅到2026-06-30。**
-
-## 仓库结构
-
-- `src/logic_b/`：全新、轻量的交易账本、策略、费用、数据适配。
-- `config/research.json`：唯一当前研究配置。
-- `tests/`：新引擎回归测试。
-- `legacy/2026-10-15-pre-reset/`：完整原项目快照，包含原源码、历史H01/H02、报告、工作流和配置。仅供查阅，不参与当前构建或默认测试。
-- `docs/RESEARCH_LOOP.md`：LLM提出假设 → 固定实验 → 回测 → 记录决策 → 下一轮。
-
-## 现在可运行
+## 当前已经实现的可见仪表板（纯合成演示，**不是实际交易成绩**）
 
 ```bash
 python -m pip install -e ".[dev]"
 python -m pytest -q
-python -m logic_b --dataset examples/toy_history.json --out runs/smoke
+python -m logic_b.goal --dataset examples/goal_toy_2025_2026.json \
+  --config config/goal_2025_2026.json \
+  --proposals examples/proposal_example.json \
+  --data-root data --out runs/goal_2025_2026_demo
 ```
 
-上述是**合成回归样本**，不是2020—2026真实市场收益。使用真实数据须构建同格式的历史日线/5分钟K线数据集；不能把事件池的延续概率当作收益。
+在本地打开`runs/goal_2025_2026_demo/dashboard.html`；同时有 `training_equity.svg`、`validation_equity.svg`、`iteration_history.csv/json`、`storage_inventory.json`、冻结训练冠军信息及两个独立1万元账户的数据曲线。
 
-详情见 [研究合同](docs/RESEARCH_LOOP.md)。
-## 真实数据与AI研究入口
+[GitHub Actions 演示（含可下载HTML/SVG/CSV/JSON附件）](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38709918043) — **只用合成数据，绝不等同于实际2025训练或2026验证**。
+
+## 真实数据入口（需正常获取与缓存2025/2026行情）
 
 ```bash
-# 推荐：按需增量采集的第一季度真实价格试跑
-python -m logic_b.pipeline --start 2020-01-01 --end 2020-03-31 --max-sessions 50
+# 2025年1月最多20交易日的分区试跑
+python -m logic_b.pipeline --start 2025-01-01 --end 2025-01-31 \
+  --max-sessions 20 --config config/goal_2025_2026.json \
+  --out runs/real-2025-jan
 
-# 将真实行情样本转换为固定策略比较（目前只是探索性）
-python -m logic_b.research_cli --dataset runs/smart-pilot/private_replay_input.json \
-  --proposal examples/proposal_example.json
-
-# 只生成供本人审阅的Follow清单
-python -m logic_b.follow --dataset runs/smart-pilot/private_replay_input.json
+# 2026年1月类似执行；全窗口需要月分区累积、稳定存储和两个样本集整合
 ```
 
-以上命令在本地有网络且免费接口仍可用时运行。分钟K报价来自**已结束的09:45五分钟Bar**，是保守模拟而不是实盘真实成交。**目前`strategy.select_core`只是可审计的昨日涨停事件排序v0，不代表已经忠实复原完整逻辑A。** 对真实市场未完成日期、公司行动和源缺失，不得给出完整历史回报结论。
+**真实训练/验证整个窗口的获取、公司行动/数据缺口修复及长期存储尚未完成。** 失败的数据分区需要按源代码记录并重试，禁止未经证据显示全期正收益。详见最新 Goal 规范。
 
-查看 [完整中文操作指南](docs/QUICKSTART.md) 及 [Goal执行约定](AGENTS.md)。
+## 验收只看真实交付
 
-## Runtime Dry-run：模拟每日运行（不是实盘）
+1. 实际XGB/BaoStock数据覆盖 + 每月实际存储文件数/字节数，R2是否真正连上。
+2. 2025训练：V0和每次心理/状态/核心规则的差异、收益、回撤、成本、失败/拒单和可视资金曲线。
+3. 训练冻结前不看2026结果；冻结后2026上半年开发验证的独立曲线和风险。
+4. 可复现数据及代码SHA、GitHub Actions附件、能否人工Follow或NO_FOLLOW。
 
-```bash
-python -m logic_b.runtime_cli --snapshot examples/runtime_shadow_snapshot.json --out runs/runtime-shadow/decision.json
-```
-
-这是人工合成的已知09:35证据；策略尚未正式批准时输出 `NO_FOLLOW`，Codex无运行时依赖，Jev/DeepSeek均不发出API请求，无券商订单。上线应另行部署定时服务、接入真实时间可得行情、冻结策略发布包和受批准的模型API预算。详细见 [Offline Codex vs Runtime DeepSeek/Jev](docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md)。
+[执行检查点](research/GOAL_CHECKPOINT.md)；旧代码及H01/H02原文保存在 `legacy/2026-10-15-pre-reset/`。

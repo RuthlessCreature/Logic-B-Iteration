@@ -105,12 +105,12 @@ def run_pilot(start,end,max_sessions,cache,config):
 
 def main():
     p=argparse.ArgumentParser()
-    p.add_argument("--start",default="2020-01-01")
-    p.add_argument("--end",default="2020-03-31")
-    p.add_argument("--max-sessions",type=int,default=40)
+    p.add_argument("--start",default="2025-01-01")
+    p.add_argument("--end",default="2025-01-31")
+    p.add_argument("--max-sessions",type=int,default=20)
     p.add_argument("--cache",type=Path,default=Path("data/raw"))
     p.add_argument("--out",type=Path,default=Path("runs/smart-pilot"))
-    p.add_argument("--config",type=Path,default=Path("config/research.json"))
+    p.add_argument("--config",type=Path,default=Path("config/goal_2025_2026.json"))
     args=p.parse_args()
     cfg=json.loads(args.config.read_text(encoding="utf-8"))
     ds,r,a=run_pilot(args.start,args.end,args.max_sessions,args.cache,cfg)

@@ -1,3 +1,19 @@
+# Luna Goal 执行检查点 — 当前2025训练 / 2026H1验证
+
+**2026-10-15用户最后一次重新锁定样本。** [权威规格](../docs/LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md)；[完整Goal提示词](../docs/LUNA_GOAL_PROMPT_2025_2026.md)。旧2020-2026实验内容在文件下方的历史注释中，不再主导当前执行。
+
+- **TRAIN=2025-01-01..2025-12-31; VALIDATION=2026-01-01..2026-06-30**，两个独立1万元账户，验证只用于最终冻结后的评估。
+- **当前已编码：** `config/goal_2025_2026.json`；`src/logic_b/replay.py` 可识别新时期与旧回归；`research.py` 同理；`src/logic_b/goal.py` 导出每轮训练对比、训练/验证资金曲线的SVG、HTML仪表板、实际本地文件字节清单。
+- **CI已证明：** [合成Goal Demo #38709918043](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38709918043)，并生成HTML/CSV/SVG/JSON附件。它是演示数据，不是2025/2026真实行情。
+- **尚未完成：** 真实2025/2026H1行情持续存储、按月份数据大小/Parquet、全年训练/验证逐笔账本、心理状态/Logic A迭代和最终真实验证、R2/D1连接。
+- **仍须优先修复：** BaoStock按股票/日期/频次请求错误`10002007`；历史数据失败重试和存储持久化；增量单遍组合回测与公司行动。
+- **严格边界：** `legacy/`及2020年旧实验不进入本轮训练；受保护2026-07-01..09-28不访问；未经授权不调用DeepSeek/Jev或开付费云API，也不下单。
+- **迭代可视化：** 每轮记录`iteration/strategy_sha/hypothesis/train_cash_equity/train_mdd/trades/taxes_and_fees/veto/KEEP_OR_REJECT/git_sha/run_url`；**验证仅训练冠军冻结之后打开一次**，不可反向选择。
+
+下一步：逐月采真实2025和2026H1数据，给每个月的文件数/实际字节、数据源失败分区及缓存命中数量；完整训练V0与第一个MarketState版本的同口径净值曲线；最终再跑验证，不要在合成Demo后停工。
+
+---
+
 # Logic-B / Luna 研究执行检查点
 
 **最后手工交接**：2026-10-15。本文是交接状态，不代表异步代理已在继续执行。恢复工作前先刷新 GitHub 最新 HEAD、CI 及数据存储状态。

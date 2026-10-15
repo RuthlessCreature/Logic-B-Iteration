@@ -7,7 +7,7 @@ from .research import training_summary, ask_llm_for_hypothesis, compare_candidat
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--dataset", type=Path, required=True)
-    p.add_argument("--config", type=Path, default=Path("config/research.json"))
+    p.add_argument("--config", type=Path, default=Path("config/goal_2025_2026.json"))
     p.add_argument("--out", type=Path, default=Path("runs/research"))
     p.add_argument("--proposal", type=Path, help="previously frozen JSON proposal")
     p.add_argument("--llm-model", help="generate ONE proposal with OpenAI API using TRAIN metrics ONLY")

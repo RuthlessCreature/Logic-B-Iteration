@@ -1,3 +1,21 @@
+# Luna Goal: ACTIVE EXPERIMENT 2025→2026H1 (2026-10-15 user override)
+
+**READ THIS FIRST:** [2025 training / 2026H1 validation hard contract](docs/LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md) and [direct Goal prompt](docs/LUNA_GOAL_PROMPT_2025_2026.md). This OVERRIDES all earlier instructions below stating 2020-2026 is the active data collection/research period.
+
+**TRAIN ONLY:** 2025-01-01..2025-12-31. **VALIDATION ONLY:** 2026-01-01..2026-06-30. **Do not use any 2020-2024 market history to train/tune the ACTIVE GOAL.** Retain 2020-2024 historical samples as legacy regression fixtures. Never access protected 2026-07-01..2026-09-28.
+
+**Active config:** `config/goal_2025_2026.json`; **old regression** `config/research.json` must NOT be used for current Goal. The `python -m logic_b.goal` CLI is the user-visible iteration + train/validation equity + storage byte dashboard. A real data acquisition pipeline and storage permanence remain to be completed. **Passing demo CI is not real training/validation.**
+
+**Goals in priority order:**
+(1) actual 2025+2026H1 vendor data (XGB pool / BaoStock bars) with monthly cache and measured physical bytes, retry failure partitions; (2) reliable 10k trading replay and as-of features;
+(3) participant psychology / MarketState / MarketGate and LogicA proxy iterations on 2025 only, keep every iteration hypothesis/diff/return/MDD curve; (4) freeze training-selected version and ONLY THEN run 2026H1 validation once;
+(5) user-readable HTML/SVG dashboards, coverage/storage growth by month, honest no-follow verdict and checkpoint in GitHub.
+Codex=OFFLINE research/optimization. DeepSeek/Jev=FUTURE DAILY RUNTIME, both currently disabled. R2/D1 are not yet connected. No raw third-party market rows published to GitHub and no paid APIs/live broker orders without approval.
+
+**Never select strategies using validation P&L.** Validation is an already-exposed development segment, not pristine blind OOS. If missing data, report partial status and exact missing bytes/days; don't fake the ROI. Retain PR #1 Draft, no main merge or force push. Existing parts of AGENTS.md below describe historical contracts and are superseded where they conflict with this paragraph.
+
+---
+
 # IMPORTANT — Read the authoritative Luna handoff first
 
 **Critical 2026-10-15 role correction:** [Offline Codex research vs Daily DeepSeek/Jev runtime architecture](docs/RESEARCH_VS_RUNTIME_ARCHITECTURE.md) controls. Codex/OpenAI researches/trains/backtests/iterates/freeze strategy. **DeepSeek and TypeSafe Jev are intended for future actual production runtime inference** (distinct contextual LLM vs typed decision inference), not fallback research Agents. Build a deployable bounded, frozen-version runtime with explicit as-of, cost/timeouts and hard gates. They remain currently DISABLED/unconnected with no real API traffic. [Runtime scaffold](src/logic_b/runtime.py) is mock-only, not a live deployment. Future activation requires user authorization and shadow/paper verification. Do not conflate strategy validation with external provider billing or automatic broker orders.

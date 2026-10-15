@@ -1,3 +1,5 @@
+> **当前活动研究窗口已改为2025训练 + 2026H1开发验证。** [Goal锁定规格](LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md)。本架构先前2020-2026数据段仅代表可延展的历史研究愿景，不是当前 Luna Goal 的实际训练数据。生产Runtime边界仍独立，且旧2026-07-01..09-28保护不变。
+
 # Logic-B — 离线研究大脑 vs 在线运行大脑（Luna 必须遵守）
 
 **2026-10-15 用户纠正 / 高优先级架构决策。** 此文是 [Luna 总 Handoff](HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md) 的角色权威解释，后续代理以本架构为准，不可把 DeepSeek / Jev 当作 Codex 的“研究备用模型”，也不可因现在未接入就将它们从未来生产架构删除。
