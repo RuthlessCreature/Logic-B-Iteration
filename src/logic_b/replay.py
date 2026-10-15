@@ -143,7 +143,9 @@ def _tradeable(day: dict, prev: dict, code: str, execution_time: str, side: str)
 
 
 def replay(dataset: dict, config: dict) -> dict:
-    if config.get("start") != FIRST or config.get("end") != LAST:
+    bounds=(config.get("start"),config.get("end"))
+    # Preserve frozen legacy smoke (2020+) while supporting 2025/2026 Goal.
+    if bounds not in ((FIRST,LAST), ("2025-01-01","2026-06-30")):
         raise ValueError("unexpected research date boundary")
     starting = _numeric(config["initial_cash"])
     if starting <= 0:
@@ -154,7 +156,7 @@ def replay(dataset: dict, config: dict) -> dict:
     dates = [d["date"] for d in snapshots]
     if dates != sorted(set(dates)):
         raise ValueError("trading days must be strictly sorted and unique")
-    if any(not (FIRST <= d <= LAST) for d in dates):
+    if any(not (bounds[0] <= d <= bounds[1]) for d in dates):
         raise ValueError("protected or outside-range day")
     commission = float(config["commission_rate"])
     minimum = float(config["minimum_commission"])

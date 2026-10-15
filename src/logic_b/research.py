@@ -13,8 +13,23 @@ from pathlib import Path
 from urllib.request import Request, urlopen
 from .replay import replay
 
-TRAIN_END = "2024-12-31"
+TRAIN_END = "2024-12-31"  # Legacy regression compatibility
 VALIDATION_START = "2025-01-01"
+
+
+def study_boundaries(config: dict) -> tuple[str,str,str,str]:
+    """Active Luna Goal uses 2025 train and 2026H1 validation; no other splits."""
+    start, end=config.get("start"),config.get("end")
+    if (start,end)==("2025-01-01","2026-06-30"):
+        b=("2025-01-01","2025-12-31","2026-01-01","2026-06-30")
+    elif (start,end)==("2020-01-01","2026-06-30"):
+        b=("2020-01-01","2024-12-31","2025-01-01","2026-06-30")
+    else:
+        raise ValueError("unapproved Luna research split")
+    for field,value in zip(("train_start","train_end","validation_start","validation_end"),b):
+        if field in config and config[field] != value:
+            raise ValueError("study split conflicts with "+field)
+    return b
 
 def validate_proposal(value: dict) -> dict:
     if not isinstance(value, dict) or set(value) != {"hypothesis", "params", "risk", "name"}:
@@ -39,11 +54,12 @@ def proposal_digest(proposal: dict) -> str:
 
 
 def training_summary(dataset: dict, config: dict) -> dict:
-    scoped = dict(dataset, days=[day for day in dataset.get("days", []) if day["date"] <= TRAIN_END])
+    train_start, train_end, _, _ = study_boundaries(config)
+    scoped = dict(dataset, days=[day for day in dataset.get("days", []) if train_start <= day["date"] <= train_end])
     result = replay(scoped, config)
     return {k: result[k] for k in ("classification", "status", "initial_cash", "final_equity",
                                     "return_pct", "max_drawdown_pct") } | {
-        "training_end": TRAIN_END, "sessions": len(scoped["days"]),
+        "training_end": train_end, "training_start": train_start, "sessions": len(scoped["days"]),
         "closed_trades": len(result["closed_trades"]),
         "reason_counts": {r: sum(x.get("reason")==r for x in result["orders"])
                           for r in sorted(set(x.get("reason") for x in result["orders"]))},
@@ -90,8 +106,9 @@ def ask_llm_for_hypothesis(train_summary: dict, *, model: str, api_key: str | No
 
 def compare_candidate(dataset: dict, config: dict, proposal: dict) -> dict:
     proposal = validate_proposal(proposal)
-    train_days = [x for x in dataset["days"] if x["date"] <= TRAIN_END]
-    valid_days = [x for x in dataset["days"] if x["date"] >= VALIDATION_START]
+    train_start,train_end,valid_start,valid_end=study_boundaries(config)
+    train_days=[x for x in dataset["days"] if train_start <= x["date"] <= train_end]
+    valid_days=[x for x in dataset["days"] if valid_start <= x["date"] <= valid_end]
     config_new = copy.deepcopy(config)
     config_new["baseline"] = copy.deepcopy(proposal["params"])
     rows = {}
@@ -119,7 +136,8 @@ def compare_candidate(dataset: dict, config: dict, proposal: dict) -> dict:
     verdict = "CANDIDATE_FOR_MANUAL_REVIEW" if credible else "NO_FOLLOW"
     return {"classification": "RESEARCH_SIMULATED_BAR_FILLS_NOT_FINANCIAL_ADVICE",
             "version": proposal_digest(proposal), "proposal": proposal,
-            "time_split": {"train_end": TRAIN_END, "validation_start": VALIDATION_START},
+            "time_split": {"train_start":train_start,"train_end":train_end,
+                           "validation_start":valid_start,"validation_end":valid_end},
             "results": rows, "verdict": verdict,
             "follow_instruction": "Never auto-execute; human approval, live data and broker checks required",
             "notes": "Validation is only a chronologically later development segment; repeated optimization contaminates it."}

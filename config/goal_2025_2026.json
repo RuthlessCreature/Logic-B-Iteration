@@ -1,0 +1,43 @@
+{
+  "version": "logic-b-goal-2025-2026-v1",
+  "status": "ACTIVE_GOAL_FIXED_SAMPLE",
+  "start": "2025-01-01",
+  "end": "2026-06-30",
+  "train_start": "2025-01-01",
+  "train_end": "2025-12-31",
+  "validation_start": "2026-01-01",
+  "validation_end": "2026-06-30",
+  "initial_cash": 10000,
+  "commission_rate": 0.00025,
+  "minimum_commission": 5,
+  "lot_size": 100,
+  "max_positions": 1,
+  "decision_time": "09:35",
+  "execution_time": "09:45",
+  "buy_at_limit_up": false,
+  "sell_at_limit_down": false,
+  "baseline": {
+    "min_streak": 1,
+    "max_breaks": 100,
+    "min_market_temperature": null
+  },
+  "storage": {
+    "local_data_root": "data",
+    "cloud_r2": "RESERVED_NOT_CONNECTED",
+    "cloud_d1": "RESERVED_NOT_CONNECTED",
+    "audit_target": "files_bytes_by_provider_year"
+  },
+  "validation_policy": {
+    "validation_is_development_not_blind": true,
+    "only_train_can_select_parameters": true,
+    "fail_if_validation_tuned": true
+  },
+  "ai_roles": {
+    "offline_research": "codex",
+    "daily_runtime_future": [
+      "deepseek",
+      "jev_typesafe"
+    ],
+    "both_runtime_disabled": true
+  }
+}

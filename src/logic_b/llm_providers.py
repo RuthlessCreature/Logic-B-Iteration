@@ -70,14 +70,14 @@ def load_provider_config(path: str | Path = "config/llm_providers.json") -> dict
 
 
 def validate_request(request: ProposalRequest) -> None:
-    if request.train_end != "2024-12-31" or request.schema_version != "logic-b-proposal-v1":
+    if request.train_end not in ("2024-12-31","2025-12-31") or request.schema_version != "logic-b-proposal-v1":
         raise ValueError("unapproved experiment boundary")
     allowed = {"classification", "status", "initial_cash", "final_equity",
-               "return_pct", "max_drawdown_pct", "training_end", "sessions",
+               "return_pct", "max_drawdown_pct", "training_end", "training_start", "sessions",
                "closed_trades", "reason_counts"}
     if not request.train_summary or set(request.train_summary).difference(allowed):
         raise ValueError("LLM can only receive vetted training-period aggregated metrics")
-    if request.train_summary.get("training_end") != "2024-12-31":
+    if request.train_summary.get("training_end") != request.train_end:
         raise ValueError("training_end verification failed")
 
 
