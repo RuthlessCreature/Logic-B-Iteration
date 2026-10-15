@@ -24,10 +24,10 @@ jobs:
           set -euo pipefail
           mkdir -p runs/real-pilot
           python -m logic_b.collect calendar --start 2020-01-01 --end 2020-01-31
-          python -m logic_b.collect events --start 2020-01-01 --end 2020-01-31 --max-days 7
-          python -m logic_b.collect daily --start 2020-01-01 --end 2020-01-31 --max-days 7
-          python -m logic_b.collect minute --start 2020-01-01 --end 2020-01-31 --max-days 7 --exit-lookahead-sessions 7
-          python -m logic_b.collect dataset --start 2020-01-01 --end 2020-01-31 --max-days 7 --out data/replay_dataset.json
+          python -m logic_b.collect events --start 2020-01-01 --end 2020-01-31 --max-days 16
+          python -m logic_b.collect daily --start 2020-01-01 --end 2020-01-31 --max-days 16
+          python -m logic_b.collect minute --start 2020-01-01 --end 2020-01-31 --max-days 16 --exit-lookahead-sessions 16
+          python -m logic_b.collect dataset --start 2020-01-01 --end 2020-01-31 --max-days 16 --out data/replay_dataset.json
           python -m logic_b --dataset data/replay_dataset.json --out runs/real-pilot
       - name: Publish only aggregate coverage and portfolio diagnostics
         if: always()
@@ -42,7 +42,7 @@ jobs:
           data=Path("data/replay_dataset.json")
           report=out/"report.json"
           summary={"source":"Xuangubao pools + BaoStock historical unadjusted OHLC",
-                   "data_window":"2020-01-01..2020-01-31","max_trade_sessions_requested":7,
+                   "data_window":"2020-01-01..2020-01-31","max_trade_sessions_requested":16,
                    "pilot_step_status":os.environ.get("STEP_OUTCOME"),
                    "classification":"PARTIAL_REAL_DATA_BAR_SIMULATION_NOT_ACTUAL_FILLS"}
           if data.exists():
@@ -56,6 +56,12 @@ jobs:
                   ("status","initial_cash","final_equity","return_pct","max_drawdown_pct")})
               summary["attempts"]=len(a.get("orders",[]))
               summary["closed_trades"]=len(a.get("closed_trades",[]))
+              summary["filled_buys"]=sum(x.get("side")=="BUY" for x in a.get("fills",[]))
+              summary["filled_sells"]=sum(x.get("side")=="SELL" for x in a.get("fills",[]))
+              summary["held_at_sample_end"]=bool(a.get("daily_equity") and a["daily_equity"][-1].get("shares"))
+              summary["mark_stale_days"]=sum(bool(x.get("mark_stale")) for x in a.get("daily_equity",[]))
+              from collections import Counter
+              summary["order_reason_counts"]=dict(Counter(x.get("reason","UNKNOWN") for x in a.get("orders",[])))
               summary["orders_without_fill"]=sum(x.get("reason")!="SIMULATED_BAR_CLOSE_FILL"
                   for x in a.get("orders",[]))
           (out/"aggregate_summary.json").write_text(json.dumps(summary,indent=2)+"\n")
