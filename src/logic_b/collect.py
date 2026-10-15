@@ -249,9 +249,10 @@ def main():
     p.add_argument("--out", type=Path, default=Path("data/replay_dataset.json"))
     p.add_argument("--max-days", type=int, default=5, help="bounded first pilot")
     p.add_argument("--max-codes", type=int, default=20)
+    p.add_argument("--exit-lookahead-sessions", type=int, default=10)
     args = p.parse_args()
     _check_dates(args.start, args.end)
-    if args.max_days < 1 or args.max_codes < 1:
+    if args.max_days < 1 or args.max_codes < 1 or args.exit_lookahead_sessions < 1:
         raise ValueError("limits must be >= 1")
     calendar_file = args.cache / "calendar.json"
     if args.action == "calendar":
@@ -293,7 +294,15 @@ def main():
                 fetch_daily(code, args.cache, client, start=args.start, end=args.end)
                 print("cached daily", code)
         else:
+            # Download enough subsequent sessions to attempt T+1 exits,
+            # including several consecutive days with locked lower bands.
+            work = set()
+            positions = {day: pos for pos, day in enumerate(days[:args.max_days])}
             for day, code in list(chosen_by_date.items())[:args.max_codes]:
+                i = positions[day]
+                for exit_day in days[i:i+args.exit_lookahead_sessions]:
+                    work.add((code, exit_day))
+            for code, day in sorted(work):
                 fetch_5m(code, day, args.cache, client)
                 print("cached five minute", day, code)
 
