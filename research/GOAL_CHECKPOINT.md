@@ -39,3 +39,8 @@
 - 下个可执行动作，明确的阻断或需要用户授予的权限
 
 **禁止**：按测试数量宣布盈利优势；用户不在场时购买服务；访问2026-07-01..09-28保护留出集；未经允许自动下单；不经时间审计就给心理因果命名。
+
+
+## 2026-10-15 追加：Jev / TypeSafe DecisionProvider
+
+用户明确要预留 **Jev by TypeSafe AI**。官方 `POST https://api.typesafe.ai/v1/systemone`（`choice/score/noul`）；官方 `GET /v1/models`，不是第三方托管的 `decide` 网关。已建立 `config/decision_providers.json` + `src/logic_b/decision_providers.py` + `tests/test_decision_providers.py`，状态 **RESERVED / DISABLED / NOT_CONNECTED / NOT_BILLED**。它与禁用的DeepSeek文本Provider相互独立。决策主路径仍是确定性证据+MarketGate；Jev未来也只能作为研究性辅助，不允许买卖下单/放开风险硬否决。详见 `docs/JEV_TYPESAFE_RESERVED_API.md` 和 Handoff 第12章。

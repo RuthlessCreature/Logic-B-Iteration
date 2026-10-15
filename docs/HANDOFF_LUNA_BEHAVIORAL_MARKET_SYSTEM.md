@@ -376,3 +376,39 @@ test_count, errors, unresolved_flags, next_action`。
 **不做**：复活旧H01/H02流水线、继续争论是否必须Tushare收费接口、为了强行证明“心理强化已被识别”而陷入无限认证、靠未经时间审计的文本叙事挑票、开启DeepSeek调用、修改main或实盘自动买卖。
 
 **遇到失败就保留负面证据；得不出正收益也可以如实结项。用户需要的是能不断复算、升级、懂得空仓和风险约束的研究能力，而不是漂亮的幻觉。**
+
+
+---
+
+## 12. 用户新增要求：TypeSafe AI Jev 作为 **独立 DecisionProvider** 预留
+
+**特别重要：Jev/TypeSafe 不等于 DeepSeek，更不是普通聊天LLM的另一个 model 名称。** 这是2026-10-15用户追加的第三类模型能力：Jev 是 TypeSafe AI 的 **System One 模型**，用于返回指定类型的结构化决策及概率，不负责长篇研究推理和写自然语言。不能将它随意接到 `research.py` 的 OpenAI / DeepSeek 文本提案接口。
+
+官方来源（2026-10-15核对）：  
+- TypeSafe 官网：https://typesafe.ai/  
+- 官方 OpenAPI：https://api.typesafe.ai/openapi.json  
+- 官方 API 文档：https://api.typesafe.ai/docs  
+- 官方 POST：`https://api.typesafe.ai/v1/systemone`  
+- 官方模型发现：`GET https://api.typesafe.ai/v1/models`（需要账户授权）。  
+- 载荷核心：`{"model": "...", "state": {...}, "questions": {...}}`；回答用同样问题名返回。类型 `choice`、`score`、`noul`。不要采用非官方第三方托管站的 `/api/v1/decide` 作为默认endpoint；第三方钥匙与官方 TypeSafe 钥匙不通用。
+
+已落地的**代码级预留**：
+- `config/decision_providers.json`：`active_provider=deterministic`，`jev_typesafe.enabled=false`，`allow_external_calls=false`，`model=null`。
+- `src/logic_b/decision_providers.py`：标准化 `DecisionRequest/DecisionResponse`、校验历史截止时间、官方问题模板、JevAdapter。**目前不含真实HTTP传输，只接受授权之后的注入transport**。
+- `tests/test_decision_providers.py`：禁用不联网、无凭据不调用、受保护日期被拒、时间泄漏禁止、mock协议/输出检查。
+- `docs/JEV_TYPESAFE_RESERVED_API.md`：正式独立说明与未来激活验收。
+
+**定位：Jev 可以有帮助，但必须证明。** 未来若用户授权，考虑在**规则计算好的同一份合法证据**上，让Jev辅助完成：
+1. 市场状态分类 `ATTACK/TRIAL/NEUTRAL/RETREAT/ICE`（choice）；
+2. 下行尾部与跌停锁仓风险分级（score）；
+3. 昨日核心的负反馈是否正在扩散（noul）。
+这些输出首先只能作为研究**诊断列**，与纯规则状态机、简单统计、单一高推理LLM候选研究做配对实验，评估日期分块准确率、对数损失、校准和费后拒单价值。官方声称“校准概率”并不等于在A股市场已校准；历史性能必须另行验证。
+
+**绝对权限与失败规则：**
+- 不接实盘，不替代 MarketGate 硬否决，不单独决定买卖，不能在风险红灯时放行。
+- 缺认证 `TYPESAFE_API_KEY`、没有经确认的模型ID、源数据时刻不明或用户没有明确授权 → 禁用/拒绝。
+- 不自动执行 `GET /v1/models`、不申请/使用密钥、不发送受保护期间价格与个人账户信息，不产生付费请求。
+- **启用时必须双开关 + 明确外部调用授权 + 审计过的 transport 实现**。连通成功且有真实账单记录以后才能标为 CONNECTED。
+- 与 DeepSeek 一样，**“接口预留”不是已接入**；DeepSeek属可选语言模型Provider；Jev属独立结构化DecisionProvider；当前实际决策还是确定性规则与主研究LLM。
+
+Luna 未来不要把“Jev直接输出5状态”当成模型已验证或已可跟随。它适合做大量、便宜、格式统一的判断任务的**候选工具**，先离线实验再判断能否提供额外经济价值。

@@ -1,5 +1,8 @@
 # IMPORTANT — Read the authoritative Luna handoff first
 
+**New reservation (2026-10-15):** TypeSafe AI Jev uses a **separate typed DecisionProvider** (choice/score/noul), not the DeepSeek/OpenAI generative LLM interface. Read [docs/JEV_TYPESAFE_RESERVED_API.md](docs/JEV_TYPESAFE_RESERVED_API.md) and Handoff §12. Official API `https://api.typesafe.ai/v1/systemone`. Both JEV and DeepSeek are **disabled/unconnected/not billed**, no auto model/key discovery or network calls. Jev is *advisory only*, never allowed to override MarketGate or transmit orders.
+
+
 **Handoff:** [docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md](docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md).
 **Persistent checkpoint:** [research/GOAL_CHECKPOINT.md](research/GOAL_CHECKPOINT.md).
 

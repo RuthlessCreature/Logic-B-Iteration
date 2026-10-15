@@ -1,5 +1,8 @@
 # Luna 新研究交接：心理驱动的市场状态识别 + 个人交易系统
 
+**TypeSafe AI Jev 接口也已预留：** [独立 DecisionProvider API 说明](docs/JEV_TYPESAFE_RESERVED_API.md)，配置 `config/decision_providers.json`，实现 `src/logic_b/decision_providers.py`，默认关闭、未联网、未计费。它可在未来做类型约束的市场状态/风险评估，不与DeepSeek文本研究接口混用，不直接下单或覆盖风险硬否决。
+
+
 **当前权威执行文档：** [Logic-B / Luna 完整 Handoff](docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md)；[长期执行检查点](research/GOAL_CHECKPOINT.md)。Luna 必须先阅读它们再动工。研究应理解参与者心理与赚钱/亏钱反馈，以可观测的 MarketState/SectorState/CoreState 构建 MarketGate 和核心筛选，然后用真实价格、单票1万元、T+1、全部税费进行版本化资金回测，最终输出人类可审阅的 Follow 或 NO_FOLLOW。
 
 **大模型架构：** 当前保持OpenAI单一研究主路径。预留DeepSeek的 `config/llm_providers.json` + `src/logic_b/llm_providers.py`，**默认禁用、尚未联网、不产生收费**。不得暗中切换模型或把心理理论说成已经识别真实交易者心理。
