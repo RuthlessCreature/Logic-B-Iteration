@@ -10,7 +10,9 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import socket
 import time
+from urllib.error import HTTPError, URLError
 from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
@@ -51,6 +53,46 @@ def _request_json(url: str, *, opener=urlopen):
     return result, hashlib.sha256(raw).hexdigest()
 
 
+def _record_failure(root: Path, *, provider: str, partition: str, error: Exception,
+                    attempts: int):
+    """Append an auditable partition failure without request credentials or raw payloads."""
+    path = root / "failures.jsonl"
+    path.parent.mkdir(parents=True, exist_ok=True)
+    row = {"provider": provider, "partition": partition, "attempts": attempts,
+           "error_type": type(error).__name__, "error": str(error)[:500],
+           "recorded_utc": datetime.now(timezone.utc).isoformat()}
+    with path.open("a", encoding="utf-8", newline="\n") as fh:
+        fh.write(json.dumps(row, ensure_ascii=False, sort_keys=True) + "\n")
+
+
+def _month_partitions(start: str, end: str):
+    """Return inclusive month-bounded ranges intersecting [start, end]."""
+    year, month = map(int, start[:7].split("-"))
+    last_year, last_month = map(int, end[:7].split("-"))
+    while (year, month) <= (last_year, last_month):
+        first = f"{year:04d}-{month:02d}-01"
+        if month == 12:
+            next_month = f"{year + 1:04d}-01-01"
+        else:
+            next_month = f"{year:04d}-{month + 1:02d}-01"
+        from datetime import date, timedelta
+        month_end = (date.fromisoformat(next_month) - timedelta(days=1)).isoformat()
+        yield max(start, first), min(end, month_end)
+        year, month = (year + (month == 12), 1 if month == 12 else month + 1)
+
+
+def _retry_xgb_request(url: str, request, *, attempts=3):
+    last_error = None
+    for attempt in range(1, attempts + 1):
+        try:
+            return (*request(url), attempt)
+        except (HTTPError, URLError, TimeoutError, socket.timeout, ConnectionError, OSError) as exc:
+            last_error = exc
+            if attempt < attempts:
+                time.sleep(0.5 * (2 ** (attempt - 1)))
+    raise last_error
+
+
 def fetch_xgb_day(day: str, root: Path, *, request=_request_json):
     _check_dates(day, day)
     path = root / "events" / (day + ".json")
@@ -59,10 +101,18 @@ def fetch_xgb_day(day: str, root: Path, *, request=_request_json):
         return existing
     pools = {}
     hashes = {}
+    retry_counts = {}
     for name in POOL_NAMES:
         url = ("https://flash-api.xuangubao.com.cn/api/pool/detail?"
                + urlencode({"date": day, "pool_name": name}))
-        response, digest = request(url)
+        try:
+            response, digest, attempts = _retry_xgb_request(url, request)
+        except Exception as exc:
+            _record_failure(root, provider="xuangubao", partition=f"{day}/{name}",
+                            error=exc, attempts=3 if isinstance(exc, (HTTPError, URLError,
+                            TimeoutError, socket.timeout, ConnectionError, OSError)) else 1)
+            raise
+        retry_counts[name] = attempts - 1
         data = response.get("data")
         if not isinstance(data, list):
             raise ValueError("unexpected Xuangubao pool payload")
@@ -85,15 +135,24 @@ def fetch_xgb_day(day: str, root: Path, *, request=_request_json):
         pools[name] = clean
         hashes[name] = digest
     # Market indicator is optional; no made-up intraday gate if missing.
-    response, digest = request("https://flash-api.xuangubao.com.cn/api/market_indicator/line?"
-                               + urlencode({"date": day, "fields": "market_temperature,limit_up_count,limit_down_count"}))
+    endpoint = ("https://flash-api.xuangubao.com.cn/api/market_indicator/line?"
+                + urlencode({"date": day, "fields": "market_temperature,limit_up_count,limit_down_count"}))
+    try:
+        response, digest, attempts = _retry_xgb_request(endpoint, request)
+    except Exception as exc:
+        _record_failure(root, provider="xuangubao", partition=f"{day}/market_indicator",
+                        error=exc, attempts=3 if isinstance(exc, (HTTPError, URLError,
+                        TimeoutError, socket.timeout, ConnectionError, OSError)) else 1)
+        raise
+    retry_counts["market_indicator"] = attempts - 1
     records = response.get("data") or []
     market = records[-1] if isinstance(records, list) and records else {}
     market = {"market_temperature": market.get("market_temperature")} if isinstance(market, dict) else {}
     out = {"date": day, "limit_up": pools["limit_up"], "limit_down": pools["limit_down"],
            "limit_broken": pools["limit_up_broken"], "market": market,
            "provenance": {"provider": "xuangubao", "retrieved_utc": datetime.now(timezone.utc).isoformat(),
-                          "sha256_by_endpoint": dict(hashes, market_indicator=digest)}}
+                          "sha256_by_endpoint": dict(hashes, market_indicator=digest),
+                          "retry_count_by_endpoint": retry_counts}}
     _atomic_json(path, out)
     return out
 
@@ -108,7 +167,7 @@ def _bs_code(code: str):
 
 def _bs_rows(result):
     if result.error_code != "0":
-        raise RuntimeError(f"BaoStock query error: {result.error_code}")
+        raise RuntimeError(f"BaoStock query error: {result.error_code}: {result.error_msg}")
     values = []
     while result.next():
         values.append(dict(zip(result.fields, result.get_row_data())))
@@ -116,6 +175,8 @@ def _bs_rows(result):
 
 
 class BaoStockClient:
+    NETWORK_ERROR_CODES = {"10002001", "10002007"}
+
     def __enter__(self):
         try:
             import baostock as bs
@@ -125,7 +186,18 @@ class BaoStockClient:
         response = bs.login()
         if response.error_code != "0":
             raise RuntimeError("BaoStock login failed")
+        self.query_retry_count = 0
+        self.query_failures = []
         return self
+
+    def _relogin(self):
+        try:
+            self.bs.logout()
+        except Exception:
+            pass
+        response = self.bs.login()
+        if response.error_code != "0":
+            raise RuntimeError("BaoStock relogin failed")
 
     def __exit__(self, _type, _value, _tb):
         self.bs.logout()
@@ -141,43 +213,71 @@ class BaoStockClient:
             raise ValueError("only daily or completed 5min supported")
         fields = ("date,code,open,high,low,close,preclose,volume,tradestatus,isST" if freq == "d"
                   else "date,time,code,open,high,low,close,volume")
-        return _bs_rows(self.bs.query_history_k_data_plus(
-            _bs_code(code), fields, start_date=start, end_date=end, frequency=freq, adjustflag="3"))
+        last_error = None
+        for attempt in range(1, 4):
+            try:
+                result = self.bs.query_history_k_data_plus(
+                    _bs_code(code), fields, start_date=start, end_date=end,
+                    frequency=freq, adjustflag="3")
+                return _bs_rows(result)
+            except Exception as exc:
+                last_error = exc
+                code_text = str(getattr(locals().get("result"), "error_code", ""))
+                if code_text not in self.NETWORK_ERROR_CODES or attempt == 3:
+                    self.query_failures.append({"code": canonical_code(code), "start": start,
+                        "end": end, "frequency": freq, "attempts": attempt,
+                        "error": str(exc)[:500]})
+                    raise
+                self.query_retry_count += 1
+                time.sleep(0.5 * (2 ** (attempt - 1)))
+                self._relogin()
+        raise last_error
 
 
 def fetch_daily(code: str, root: Path, client: BaoStockClient, *, start=FIRST, end=LAST):
     canon = canonical_code(code)
-    path = root / "daily" / (canon + ".json")
-    old = _cached(path)
-    if old is not None and old.get("range") == [start, end]:
-        return old
-    records = client.historical(canon, start, end, freq="d")
-    by_day = {}
-    for r in records:
-        ds = r["date"]
-        if not (start <= ds <= end):
-            raise ValueError("provider daily date out of range")
-        if ds in by_day:
-            raise ValueError("duplicate daily date")
-        # BaoStock flags are 1/0 as strings. Never substitute a name-based
-        # ST identity or infer a future status from an observed price.
-        st = r.get("isST")
-        by_day[ds] = {
-            "open": float(r["open"]) if r["open"] else None,
-            "high": float(r["high"]) if r["high"] else None,
-            "low": float(r["low"]) if r["low"] else None,
-            "close": float(r["close"]) if r["close"] else None,
-            # BaoStock's historical reference price may differ from the last
-            # unadjusted close on corporate-action days. Preserve both.
-            "preclose": float(r["preclose"]) if r.get("preclose") else None,
-            "volume": float(r["volume"]) if r.get("volume") else None,
-            "is_st": (st == "1") if st in ("0", "1") else None,
-            "tradestatus": int(r["tradestatus"]) if r.get("tradestatus") in ("0", "1") else None,
-        }
-    value = {"code": canon, "range": [start, end], "adjustflag": "3", "frequency": "d",
-             "provider": "baostock", "records": by_day}
-    _atomic_json(path, value)
-    return value
+    merged = {}
+    partitions = []
+    for part_start, part_end in _month_partitions(start, end):
+        month = part_start[:7]
+        path = root / "daily" / month / (canon + ".json")
+        old = _cached(path)
+        if old is not None and old.get("range") == [part_start, part_end]:
+            value = old
+        else:
+            try:
+                records = client.historical(canon, part_start, part_end, freq="d")
+            except Exception as exc:
+                attempt_count = (client.query_failures[-1]["attempts"]
+                                 if getattr(client, "query_failures", None) else 1)
+                _record_failure(root, provider="baostock", partition=f"daily/{month}/{canon}",
+                                error=exc, attempts=attempt_count)
+                raise
+            by_day = {}
+            for r in records:
+                ds = r["date"]
+                if not (part_start <= ds <= part_end):
+                    raise ValueError("provider daily date out of requested month partition")
+                if ds in by_day:
+                    raise ValueError("duplicate daily date")
+                st = r.get("isST")
+                by_day[ds] = {
+                    "open": float(r["open"]) if r["open"] else None,
+                    "high": float(r["high"]) if r["high"] else None,
+                    "low": float(r["low"]) if r["low"] else None,
+                    "close": float(r["close"]) if r["close"] else None,
+                    "preclose": float(r["preclose"]) if r.get("preclose") else None,
+                    "volume": float(r["volume"]) if r.get("volume") else None,
+                    "is_st": (st == "1") if st in ("0", "1") else None,
+                    "tradestatus": int(r["tradestatus"]) if r.get("tradestatus") in ("0", "1") else None,
+                }
+            value = {"code": canon, "range": [part_start, part_end], "adjustflag": "3",
+                     "frequency": "d", "provider": "baostock", "records": by_day}
+            _atomic_json(path, value)
+        merged.update(value.get("records", {}))
+        partitions.append(path.relative_to(root).as_posix())
+    return {"code": canon, "range": [start, end], "adjustflag": "3", "frequency": "d",
+            "provider": "baostock", "partitions": partitions, "records": merged}
 
 
 def fetch_5m(code: str, day: str, root: Path, client: BaoStockClient):
@@ -187,7 +287,14 @@ def fetch_5m(code: str, day: str, root: Path, client: BaoStockClient):
     old = _cached(path)
     if old is not None:
         return old
-    rows = client.historical(canon, day, day, freq="5")
+    try:
+        rows = client.historical(canon, day, day, freq="5")
+    except Exception as exc:
+        attempt_count = (client.query_failures[-1]["attempts"]
+                         if getattr(client, "query_failures", None) else 1)
+        _record_failure(root, provider="baostock", partition=f"minute/{canon}/{day}",
+                        error=exc, attempts=attempt_count)
+        raise
     bars = []
     for r in rows:
         # BaoStock encodes completed bar end as YYYYMMDDHHmmssSSS.

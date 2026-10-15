@@ -1,5 +1,6 @@
 import json
 from pathlib import Path
+from urllib.error import URLError
 import pytest
 from logic_b.collect import _check_dates, _bs_code, fetch_xgb_day, fetch_daily, fetch_5m, make_dataset
 from logic_b.identity import canonical_code
@@ -52,3 +53,94 @@ def test_unavailable_history_is_reported_not_filled(tmp_path):
 def test_future_range_rejected():
     with pytest.raises(ValueError):
         _check_dates("2026-06-30", "2026-07-01")
+
+def test_daily_storage_is_split_into_reusable_month_partitions(tmp_path):
+    class Fake:
+        def __init__(self):
+            self.calls = []
+        def historical(self, code, start, end, *, freq):
+            self.calls.append((start, end, freq))
+            days = {"2025-01-02": "10", "2025-02-03": "11"}
+            return [{"date": day, "open": price, "high": price, "low": price,
+                     "close": price, "preclose": price, "volume": "100",
+                     "isST": "0", "tradestatus": "1"}
+                    for day, price in days.items() if start <= day <= end]
+    client = Fake()
+    result = fetch_daily("600001.SH", tmp_path, client, start="2025-01-01", end="2025-02-28")
+    assert client.calls == [("2025-01-01", "2025-01-31", "d"),
+                            ("2025-02-01", "2025-02-28", "d")]
+    assert (tmp_path / "daily/2025-01/600001.SH.json").is_file()
+    assert (tmp_path / "daily/2025-02/600001.SH.json").is_file()
+    assert sorted(result["records"]) == ["2025-01-02", "2025-02-03"]
+    again = fetch_daily("600001.SH", tmp_path, client, start="2025-01-01", end="2025-02-28")
+    assert len(client.calls) == 2
+    assert again == result
+
+def test_xgb_network_retry_count_is_part_of_provenance(tmp_path):
+    calls = 0
+    def request(url):
+        nonlocal calls
+        calls += 1
+        if calls in (1, 2):
+            raise URLError("temporary network receive error")
+        if "market_indicator" in url:
+            return {"data": [{"market_temperature": 40}]}, "0" * 64
+        if "pool_name=limit_up" in url:
+            return {"data": [{"symbol": "600001.SH"}]}, "1" * 64
+        return {"data": []}, "2" * 64
+    item = fetch_xgb_day("2025-01-02", tmp_path, request=request)
+    assert item["provenance"]["retry_count_by_endpoint"]["limit_up"] == 2
+    assert item["provenance"]["retry_count_by_endpoint"]["limit_down"] == 0
+    assert not (tmp_path / "failures.jsonl").exists()
+
+def test_xgb_failed_endpoint_records_recoverable_partition(tmp_path):
+    def request(_url):
+        raise URLError("offline test failure")
+    with pytest.raises(URLError):
+        fetch_xgb_day("2025-01-02", tmp_path, request=request)
+    failures = (tmp_path / "failures.jsonl").read_text(encoding="utf-8").splitlines()
+    assert len(failures) == 1
+    failure = json.loads(failures[0])
+    assert failure["provider"] == "xuangubao"
+    assert failure["partition"] == "2025-01-02/limit_up"
+    assert failure["attempts"] == 3
+
+def test_baostock_network_receive_error_relogs_in_and_retries(monkeypatch):
+    from logic_b.collect import BaoStockClient
+    import logic_b.collect as collect
+    monkeypatch.setattr(collect.time, "sleep", lambda _: None)
+    class Result:
+        fields = ["date", "code"]
+        error_msg = "network receive error"
+        def __init__(self, error_code):
+            self.error_code = error_code
+            self.done = False
+        def next(self):
+            if self.error_code != "0" or self.done:
+                return False
+            self.done = True
+            return True
+        def get_row_data(self):
+            return ["2025-01-02", "sh.600001"]
+    class FakeBaoStock:
+        def __init__(self):
+            self.query_count = 0
+            self.login_count = 0
+        def login(self):
+            self.login_count += 1
+            return type("Login", (), {"error_code": "0"})()
+        def logout(self):
+            return None
+        def query_history_k_data_plus(self, *args, **kwargs):
+            self.query_count += 1
+            return Result("10002007" if self.query_count == 1 else "0")
+    fake = FakeBaoStock()
+    client = BaoStockClient()
+    client.bs = fake
+    client.query_retry_count = 0
+    client.query_failures = []
+    assert client.historical("600001.SH", "2025-01-01", "2025-01-31", freq="d") == [
+        {"date": "2025-01-02", "code": "sh.600001"}]
+    assert fake.query_count == 2
+    assert fake.login_count == 1
+    assert client.query_retry_count == 1
