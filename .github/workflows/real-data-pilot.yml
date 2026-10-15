@@ -1,0 +1,70 @@
+name: first-real-data-pilot
+on:
+  push:
+    branches: [research/behavioral-edge-20261013]
+    paths: [.github/workflows/real-data-pilot.yml]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pilot:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install free market adapter
+        run: python -m pip install -e ".[data]"
+      - name: Run Jan 2020 bounded real-data pilot (never access protected dates)
+        id: pilot
+        continue-on-error: true
+        run: |
+          set -euo pipefail
+          mkdir -p runs/real-pilot
+          python -m logic_b.collect calendar --start 2020-01-01 --end 2020-01-31
+          python -m logic_b.collect events --start 2020-01-01 --end 2020-01-31 --max-days 7
+          python -m logic_b.collect daily --start 2020-01-01 --end 2020-01-31 --max-days 7
+          python -m logic_b.collect minute --start 2020-01-01 --end 2020-01-31 --max-days 7 --exit-lookahead-sessions 7
+          python -m logic_b.collect dataset --start 2020-01-01 --end 2020-01-31 --max-days 7 --out data/replay_dataset.json
+          python -m logic_b --dataset data/replay_dataset.json --out runs/real-pilot
+      - name: Publish only aggregate coverage and portfolio diagnostics
+        if: always()
+        env:
+          STEP_OUTCOME: ${{ steps.pilot.outcome }}
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          out=Path("runs/real-pilot")
+          out.mkdir(parents=True,exist_ok=True)
+          data=Path("data/replay_dataset.json")
+          report=out/"report.json"
+          summary={"source":"Xuangubao pools + BaoStock historical unadjusted OHLC",
+                   "data_window":"2020-01-01..2020-01-31","max_trade_sessions_requested":7,
+                   "pilot_step_status":os.environ.get("STEP_OUTCOME"),
+                   "classification":"PARTIAL_REAL_DATA_BAR_SIMULATION_NOT_ACTUAL_FILLS"}
+          if data.exists():
+              blob=json.loads(data.read_text())
+              summary["coverage"]=blob.get("coverage")
+              summary["sample_first_day"]=blob["days"][0]["date"] if blob.get("days") else None
+              summary["sample_last_day"]=blob["days"][-1]["date"] if blob.get("days") else None
+          if report.exists():
+              a=json.loads(report.read_text())
+              summary.update({k:a.get(k) for k in
+                  ("status","initial_cash","final_equity","return_pct","max_drawdown_pct")})
+              summary["attempts"]=len(a.get("orders",[]))
+              summary["closed_trades"]=len(a.get("closed_trades",[]))
+              summary["orders_without_fill"]=sum(x.get("reason")!="SIMULATED_BAR_CLOSE_FILL"
+                  for x in a.get("orders",[]))
+          (out/"aggregate_summary.json").write_text(json.dumps(summary,indent=2)+"\n")
+          print(json.dumps(summary,indent=2))
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: logic-b-2020-january-aggregate-only
+          path: runs/real-pilot/aggregate_summary.json
+          if-no-files-found: error
+          retention-days: 14
