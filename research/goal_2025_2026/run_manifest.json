@@ -1,0 +1,25 @@
+{
+  "classification": "AGGREGATE_ONLY_REAL_SOURCE_PARTIAL_BAR_SIMULATION",
+  "code_head_before_freeze": "c73b0c15cafbfa4074d496e07321bfb0fa401e5a",
+  "strategy_source_sha256": "a789271ae0ccc98ec408c2ca34aebd44851dfa96a391d8a09b19bccf915e1d6e",
+  "data_snapshot_sha256_by_version": {
+    "V0_SIMPLE_STREAK": "438accbad744d668b5b91fffd8b49822a4cec6b6d4f047fb3d16d244087c4e61",
+    "V1_MARKET_STATE_GATE": "4f2d0c572df8a6cd961b3d1ec8ef657bb48be7c06ab4e4761bad108836beb2c3",
+    "V2_BREAK_FEEDBACK_VETO": "f5575ceb4034a4c95f431b7ea30ebc7ed510cea85846738d134d1762eae58f87"
+  },
+  "config_sha256": "3df1e1dc84efb2ddbf1dc85068c7c9bcf8cc3fec21229d23244bede035ddaac1",
+  "train_window": [
+    "2025-01-01",
+    "2025-12-31"
+  ],
+  "validation_window": [
+    "2026-01-01",
+    "2026-06-30"
+  ],
+  "validation_accessed": false,
+  "frozen_selection_sha256": "365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45",
+  "providers": {
+    "event": "Xuangubao",
+    "daily_and_5m": "BaoStock"
+  },
+  "model_provider": "Codex offline research; no ex

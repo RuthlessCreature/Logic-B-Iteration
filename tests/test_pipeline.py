@@ -59,3 +59,19 @@ def test_missing_minute_fails_closed():
         lambda *_:{"bars":[]},CFG)
     assert cov["missing_minute_target_days"]==1
     assert replay(ds,CFG)["orders"][0]["reason"]=="MISSING_5M_BARS"
+
+def test_suspended_symbol_does_not_create_a_missing_minute_failure():
+    days=["2020-01-02","2020-01-03"]
+    daily={"600001.SH":{"records":{days[0]:record(10),days[1]:dict(record(10),tradestatus=0)}}}
+    def no_minute(*_):
+        pytest.fail("a suspended security must not request minute bars")
+    ds,cov=prepare_demand_driven(days,[events(days[0],True),events(days[1])],daily,no_minute,CFG)
+    assert cov["suspended_target_days"]==1
+    assert cov["minute_requested"]==0
+    assert cov["missing_minute_target_days"]==0
+    assert replay(ds,CFG)["orders"][0]["reason"]=="SUSPENDED"
+
+def test_unavailable_previous_event_source_fails_closed_without_crashing():
+    days=["2020-01-02","2020-01-03"]
+    missing={"date":days[0],"limit_up":None,"limit_down":None,"limit_broken":None,
+       

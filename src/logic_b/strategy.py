@@ -6,6 +6,8 @@ def select_core(previous: dict, cfg: dict) -> tuple[str | None, str]:
     """Only yesterday's completed Xuangubao pool and market summary are consulted."""
     candidates = previous.get("limit_up", [])
     market = previous.get("market", {})
+    if not isinstance(candidates, list) or not isinstance(market, dict):
+        return None, "SOURCE_UNAVAILABLE"
     floor = cfg.get("min_market_temperature")
     if floor is not None:
         t = market.get("market_temperature")
@@ -17,12 +19,4 @@ def select_core(previous: dict, cfg: dict) -> tuple[str | None, str]:
             sym = canonical_code(c["symbol"])
             streak = int(c.get("limit_up_days", 1))
             breaks = int(c.get("break_limit_up_times", 0))
-        except (ValueError, TypeError, KeyError):
-            continue
-        if streak < int(cfg.get("min_streak", 1)) or breaks > int(cfg.get("max_breaks", 100)):
-            continue
-        allowed.append((-streak, breaks, sym))
-    if not allowed:
-        return None, "NO_PRIOR_DAY_CANDIDATE"
-    allowed.sort()
-    return allowed[0][2], "PRIOR_DAY_CORE"
+        except (ValueError, TypeError

@@ -1,0 +1,40 @@
+name: luna-goal-research-aggregates
+
+on:
+  push:
+    branches: [research/behavioral-edge-20261013]
+    paths:
+      - "research/goal_2025_2026/**"
+      - ".github/workflows/goal-research-aggregates.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  aggregate-artifacts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate aggregate-only package
+        run: |
+          test -s research/goal_2025_2026/goal_report.json
+          test -s research/goal_2025_2026/dashboard.html
+          test -s research/goal_2025_2026/storage_inventory.json
+          test -s research/goal_2025_2026/frozen_selection.json
+          if find research/goal_2025_2026 -type f \( -name '*.zip' -o -name 'private_*' -o -name '*trade_ledger*' \) | grep -q .; then
+            echo "private or raw data found in aggregate package" >&2
+            exit 1
+          fi
+      - name: Upload aggregate research package
+        uses: actions/upload-artifact@v4
+        with:
+          name: luna-goal-2025-2026-research-aggregates
+          path: research/goal_2025_2026/
+          if-no-files-found: error
+          retention-days: 90
+      - name: Add artifact index to job summary
+        run: |
+          {
+            echo "## Logic-B Goal research aggregate package"
+          

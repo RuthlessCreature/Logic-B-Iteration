@@ -1,37 +1,36 @@
-# Luna Goal live checkpoint — 2025 TRAIN / 2026H1 VALIDATION
+# Logic-B Goal checkpoint — 2025 TRAIN / 2026H1 VALIDATION
 
-**Active instruction:** [2025→2026H1 hard Goal](../docs/LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md) · [Full Luna prompt](../docs/LUNA_GOAL_PROMPT_2025_2026.md). This file deliberately contains NO obsolete 2020-start runbook.
+**Updated:** 2026-10-15 (Asia/Shanghai)
+**Active rule:** `docs/LUNA_GOAL_2025_TRAIN_2026_VALIDATE.md`; 2025 only for training and selection, 2026H1 is not read until a training freeze exists. Protected 2026-07-01..2026-09-28 data remains untouched.
+**Working base before this checkpoint's commit:** `c73b0c15cafbfa4074d496e07321bfb0fa401e5a` on `research/behavioral-edge-20261013`; that HEAD's core Actions run [38716185269](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38716185269) succeeded. PR #1 is open, Draft, base `main`; no main/PR mutation.
 
-## Fixed contract
+## 2025 source coverage and measured storage
 
-| Field | Current value |
-|---|---|
-| TRAIN | **2025-01-01..2025-12-31** |
-| VALIDATION | **2026-01-01..2026-06-30** (after training freeze) |
-| Active config | `config/goal_2025_2026.json` |
-| Old 2020 regression config | `config/research.json`, preserve old CI only |
-| Capital / fees | **CNY10000 per train/validation account**, 0.00025 each side, min CNY5 each order, stamp duty+transfer separately |
-| Constraints | A-share T+1, one position, 100-share buys, limit-up no buy, limit-down no sell, cash valid, stock exchange+6-digit stable through ST/name |
-| Historical protection | NEVER access 2026-07-01..2026-09-28 |
-| Model responsibilities | Codex **offline research**; DeepSeek/Jev **future daily runtime only**, currently DISABLED |
-| Cloudflare | R2/D1 **NOT CONNECTED** — no persistence or storage bytes available via account |
-| Live trading | NO brokerage order permission |
+- BaoStock calendar: **243/243** 2025 trading sessions; Xuangubao event partitions: **243/243**. Event partition failures: 0. Full-year input SHA256: `475f5a64d0c1971104483e2f35a4a48af93acc5614bf9deb4efd1d395500ac7f`.
+- The price universe is a **candidate-path proxy**, not the whole market. Across V0/V1/V2 there are 117 daily symbols, 28,315 month-partitioned daily symbol-days, and 322 unique 5m files/15,264 bars. Xuangubao event pools contain 31,779 event rows. V0 requests 236/236 non-suspended target 5m partitions; V1 192/192; V2 187/187. These are path-complete only; all target missing counts are zero. V0/V1/V2 suspensions: 6/3/4. BaoStock query retries/errors: 0/0 on the instrumented reruns.
+- Current local physical cache: **2,130 files / 19,077,530 bytes / 18.19375 MiB**, including normalized Parquet and 100 older unpartitioned annual daily files (4,970,363 bytes) retained on disk. Month-partitioned JSON: 12,712,775 bytes; normalized month Parquet: 1,393,997 bytes (10.96% of JSON size). The 100 annual files overlap monthly rows and are counted in disk usage but not the monthly coverage totals. Per-type/month file count, rows, bytes and manifest SHA256 are in `research/goal_2025_2026/coverage_by_month.csv` and `storage_inventory.json`.
+- R2/D1 are **NOT_CONNECTED**; `r2_actual_bytes=null`. The initial full-range cache download happened before byte counters existed; exact counters for that original run are unavailable. Instrumented incremental reruns report exact reused/new bytes, queries, retries and failures per version. R2 bytes are never inferred from local bytes.
+- The legacy Xuangubao cache and current monthly caches are private/local only. Raw supplier records and detailed symbol-level ledgers stay ignored under `data/` and `runs/`; only aggregates/curves/hashes are staged for GitHub.
 
-## Verified implementation as of 2026-10-15
+## 2025 training iterations (exploratory bar-close simulation only)
 
-- `src/logic_b/goal.py` produces `dashboard.html`, `training_equity.svg/csv`, `validation_equity.svg/csv`, `iteration_history.json/csv`, `frozen_selection.json`, `goal_report.json`, `storage_inventory.json` from a ready dataset; records *actual* local file bytes and R2 null if disconnected.
-- `src/logic_b/replay.py` + `research.py` support locked **2025 train / 2026H1 validation** while old2020 version remains available only as regression.
-- Smoke dataset: `examples/goal_toy_2025_2026.json` is **synthetic** and not real market prices. [Goal demo #38709918043](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38709918043) attached the synthetic dashboard. Last verified test [#38710991077](https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/38710991077) **71 passed**.
-- H01/H02 old files remain in `legacy/2026-10-15-pre-reset/`. Former 2020 research pilot is not an active train sample. `docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md` retains the psych/LogicA reference.
-- **Not yet achieved:** actual entire 2025+2026H1 verified source coverage, real historical full-range equities, month-by-month source byte/record dashboard, corporate action completeness, real persistent R2 storage, deployed DeepSeek/Jev inference. Do not claim these are complete.
+All three runs use separate CNY10,000 accounts, the active fee model, 243 sessions, T+1, one position, 100-share buys, price-limit rejects and 09:45 completed-bar-close fills. Price bands are inferred, not official; this is not broker execution or trustworthy after-cost market performance.
 
-## Next actual work for Luna
+| Version | Change | Return | MDD | Round trips | Fees CNY | Cash days | No-fill up/down | Decision |
+|---|---|---:|---:|---:|---:|---:|---:|---|
+| V0_SIMPLE_STREAK | Frozen original event-streak baseline | -76.9218% | -78.0509% | 65 | 767.18 | 163 | 85 / 15 | Keep as reference |
+| V1_MARKET_STATE_GATE | Gate entries when lagged vendor temperature < 40 | -80.6120% | -81.2785% | 52 | 598.20 | 178 | 69 / 13 | Reject; worse return and MDD |
+| V2_BREAK_FEEDBACK_VETO | V1 plus candidate break-count <= 1 | -60.7934% | -62.3941% | 48 | 601.34 | 187 | 81 / 8 | Reject as strategy; exploratory loss smaller, but still severe and unverified |
 
-1. Inspect latest GitHub HEAD and CI; run demo/tests.
-2. Complete 2025 train + 2026H1 market source downloads with partition recovery, fixing BaoStock 10002007, local byte and row count manifests.
-3. Improve long-term cache storage abstraction (R2 only with user-provided credentials); compute real by-month data footprint and growth curves.
-4. Complete 1万元 fee-accurate streaming replay; 2025 V0 baseline and psych regime V1 trials, log every iteration and training chart.
-5. Freeze 2025-selected version BEFORE opening 2026H1 validation, compare to V0 and report risks. No retro-selection.
-6. Upload public **aggregate-only** dashboard/CSV/SVG/JSON to GitHub Actions and link to committed summary; no source raw rows, no false R2 data claims.
+Precommitted exploratory score is `net_return_pct + 0.5 * signed_MDD_pct`. V2 scores best among the three, but all scores are negative and the full-market price universe, official per-security limits, 09:35 PIT, corporate actions and real-fill gates are unmet. Therefore the training freeze is **`NO_CANDIDATE`**, SHA256 `365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45`, recorded in `research/goal_2025_2026/frozen_selection.json`. V0 remains a reference only. The state series is a lagged vendor-pool proxy; it does not establish investor psychology. Sector/core labels are `UNKNOWN` where the source lacks legal historical labels.
 
-**Every future Luna execution must rewrite this checkpoint with true SHA/Actions/data hashes/real bytes/coverage, current strategy version, hypothesis outcomes and blockers; do not fabricate.**
+The new one-pass demand planner reproduces the prior V0 2025 private snapshot byte-for-byte at canonical input SHA `475f5a64...500ac7f`, with the same account metrics, while removing repeated full-prefix replays. The old run, the streaming rerun and private ledgers are local/ignored.
+
+## Artifacts generated
+
+- `research/goal_2025_2026/dashboard.html`
+- `iteration_history.csv/json`, `training_equity.csv/svg`
+- `market_state_2025.csv/svg`, `market_state_activity.csv`, `market_state_summary.csv`
+- `coverage_by_month.csv`, `storage_inventory.json`, `storage_growth.csv/svg`
+- `frozen_selection.json`, `run_manifest.json`, `goal_report.json`
+- Synthetic harness separately writes an explicitly synthetic das

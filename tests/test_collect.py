@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 from urllib.error import URLError
 import pytest
-from logic_b.collect import _check_dates, _bs_code, fetch_xgb_day, fetch_daily, fetch_5m, make_dataset
+from logic_b.collect import _check_dates, _bs_code, fetch_calendar, fetch_xgb_day, fetch_daily, fetch_5m, make_dataset
 from logic_b.identity import canonical_code
 
 def test_vendor_event_cache_with_st_name_stable(tmp_path):
@@ -74,7 +74,29 @@ def test_daily_storage_is_split_into_reusable_month_partitions(tmp_path):
     assert sorted(result["records"]) == ["2025-01-02", "2025-02-03"]
     again = fetch_daily("600001.SH", tmp_path, client, start="2025-01-01", end="2025-02-28")
     assert len(client.calls) == 2
-    assert again == result
+    assert again["records"] == result["records"]
+    assert again["cache_reused_months"] == 2
+    assert again["downloaded_months"] == 0
+
+def test_existing_full_range_daily_cache_migrates_without_download(tmp_path):
+    import hashlib
+    source = tmp_path / "daily" / "600001.SH.json"
+    source.parent.mkdir(parents=True)
+    source.write_text(json.dumps({"code":"600001.SH","range":["2025-01-01","2025-12-31"],
+        "provider":"baostock","frequency":"d","adjustflag":"3","records":{
+            "2025-01-02":{"close":10},"2025-02-03":{"close":11}}}),encoding="utf-8")
+    source_sha = hashlib.sha256(source.read_bytes()).hexdigest()
+    class NoDownload:
+        def historical(self,*args,**kwargs):
+            raise AssertionError("monthly cache migration should reuse stored source rows")
+    result=fetch_daily("600001.SH",tmp_path,NoDownload(),start="2025-01-01",end="2025-02-28")
+    assert sorted(result["records"]) == ["2025-01-02","2025-02-03"]
+    jan=json.loads((tmp_path/"daily/2025-01/600001.SH.json").read_text(encoding="utf-8"))
+    feb=json.loads((tmp_path/"daily/2025-02/600001.SH.json").read_text(encoding="utf-8"))
+    assert jan["parent_cache_sha256"] == source_sha
+    assert feb["parent_cache_sha256"] == source_sha
+    assert result["cache_reused_months"] == 2
+    assert result["downloaded_months"] == 0
 
 def test_xgb_network_retry_count_is_part_of_provenance(tmp_path):
     calls = 0
@@ -106,41 +128,4 @@ def test_xgb_failed_endpoint_records_recoverable_partition(tmp_path):
     assert failure["attempts"] == 3
 
 def test_baostock_network_receive_error_relogs_in_and_retries(monkeypatch):
-    from logic_b.collect import BaoStockClient
-    import logic_b.collect as collect
-    monkeypatch.setattr(collect.time, "sleep", lambda _: None)
-    class Result:
-        fields = ["date", "code"]
-        error_msg = "network receive error"
-        def __init__(self, error_code):
-            self.error_code = error_code
-            self.done = False
-        def next(self):
-            if self.error_code != "0" or self.done:
-                return False
-            self.done = True
-            return True
-        def get_row_data(self):
-            return ["2025-01-02", "sh.600001"]
-    class FakeBaoStock:
-        def __init__(self):
-            self.query_count = 0
-            self.login_count = 0
-        def login(self):
-            self.login_count += 1
-            return type("Login", (), {"error_code": "0"})()
-        def logout(self):
-            return None
-        def query_history_k_data_plus(self, *args, **kwargs):
-            self.query_count += 1
-            return Result("10002007" if self.query_count == 1 else "0")
-    fake = FakeBaoStock()
-    client = BaoStockClient()
-    client.bs = fake
-    client.query_retry_count = 0
-    client.query_failures = []
-    assert client.historical("600001.SH", "2025-01-01", "2025-01-31", freq="d") == [
-        {"date": "2025-01-02", "code": "sh.600001"}]
-    assert fake.query_count == 2
-    assert fake.login_count == 1
-    assert client.query_retry_count == 1
+    

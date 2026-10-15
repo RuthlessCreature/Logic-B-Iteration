@@ -8,7 +8,6 @@ examined ONCE only after a training-selected candidate is frozen.
 from __future__ import annotations
 
 from collections import Counter, defaultdict
-from datetime import datetime, timezone
 from hashlib import sha256
 from html import escape
 import argparse
@@ -18,6 +17,7 @@ from pathlib import Path
 
 from .replay import replay
 from .research import validate_proposal, proposal_digest, study_boundaries
+from .storage import physical_cache_inventory, export_normalized_parquet
 
 def digest(v):
     return sha256(json.dumps(v, sort_keys=True, ensure_ascii=False, allow_nan=False,
@@ -43,40 +43,8 @@ def split_days(dataset, cfg):
     return tr,va
 
 def physical_storage_inventory(root: Path):
-    """Actual local filesystem bytes only, NEVER an invented R2 size."""
-    if not root.exists():
-        return {"local_root":str(root),"exists":False,"total_files":0,"total_bytes":0,
-                "by_provider_year":[],"r2_actual_bytes":None,"r2_status":"NOT_CONNECTED"}
-    counts=defaultdict(lambda:{"files":0,"bytes":0})
-    total=0
-    files=0
-    for path in sorted(root.rglob("*")):
-        if not path.is_file():
-            continue
-        relative=path.relative_to(root)
-        parts=relative.parts
-        provider=parts[0] if parts else "unknown"
-        if provider=="raw" and len(parts)>1:
-            provider=parts[1]
-        # Date-partitioned events/minute files: read the *path*; daily
-        # caches named by symbol are explicitly UNPARTITIONED.
-        year="UNPARTITIONED"
-        for part in parts:
-            if len(part)>=4 and part[:4].isdigit() and part[:4] in ("2025","2026"):
-                if (len(part)==4 or part[4] in "-_./"):
-                    year=part[:4]
-                    break
-        size=path.stat().st_size
-        counts[provider,year]["files"]+=1
-        counts[provider,year]["bytes"]+=size
-        total+=size
-        files+=1
-    return {"local_root":str(root),"exists":True,"total_files":files,
-            "total_bytes":total,"total_mib":round(total/1048576,6),
-            "by_provider_year":[{"provider":p,"year":y,**v}
-                    for (p,y),v in sorted(counts.items())],
-            "r2_actual_bytes":None,"r2_status":"NOT_CONNECTED",
-            "storage_note":"Local physical file sizes, not estimated compression or R2 billable bytes"}
+    """Actual local bytes, monthly rows and formats; R2 size stays explicitly null."""
+    return physical_cache_inventory(root)
 
 def _curve(outcome):
     return [{"date":r["day"],"equity":r["equity"],
@@ -108,6 +76,55 @@ def _write_csv(path,rows,columns):
         w=csv.DictWriter(fh,fieldnames=columns)
         w.writeheader()
         w.writerows(rows)
+
+def _write_storage_reports(out_dir:Path, inventory:dict):
+    rows=inventory.get("by_source_type_month",[])
+    columns=["provider","dataset","year","month","format","files","rows",
+             "trading_days","physical_bytes","mib","partition_status",
+             "partition_manifest_sha256","r2_actual_bytes"]
+    _write_csv(out_dir/"coverage_by_month.csv",rows,columns)
+    totals=defaultdict(lambda:{"json":0,"parquet":0})
+    unpartitioned={"json":0,"parquet":0}
+    for row in rows:
+        target=unpartitioned if row["month"]=="UNPARTITIONED" else totals[row["month"]]
+        target[row["format"] if row["format"] in ("json","parquet") else "json"]+=row["physical_bytes"]
+    months=sorted(totals)
+    cumulative_json=unpartitioned["json"]
+    cumulative_parquet=unpartitioned["parquet"]
+    growth=[]
+    for month in months:
+        cumulative_json+=totals[month]["json"]
+        cumulative_parquet+=totals[month]["parquet"]
+        growth.append({"month":month,"json_month_bytes":totals[month]["json"],
+                       "parquet_month_bytes":totals[month]["parquet"],
+                       "json_cumulative_bytes":cumulative_json,
+                       "parquet_cumulative_bytes":cumulative_parquet,
+                       "combined_cumulative_bytes":cumulative_json+cumulative_parquet})
+    _write_csv(out_dir/"storage_growth.csv",growth,["month","json_month_bytes",
+        "parquet_month_bytes","json_cumulative_bytes","parquet_cumulative_bytes",
+        "combined_cumulative_bytes"])
+    w,h=1000,300
+    left,right,top,bottom=75,25,35,50
+    pw,ph=w-left-right,h-top-bottom
+    maximum=max([x["json_cumulative_bytes"] for x in growth]+[x["parquet_cumulative_bytes"] for x in growth]+[1])
+    def points(key):
+        return " ".join(f"{left+pw*i/max(len(growth)-1,1):.1f},{top+ph*(1-x[key]/maximum):.1f}"
+                         for i,x in enumerate(growth))
+    svg=[f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {w} {h}" role="img">',
+         '<text x="75" y="22" font-family="sans-serif" font-size="17">Measured local storage growth by month</text>',
+         f'<polyline fill="none" stroke="#2563eb" stroke-width="3" points="{points("json_cumulative_bytes")}"/>',
+         f'<polyline fill="none" stroke="#059669" stroke-width="3" points="{points("parquet_cumulative_bytes")}"/>',
+         f'<text x="{left}" y="{h-12}" font-family="sans-serif" font-size="12" fill="#2563eb">JSON cumulative ({unpartitioned["json"]} unpartitioned bytes start)</text>',
+         f'<text x="{left+470}" y="{h-12}" font-family="sans-serif" font-size="12" fill="#059669">Parquet cumulative</text>']
+    if not growth:
+        svg.append('<text x="75" y="160" font-family="sans-serif" font-size="14">No dated storage partitions available</text>')
+    else:
+        for i,x in enumerate(growth):
+            if i % max(1,len(growth)//8)==0 or i==len(growth)-1:
+                xpos=left+pw*i/max(len(growth)-1,1)
+                svg.append(f'<text x="{xpos:.1f}" y="{h-31}" font-family="sans-serif" font-size="10" text-anchor="middle">{escape(x["month"])}</text>')
+    svg.append("</svg>")
+    (out_dir/"storage_growth.svg").write_text("\n".join(svg),encoding="utf-8")
 
 def _svg(curves,title):
     """Portable standalone SVG line plot; no matplotlib/cloud dependencies."""
@@ -195,10 +212,13 @@ def execute_goal(dataset, config, proposals, out_dir:Path, storage_root:Path):
                       conf_by_version[version])
         val_rows.append({"version":version,"validation":_stats(result)})
         val_curves.append((version,_curve(result)))
+    parquet_export=export_normalized_parquet(storage_root)
     inventory=physical_storage_inventory(storage_root)
+    inventory["parquet_export"]=parquet_export
     inventory["snapshot_bytes"]=len(json.dumps(dataset,ensure_ascii=False).encode("utf-8"))
     inventory["snapshot_bytes_type"]="uncompressed_input_JSON_UTF8_not_R2_actual_storage"
     (out_dir/"storage_inventory.json").write_text(json.dumps(inventory,ensure_ascii=False,indent=2)+"\n",encoding="utf-8")
+    _write_storage_reports(out_dir,inventory)
     report={"classification":"SYNTHETIC_FIXTURE_NOT_TRADING_PROOF" if synthetic
                              else "EXPLORATORY_HISTORICAL_BAR_PRICE_SIMULATION",
             "goal_window":{"train_start":"2025-01-01","train_end":"2025-12-31",
@@ -234,52 +254,4 @@ def execute_goal(dataset, config, proposals, out_dir:Path, storage_root:Path):
     train_plot=_svg(snapshots,"2025 训练集 · 各迭代版本资金曲线")
     val_plot=_svg(val_curves,"2026上半年验证集 · 冻结冠军 vs V0")
     (out_dir/"training_equity.svg").write_text(train_plot,encoding="utf-8")
-    (out_dir/"validation_equity.svg").write_text(val_plot,encoding="utf-8")
-    rows_html="".join(
-        "<tr>"+"".join(f"<td>{escape(str(v))}</td>" for v in (
-            r["iteration"],r["version"],r["train"]["return_pct"],
-            r["train"]["max_drawdown_pct"],r["train_score"],r["train"]["completed_trades"]
-        ))+"</tr>" for r in train_rows)
-    storage_html="".join(
-        "<tr>"+"".join(f"<td>{escape(str(v))}</td>" for v in (
-            x["provider"],x["year"],x["files"],x["bytes"]
-        ))+"</tr>" for x in inventory["by_provider_year"])
-    html=f"""<!doctype html><html lang="zh"><meta charset="utf-8"><title>Logic-B Luna Goal · 实验仪表板</title>
-<style>body{{font:15px system-ui,sans-serif;max-width:1200px;margin:30px auto;padding:0 20px;color:#1f2937}}table{{border-collapse:collapse;width:100%}}td,th{{padding:9px;border-bottom:1px solid #ddd;text-align:left}}.warn{{background:#fff7ed;padding:15px;border-radius:8px}}.meta{{color:#64748b}}h1{{font-size:26px}}</style>
-<h1>Logic-B · Luna Goal 迭代仪表板</h1><p class=warn>此看板{"只含合成演示数据，没有真实市场收益。" if synthetic else "含历史价格Bar模拟，并非实盘成交记录。"} 当前状态：{escape(report["status"])}，不可据此自动Follow。</p>
-<p>训练：2025-01-01 ~ 2025-12-31；验证：2026-01-01 ~ 2026-06-30；初始资金均为 ¥10,000（两个独立评估账户）。</p>
-<p class=meta>数据SHA256：{data_fingerprint}；配置SHA256：{config_hash}</p>
-<h2>训练期：迭代资金曲线</h2>{train_plot}
-<h2>训练期：版本变更结果</h2><table><thead><tr><th>轮次</th><th>版本</th><th>收益%</th><th>最大回撤%</th><th>固定训练评分</th><th>平仓笔数</th></tr></thead><tbody>{rows_html}</tbody></table>
-<p>训练期优选：{escape(str(selected))}；版本在查看验证结果前冻结。无法可靠估值时收益/评分为null，不可据此认定改善。</p>
-<h2>验证期：冻结版本 vs 原始V0</h2>{val_plot}
-<h2>数据真实物理存储（本地/工作机）</h2>
-<p>扫描根目录：{escape(str(storage_root))}；文件：{inventory["total_files"]}；合计：{inventory["total_bytes"]:,} bytes（{inventory.get("total_mib",0)} MiB）。R2当前：{escape(inventory["r2_status"])}。</p>
-<table><thead><tr><th>分区/来源</th><th>年份</th><th>文件</th><th>实际字节</th></tr></thead><tbody>{storage_html}</tbody></table>
-<p>输入数据序列化长度：{inventory["snapshot_bytes"]:,} bytes，非真实存储收费容量。原始数据及详细账本不应直接提交公开GitHub。</p>
-</html>"""
-    (out_dir/"dashboard.html").write_text(html,encoding="utf-8")
-    return report
-
-def main():
-    parser=argparse.ArgumentParser(description="2025 train/2026H1 validation Goal dashboard")
-    parser.add_argument("--dataset",type=Path,required=True)
-    parser.add_argument("--config",type=Path,default=Path("config/goal_2025_2026.json"))
-    parser.add_argument("--proposals",type=Path,nargs="*",default=[])
-    parser.add_argument("--data-root",type=Path,default=Path("data"))
-    parser.add_argument("--out",type=Path,default=Path("runs/goal_2025_2026"))
-    arg=parser.parse_args()
-    dataset=json.loads(arg.dataset.read_text(encoding="utf-8"))
-    config=json.loads(arg.config.read_text(encoding="utf-8"))
-    props=[json.loads(p.read_text(encoding="utf-8")) for p in arg.proposals]
-    result=execute_goal(dataset,config,props,arg.out,arg.data_root)
-    print(json.dumps({"status":result["status"],"train_sessions":result["observed_sessions"]["train"],
-                      "validation_sessions":result["observed_sessions"]["validation"],
-                      "selected":result["frozen_selection"]["selected_from_training_only"],
-                      "iterations":len(result["train_iterations"]),
-                      "stored_files":result["storage"]["total_files"],
-                      "physical_bytes":result["storage"]["total_bytes"],
-                      "dashboard":str(arg.out/"dashboard.html")},ensure_ascii=False,indent=2))
-
-if __name__=="__main__":
-    main()
+    (out_dir/"validation_equity.svg").write_text(val_pl
