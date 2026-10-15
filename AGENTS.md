@@ -1,3 +1,16 @@
+# IMPORTANT — Read the authoritative Luna handoff first
+
+**Handoff:** [docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md](docs/HANDOFF_LUNA_BEHAVIORAL_MARKET_SYSTEM.md).
+**Persistent checkpoint:** [research/GOAL_CHECKPOINT.md](research/GOAL_CHECKPOINT.md).
+
+This project MUST study **participant psychology proxies, market emotion/earning-loss feedback, ATTACK/TRIAL/NEUTRAL/RETREAT/ICE states and risk vetoes** as a central, testable research layer connecting historical market data to practical after-cost trading decisions. This is not merely a consecutive-limit-up probability project. Read the linked handoff before altering any research architecture, treating its current project instructions as higher priority than archived H01/H02 design.
+
+**LLM-provider reservation:** OpenAI remains the single active high-reasoning research path; `src/logic_b/llm_providers.py` and `config/llm_providers.json` reserve DeepSeek as **disabled/unconnected/no billed usage**. Never silently switch, call DeepSeek, request a token, or claim connected before explicit user approval.
+
+**Immediate tasks:** fix BaoStock 10002007 partial request failure and prevent re-fetch, implement incremental replay state, build timestamped market negative-feedback and regime V1, then paired fee-inclusive V0 vs V1 replay with failures preserved. Do not treat successful CI, 2020 January -22.98% v0 result, or story-based psychology labels as proof of a tradable edge. Protected 2026-07-01..09-28 remains inaccessible.
+
+---
+
 # Logic-B Autonomous Research Goal — current project, not legacy
 
 ## Non-negotiable user outcome
