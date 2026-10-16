@@ -142,6 +142,31 @@ def _tradeable(day: dict, prev: dict, code: str, execution_time: str, side: str)
     return price, "SIMULATED_BAR_CLOSE_FILL", (upper, lower)
 
 
+def _early_confirmation(day: dict, prior: dict, code: str, threshold_pct: float):
+    """Use the recorded 09:35 five-minute close as a research-only filter.
+
+    Vendor bar timestamp availability/interval semantics are not certified;
+    this gate must not be described as a proven 09:35 point-in-time signal.
+    """
+    try:
+        previous_close = _numeric(_snapshot_map(prior, "daily")[code].get("close"))
+        bars = _snapshot_map(day, "bars_5m").get(code, [])
+        bar = next((row for row in bars if row.get("time") == "09:35"), None)
+        if bar is None:
+            return False, "EARLY_CONFIRMATION_MISSING"
+        o, h, low, close = (_numeric(bar.get(k)) for k in ("open", "high", "low", "close"))
+        volume = _numeric(bar.get("volume", 0))
+        if min(o, h, low, close, previous_close) <= 0 or volume <= 0 \
+                or h < max(o, low, close) or low > min(o, h, close):
+            return False, "EARLY_CONFIRMATION_INVALID_PRICE"
+        change_pct = (close / previous_close - 1) * 100
+        if change_pct < threshold_pct:
+            return False, "EARLY_CONFIRMATION_FAILED"
+        return True, "EARLY_CONFIRMATION_PASSED"
+    except (KeyError, TypeError, ValueError):
+        return False, "EARLY_CONFIRMATION_MISSING"
+
+
 def replay(dataset: dict, config: dict) -> dict:
     bounds=(config.get("start"),config.get("end"))
     # Preserve frozen legacy smoke (2020+) while supporting 2025/2026 Goal.
@@ -225,27 +250,40 @@ def replay(dataset: dict, config: dict) -> dict:
         if stock is None and not sold_or_attempted and prior is not None:
             candidate, reason = select_core(prior, config.get("baseline", {}))
             if candidate:
-                price, fill_reason, limits = _tradeable(day, prior, candidate, execution_time, "BUY")
-                attempt = {"day": trade_day, "time": execution_time, "side": "BUY", "symbol": candidate,
-                           "price": price, "reason": fill_reason, "limits": limits}
-                if price is not None:
-                    lots = int(cash // (price * size))
-                    while lots:
-                        qty = lots * size
-                        gross = round(qty * price, 6)
-                        cost = compute_fees(gross, "BUY", trade_day, rate=commission, minimum=minimum)
-                        total = gross + cost.total
-                        if total <= cash + 1e-7:
-                            break
-                        lots -= 1
-                    if not lots:
-                        attempt.update(reason="INSUFFICIENT_CASH_FOR_100_SHARES", price=None)
-                    else:
-                        cash = round(cash - total, 6)
-                        stock, shares, bought_on, entry_cost = candidate, qty, trade_day, total
-                        attempt.update(shares=qty, gross=gross, fees=vars(cost))
-                        fills.append(dict(attempt))
-                orders.append(attempt)
+                threshold = config.get("baseline", {}).get("entry_confirmation_pct")
+                if threshold is not None:
+                    threshold = float(threshold)
+                    if not math.isfinite(threshold) or threshold < 0:
+                        raise ValueError("entry_confirmation_pct must be finite and nonnegative")
+                    confirmed, confirmation_reason = _early_confirmation(day, prior, candidate, threshold)
+                    if not confirmed:
+                        orders.append({"day": trade_day, "side": "CASH", "symbol": None,
+                                       "reason": confirmation_reason})
+                        candidate = None
+                if candidate is None:
+                    pass
+                else:
+                    price, fill_reason, limits = _tradeable(day, prior, candidate, execution_time, "BUY")
+                    attempt = {"day": trade_day, "time": execution_time, "side": "BUY", "symbol": candidate,
+                               "price": price, "reason": fill_reason, "limits": limits}
+                    if price is not None:
+                        lots = int(cash // (price * size))
+                        while lots:
+                            qty = lots * size
+                            gross = round(qty * price, 6)
+                            cost = compute_fees(gross, "BUY", trade_day, rate=commission, minimum=minimum)
+                            total = gross + cost.total
+                            if total <= cash + 1e-7:
+                                break
+                            lots -= 1
+                        if not lots:
+                            attempt.update(reason="INSUFFICIENT_CASH_FOR_100_SHARES", price=None)
+                        else:
+                            cash = round(cash - total, 6)
+                            stock, shares, bought_on, entry_cost = candidate, qty, trade_day, total
+                            attempt.update(shares=qty, gross=gross, fees=vars(cost))
+                            fills.append(dict(attempt))
+                    orders.append(attempt)
             else:
                 orders.append({"day": trade_day, "side": "CASH", "symbol": None, "reason": reason})
         value = shares * last_mark.get(stock, 0) if stock else 0.

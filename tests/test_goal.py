@@ -63,8 +63,8 @@ def test_chart_and_iteration_outputs_are_real_files_and_labeled_synthetic(tmp_pa
     assert storage["total_files"]==2
     assert {r["year"] for r in storage["by_provider_year"]}=={"2025","2026"}
     assert storage["r2_actual_bytes"] is None
-    assert "合成演示数据" in (tmp_path/"out"/"dashboard.html").read_text()
-    assert "2025" in (tmp_path/"out"/"training_equity.svg").read_text()
+    assert "合成演示数据" in (tmp_path/"out"/"dashboard.html").read_text(encoding="utf-8")
+    assert "2025" in (tmp_path/"out"/"training_equity.svg").read_text(encoding="utf-8")
 
 def test_validation_boundaries_and_first_day_prior_seed():
     tr,va=split_days(SAMPLE,CFG)

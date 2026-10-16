@@ -56,8 +56,8 @@ def test_validation_outputs_v0_only_and_insufficient_when_no_candidate(tmp_path,
     assert report["frozen_selection"]["selected_strategy"] is None
     assert report["sessions"] == 2
     assert (paths[5] / "validation_v0_equity.csv").is_file()
-    assert "V0_REFERENCE_ONLY_NO_FROZEN_CANDIDATE" in (paths[5] / "validation_v0_equity.csv").read_text()
-    assert "2026H1 开发验证" in (paths[5] / "dashboard.html").read_text()
+    assert "V0_REFERENCE_ONLY_NO_FROZEN_CANDIDATE" in (paths[5] / "validation_v0_equity.csv").read_text(encoding="utf-8")
+    assert "2026H1 开发验证" in (paths[5] / "dashboard.html").read_text(encoding="utf-8")
 
 
 def test_validation_refuses_protected_data_and_candidate_freeze(tmp_path):

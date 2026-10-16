@@ -7,6 +7,7 @@ import pytest
 from logic_b.identity import canonical_code
 from logic_b.fees import compute_fees
 from logic_b.replay import replay, _band
+from logic_b.strategy import select_core
 
 
 CONFIG = json.loads(Path("config/research.json").read_text(encoding="utf-8"))
@@ -115,3 +116,54 @@ def test_invalid_dates_duplicate_rejected():
     a = day("2020-01-02")
     with pytest.raises(ValueError, match="sorted and unique"):
         replay({"days": [a, copy.deepcopy(a)]}, CONFIG)
+
+
+def test_leader_only_does_not_fallback_when_ranked_leader_fails_gate():
+    previous = {"limit_up": [
+        {"symbol": "600001.SH", "limit_up_days": 5, "break_limit_up_times": 2},
+        {"symbol": "600002.SH", "limit_up_days": 4, "break_limit_up_times": 0}],
+        "market": {"market_temperature": 50}}
+    assert select_core(previous, {"max_breaks": 1}) == ("600002.SH", "PRIOR_DAY_CORE")
+    assert select_core(previous, {"max_breaks": 1, "leader_only": True}) == (None, "LEADER_VETOED")
+
+
+def test_early_confirmation_uses_previous_close_and_rejects_weak_or_missing_bar():
+    prior = day("2020-01-02", px=10, cand=True)
+    weak = day("2020-01-03", px=10.2)
+    weak["bars_5m"]["600001.SH"].insert(0, {"time": "09:35", "open": 10.02,
+        "high": 10.03, "low": 10.01, "close": 10.02, "volume": 100})
+    cfg = copy.deepcopy(CONFIG)
+    cfg["baseline"]["entry_confirmation_pct"] = 0.5
+    result = replay({"days": [prior, weak]}, cfg)
+    assert not result["fills"]
+    assert result["orders"][0]["reason"] == "EARLY_CONFIRMATION_FAILED"
+
+    missing = day("2020-01-03", px=10.2)
+    result = replay({"days": [prior, missing]}, cfg)
+    assert not result["fills"]
+    assert result["orders"][0]["reason"] == "EARLY_CONFIRMATION_MISSING"
+
+
+def test_early_confirmation_passes_then_executes_only_at_later_bar():
+    prior = day("2020-01-02", px=10, cand=True)
+    current = day("2020-01-03", px=10.2)
+    current["bars_5m"]["600001.SH"].insert(0, {"time": "09:35", "open": 10.1,
+        "high": 10.2, "low": 10.1, "close": 10.15, "volume": 100})
+    cfg = copy.deepcopy(CONFIG)
+    cfg["baseline"]["entry_confirmation_pct"] = 0.5
+    result = replay({"days": [prior, current]}, cfg)
+    assert result["fills"][0]["side"] == "BUY"
+    assert result["fills"][0]["price"] == 10.2
+    assert result["fills"][0]["time"] == "09:45"
+
+
+def test_early_confirmation_requires_traded_valid_bar():
+    prior = day("2020-01-02", px=10, cand=True)
+    current = day("2020-01-03", px=10.2)
+    current["bars_5m"]["600001.SH"].insert(0, {"time": "09:35", "open": 10.1,
+        "high": 10.2, "low": 10.1, "close": 10.15, "volume": 0})
+    cfg = copy.deepcopy(CONFIG)
+    cfg["baseline"]["entry_confirmation_pct"] = 0.5
+    result = replay({"days": [prior, current]}, cfg)
+    assert not result["fills"]
+    assert result["orders"][0]["reason"] == "EARLY_CONFIRMATION_INVALID_PRICE"
