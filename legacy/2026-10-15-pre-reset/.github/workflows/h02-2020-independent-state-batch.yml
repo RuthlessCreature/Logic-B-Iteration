@@ -1,0 +1,67 @@
+name: h02-2020-independent-state-batch
+on:
+  push:
+    paths: [".github/workflows/h02-2020-independent-state-batch.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  batch-reference:
+    runs-on: ubuntu-latest
+    timeout-minutes: 14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]" baostock
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-batch-lake
+      - name: Batch prior-day candidate status from independent source
+        run: |
+          mkdir -p /tmp/h02-batch-evidence
+          timeout 660s python -u - <<'PY'
+          from pathlib import Path
+          import json
+          import baostock as bs
+          from logic_b.storage import LocalParquetStore
+          from logic_b.h02_baostock_ingest import collect_h02_reference_daily
+
+          lake=LocalParquetStore("/tmp/h02-batch-lake")
+          days=["20200102","20200103","20200106","20200107"]
+          lg=bs.login()
+          assert lg.error_code=="0",f"BaoStock login failure: {lg.error_msg}"
+          try:
+              coverage=collect_h02_reference_daily(lake,bs,days)
+          finally:
+              bs.logout()
+          result=coverage.as_dict()
+          result.update({
+              "requested_days":days,
+              "sample_scope":"2020-01-03,06,07 previous-day limit-up candidate status",
+              "parquet_sha_verified":all(lake.verify("h02_reference_daily",d) for d in days[1:]),
+              "unadjusted_daily_price":True,
+              "stock_status_independent_of_xgb":True,
+              "this_source_is_end_of_day":True,
+              "can_enter_0935_decision_without_publication_proof":False,
+              "official_price_limits_available":False,
+              "h02_net_equity_computed":False,
+          })
+          Path("/tmp/h02-batch-evidence/report.json").write_text(
+              json.dumps(result,ensure_ascii=False,indent=2))
+          print(json.dumps(result,ensure_ascii=False,indent=2))
+          assert result["parquet_sha_verified"]
+          assert result["expected_symbol_days"] > 150
+          assert result["observed_symbol_days"] > 0
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-independent-batch-status-report
+          path: /tmp/h02-batch-evidence
+          retention-days: 30
+          if-no-files-found: warn

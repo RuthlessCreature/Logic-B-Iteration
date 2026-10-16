@@ -1,0 +1,81 @@
+name: h02-2020-historical-minute-feasibility
+on:
+  push:
+    paths: [".github/workflows/h02-2020-historical-minute-feasibility.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]"
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-source
+      - name: Probe JAN-2020 historical 1m candles on prior-day leaders
+        run: |
+          mkdir -p /tmp/h02-minute-probe
+          python - <<'PY'
+          from datetime import date
+          from pathlib import Path
+          import json
+          import pandas as pd
+          from logic_b.storage import LocalParquetStore
+          from logic_b.providers.xuangubao_market import XuangubaoMarketProvider
+          from logic_b.xgb_market_ingest import XuangubaoMarketIngestor
+
+          s=LocalParquetStore("/tmp/h02-source")
+          prior=s.read_frame("limit_up","20200102")
+          code_list=prior["ts_code"].astype(str).tolist()
+          preferred=["000998.SZ","000716.SZ","000810.SZ"]
+          ordered=[k for k in preferred if k in code_list] + [k for k in code_list if k not in preferred]
+          records=[]
+          provider=XuangubaoMarketProvider(timeout=10,max_attempts=2,retry_base_seconds=0.2)
+          for code in ordered[:6]:
+              row=prior.loc[prior.ts_code.eq(code)].iloc[0]
+              pre_close=XuangubaoMarketIngestor.pre_close_from_prior_row(row)
+              item={"symbol":code,"date":"2020-01-03","prior_day_price":pre_close}
+              try:
+                  r=provider.historical_minute_day(code,date(2020,1,3),pre_close_override=pre_close)
+                  bars=r.bars
+                  times=pd.to_datetime(bars["trade_time"]) if not bars.empty else pd.Series([],dtype="datetime64[ns]")
+                  item.update({
+                      "bars":int(len(bars)),
+                      "first":str(times.iloc[0]) if len(times) else None,
+                      "last":str(times.iloc[-1]) if len(times) else None,
+                      "distinct_times":bool(times.is_unique),
+                      "same_date":bool((times.dt.date==date(2020,1,3)).all()) if len(times) else False,
+                      "ohlc_consistent":bool(((bars.high>=bars[["open","close","low"]].max(axis=1)) & (bars.low<=bars[["open","close","high"]].min(axis=1))).all()) if len(bars) else False,
+                      "checkpoint_0935_present":bool((times.dt.strftime("%H:%M")=="09:35").any()) if len(times) else False,
+                  })
+                  item["usable"]=(item["bars"]>=180 and item["same_date"] and item["distinct_times"] and item["ohlc_consistent"] and item["checkpoint_0935_present"])
+              except Exception as exc:
+                  item.update({"usable":False,"failure_type":type(exc).__name__,"failure_message":str(exc)[:240]})
+              records.append(item)
+              print(json.dumps(item,ensure_ascii=False))
+              if sum(int(r["usable"]) for r in records)>=2:break
+          report={"sample":"2020-01-02 limit-up -> 2020-01-03 candidates",
+                  "tested":len(records),"usable":sum(int(r["usable"]) for r in records),
+                  "strict_historical_minute_feasibility": "PASS" if any(r["usable"] for r in records) else "BLOCKED",
+                  "still_missing_official_price_limits_ST_halts":True,"cases":records,
+                  "not_a_net_equity_backtest":True}
+          Path("/tmp/h02-minute-probe/result.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report["usable"] >= 1, "H02 minute provider could not deliver 2020-01-03 candidates"
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-01-minute-feasibility
+          path: /tmp/h02-minute-probe
+          retention-days: 30
+          if-no-files-found: warn

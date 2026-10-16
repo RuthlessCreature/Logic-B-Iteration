@@ -1,0 +1,90 @@
+name: h02-2020-cross-provider-st-audit
+on:
+  push:
+    paths: [".github/workflows/h02-2020-cross-provider-st-audit.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+  actions: read
+jobs:
+  independent-cross-check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]" baostock
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-cross
+      - name: Compare actual 2020 Baostock/ST records to XGB historical minutes
+        run: |
+          mkdir -p /tmp/h02-cross-results
+          timeout 240s python - <<'PY'
+          import json
+          from pathlib import Path
+          from datetime import date
+          import baostock as bs
+          from logic_b.storage import LocalParquetStore
+          from logic_b.providers.xuangubao_market import XuangubaoMarketProvider
+          from logic_b.xgb_market_ingest import XuangubaoMarketIngestor
+          from logic_b.h02_independent_daily import normalize_baostock_daily,compare_daily_to_historical_minutes
+
+          symbols=["000998.SZ","000716.SZ","600421.SH"]
+          s=LocalParquetStore("/tmp/h02-cross")
+          prior=s.read_frame("limit_up","20200102")
+          market=XuangubaoMarketProvider(timeout=10,max_attempts=2,retry_base_seconds=0.2)
+          lg=bs.login()
+          assert lg.error_code=="0",f"baostock login failed: {lg.error_msg}"
+          result=[]
+          try:
+              for symbol in symbols:
+                  row=prior.loc[prior.ts_code.eq(symbol)].iloc[0]
+                  preclose=XuangubaoMarketIngestor.pre_close_from_prior_row(row)
+                  minute=market.historical_minute_day(symbol,date(2020,1,3),pre_close_override=preclose)
+                  bs_code=symbol[:6]
+                  bs_code=("sh." if symbol.endswith(".SH") else "sz.")+bs_code
+                  f="date,code,open,high,low,close,preclose,volume,amount,adjustflag,tradestatus,isST"
+                  q=bs.query_history_k_data_plus(bs_code,f,start_date="2020-01-03",end_date="2020-01-03",frequency="d",adjustflag="3")
+                  assert q.error_code=="0",f"{symbol} baostock: {q.error_msg}"
+                  records=[]
+                  while q.next():records.append(dict(zip(q.fields,q.get_row_data())))
+                  assert len(records)==1,(symbol,len(records))
+                  daily=normalize_baostock_daily(records[0])
+                  matched=compare_daily_to_historical_minutes(daily,minute.bars)
+                  entry={
+                    "symbol":symbol,"baostock_historical_is_st":daily["is_st"],
+                    "baostock_tradestatus":daily["is_trading"],
+                    "xgb_bars":len(minute.bars),
+                    "prior_pool_price_matches_independent_preclose":abs(float(preclose)-daily["preclose"])<=0.011,
+                    "cross_provider":matched,
+                    "not_official_up_down_limits":True,
+                    "not_replay_entry_fill":True
+                  }
+                  result.append(entry)
+                  print(json.dumps(entry,ensure_ascii=False))
+          finally:
+              bs.logout()
+          report={"date":"2020-01-03","source":"BaoStock daily vs XGB 1m",
+                  "samples":result,"sample_size":len(result),
+                  "cross_provider_tick_matches":sum(x["cross_provider"]["status"]=="MATCH_TICK_TOLERANCE" for x in result),
+                  "st_detected":sum(int(x["baostock_historical_is_st"]) for x in result),
+                  "official_limit_price_validation":"MISSING",
+                  "point_in_time_publication_not_proven":True,
+                  "net_equity_backtest_ready":False}
+          Path("/tmp/h02-cross-results/report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report["st_detected"]>=1
+          assert report["cross_provider_tick_matches"]>=2
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-cross-provider-st-results
+          path: /tmp/h02-cross-results
+          retention-days: 30
+          if-no-files-found: warn

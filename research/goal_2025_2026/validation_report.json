@@ -1,0 +1,122 @@
+{
+  "classification": "DEVELOPMENT_VALIDATION_V0_REFERENCE_ONLY_NO_FROZEN_CANDIDATE",
+  "status": "INSUFFICIENT",
+  "conclusion": "No strategy was selected in 2025; this is V0 reference exploration, not validation of a frozen candidate.",
+  "frozen_selection": {
+    "status": "NO_CANDIDATE",
+    "selection_sha256": "365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45",
+    "frozen_file_sha256": "3f4dadc26549874220b5cccd18e0c0f13edae0713b9e91ca131f5567a2f4bb20",
+    "selected_strategy": null
+  },
+  "validation_window": [
+    "2026-01-01",
+    "2026-06-30"
+  ],
+  "observed_calendar": [
+    "2026-01-05",
+    "2026-06-30"
+  ],
+  "sessions": 116,
+  "trading_calendar_complete": true,
+  "validation_input_sha256": "d203fcb5ecf7c90f91552e3ca8ee0048141bf107c9a12cdda829d264a683f774",
+  "dataset_file_sha256": "5eb22185e345a825445b1dff27b51dc29e889f58f5e456f527ef1be07dd9a047",
+  "account": {
+    "initial_cash_cny": 10000.0,
+    "final_equity_cny": 2025.54514,
+    "return_pct": -79.7445,
+    "max_drawdown_pct": -82.3428,
+    "closed_trades": 22,
+    "buy_fills": 22,
+    "sell_fills": 22,
+    "fees_cny": {
+      "commission": 220.0,
+      "stamp": 54.2095,
+      "transfer": 2.24536,
+      "total": 276.45486
+    },
+    "cash_days": 60,
+    "held_at_end": false,
+    "no_fill_limit_up": 29,
+    "no_fill_limit_down": 13,
+    "suspended_days": 23,
+    "corporate_action_flags": 11,
+    "unreliable_marks": 0
+  },
+  "data_evidence": {
+    "xuangubao_event_days": 116,
+    "event_failures": 0,
+    "daily_failures": 0,
+    "candidate_symbols": 63,
+    "target_5m_requests": 92,
+    "target_5m_complete": 92,
+    "missing_target_5m": 0,
+    "suspended_without_minute_request": 23,
+    "baostock_queries": 180,
+    "baostock_retries": 0,
+    "baostock_api_failures": 0,
+    "cache_activity": {
+      "calendar": {
+        "cache_reused_bytes": 3510,
+        "cache_reused_months": 6,
+        "downloaded_bytes": 0,
+        "downloaded_months": 0
+      },
+      "events": {
+        "downloaded_bytes": 0,
+        "downloaded_files": 0,
+        "reused_bytes": 2270973,
+        "reused_files": 116
+      },
+      "daily": {
+        "downloaded_bytes": 369601,
+        "downloaded_months": 88,
+        "reused_bytes": 1193945,
+        "reused_months": 290
+      },
+      "minute": {
+        "cache_reused_bytes": 0,
+        "cache_reused_files": 0,
+        "downloaded_bytes": 645093,
+        "downloaded_files": 92
+      }
+    },
+    "source_scope": "Xuangubao event pool + V0 candidate-path BaoStock data; not full-market prices."
+  },
+  "storage": {
+    "validation_2026H1_json_bytes": 4483122,
+    "validation_2026H1_json_files": 592,
+    "local_cache_total_bytes_all_years": 24064281,
+    "local_cache_total_files_all_years": 2745,
+    "normalized_parquet_bytes_2026H1": 503629,
+    "r2_status": "NOT_CONNECTED",
+    "r2_actual_bytes": null,
+    "initial_interrupted_collection_byte_counters": "UNAVAILABLE; physical source-type/month sizes are measured; only the completed rerun has instrumented new/reused byte counters."
+  },
+  "market_state": {
+    "classification": "LAGGED_VENDOR_POOL_PROXY_PUBLICATION_TIME_UNVERIFIED",
+    "rows": 116,
+    "sector_and_true_core_labels": "UNKNOWN"
+  },
+  "code_head_before_validation": "051b3c52ba4e2a2ad5028f7f65834f71aa7feebf",
+  "follow": "NO_FOLLOW",
+  "limitations": [
+    "2026H1 has prior exposure across earlier research and is a development validation period, not blind test.",
+    "No strategy was frozen; V0 is reported only as reference and cannot be a selected validation winner.",
+    "V0 outputs use simulated 09:45 completed-bar closes, not order queue fills.",
+    "Historical official per-security price limits, 09:35 publication-time PIT, and all corporate actions are not verified.",
+    "BaoStock prices are V0-path candidates, not a full market universe; R2 is not connected.",
+    "The initial interrupted collection did not preserve byte counters; actual local physical bytes are fully measured."
+  ],
+  "generated_utc": "2026-10-15T11:14:56.667584+00:00",
+  "outputs": [
+    "validation_report.json",
+    "validation_v0_equity.csv",
+    "validation_v0_equity.svg",
+    "market_state_2026H1.csv",
+    "market_state_2026H1.svg",
+    "market_state_activity_2026H1.csv",
+    "storage_2026H1_by_month.csv",
+    "storage_growth_2026H1.csv",
+    "storage_growth_2026H1.svg"
+  ]
+}

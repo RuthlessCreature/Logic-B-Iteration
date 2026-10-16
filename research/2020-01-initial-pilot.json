@@ -1,0 +1,39 @@
+{
+  "classification": "PARTIAL_REAL_DATA_BAR_SIMULATION_NOT_ACTUAL_FILLS",
+  "run_id": 38681276157,
+  "source_sha": "5035f06f9439c78b152f5e3a0b2a92f92233df32",
+  "window": {
+    "from": "2020-01-02",
+    "to": "2020-01-23",
+    "calendar_trade_sessions": 16,
+    "source_event_sessions": 16,
+    "distinct_baseline_selections": 9,
+    "daily_cached_codes": 9,
+    "cached_5m_symbol_days": 63
+  },
+  "account": {
+    "starting_cash_cny": 10000,
+    "final_equity_cny": 7702.1932,
+    "period_mark_to_market_return_pct": -22.9781,
+    "maximum_drawdown_pct": -23.8134,
+    "orders": 15,
+    "closed_trades": 3,
+    "filled_buys": 3,
+    "filled_sells": 3,
+    "still_holding_at_end": false,
+    "stale_marks": 0,
+    "order_reason_counts": {
+      "NO_FILL_LIMIT_UP": 5,
+      "SIMULATED_BAR_CLOSE_FILL": 6,
+      "NO_FILL_LIMIT_DOWN": 4
+    }
+  },
+  "notes": [
+    "This is 16 actual historical trade sessions of a deterministic v0 heuristic, NOT six years of verified backtest or actual fills.",
+    "Five minute bars and historical daily prices from BaoStock, vendor candidate/event lists from Xuangubao; 09:45 completed-bar close assumed as fill approximation.",
+    "Not adjusted for unknown corporate actions; brokerage/tax fees modeled; historical price-band assumptions require further audit.",
+    "No raw licensed market rows committed; aggregate numbers transcribed from GitHub Actions job log, verifiable at run URL.",
+    "This v0 is NOT the full Logic A; loss is evidence against this v0 on this month, not proof for any substitute strategy."
+  ],
+  "status": "PARTIAL"
+}

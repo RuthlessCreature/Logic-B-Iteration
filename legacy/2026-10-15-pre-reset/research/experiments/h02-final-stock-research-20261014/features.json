@@ -1,0 +1,5048 @@
+{
+  "schema_version": "h02-final-stock-features-v1",
+  "classification": "TIER_D_EXPLORATORY_VENDOR_EVENT_FEATURES_PIT_UNVERIFIED_NOT_TRADING_RETURNS",
+  "study_dates": [
+    "20240930",
+    "20260630"
+  ],
+  "split": {
+    "train_end": "20250630",
+    "validation_end": "20251231",
+    "forward_end": "20260630"
+  },
+  "source_archive_sha256": {
+    "h01-raw-2024h1.zip": "1abfc7022075958537e635b107c0919a68122dc0ff6b7a97cec6132f9ab6fec8",
+    "h01-raw-2024h2.zip": "ddd770f7f0dc1322c2d782ae1925d43df302570277c0b53af0bde8bef674c1ad",
+    "h01-raw-2025h1.zip": "cb9bca81e71fa42ed85659564e5a6a7f446f25cbfc1bc7005d734529dbdc0c67",
+    "h01-raw-2025h2.zip": "8c4a9c90acfc9b7e841a453b127b2dcfb6dcc68e43566ca9f5838d1dcbcb0144",
+    "h01-raw-2026dev.zip": "7da9da754fb7d976b03a371666fd9d27fec0fcaf4f4f784dbecae01e978e857c"
+  },
+  "source_manifest_hashes_verified": 1803,
+  "source_manifest_hashes_seen": 1803,
+  "event_source_manifest_hashes_verified": 1207,
+  "event_source_manifest_hashes_seen": 1207,
+  "theme_hhi_training_feature_median": 0.09387755102040816,
+  "feature_matrix_rows": 36775,
+  "feature_matrix_unique_symbol_days": 36775,
+  "protected_holdout_accessed": false,
+  "feature_matrix_contains_symbol_ids": true,
+  "feature_matrix_redistribution": "LOCAL_IGNORED_ONLY; Xuangubao terms unresolved; do not publish raw rows",
+  "field_dictionary": {
+    "candidate_date": "D-1 trading date; candidate belongs to that date's vendor limit_up event pool.",
+    "outcome_date": "D trading date, the prediction target date.",
+    "vendor_streak_length": "Consecutive prior calendar sessions ending D-1 with this code in vendor limit_up; not official close-limit board height.",
+    "vendor_streak_group": "vendor_streak_length bucket: 1, 2, or 3+.",
+    "limit_up_count_3": "Number of appearances in vendor limit_up over D-1 and prior two sessions.",
+    "limit_up_count_5": "Number of appearances in vendor limit_up over D-1 and prior four sessions.",
+    "limit_down_count_5": "Number of appearances in vendor limit_down over D-1 and prior four sessions.",
+    "days_since_limit_down": "Trading-session distance from D-1 to most recent prior vendor limit_down event; null means none in retained history.",
+    "recent_limit_up_acceleration": "limit_up appearances in the latest 3 sessions minus the preceding 3 sessions, all ending no later than D-1.",
+    "vendor_limit_up_count": "Number of unique codes in D-1 vendor limit_up pool.",
+    "vendor_limit_down_count": "Number of unique codes in D-1 vendor limit_down pool.",
+    "vendor_limit_break_count": "Number of unique codes in D-1 vendor limit_break event pool.",
+    "limit_up_pool_change_3_sessions": "D-1 vendor limit_up pool size minus size three sessions earlier.",
+    "limit_up_pool_change_5_sessions": "D-1 vendor limit_up pool size minus size five sessions earlier.",
+    "lagged_continuation_rate": "Prior-session vendor limit_up overlap divided by previous session's candidate pool size, available by event date only in the constructed chronology.",
+    "lagged_continuation_change_3_sessions": "Mean of latest three prior-session continuation rates minus preceding three; no D or later outcomes.",
+    "rise_fall_event_ratio": "D-1 final market_indicator rise_count / max(fall_count, 1).",
+    "theme_hhi": "Herfindahl concentration of vendor theme assignments among D-1 candidate codes; multi-theme assignments split each code's weight evenly.",
+    "continuation_D": "D vendor limit_up pool membership; outcome only.",
+    "down_next_D": "D vendor limit_down pool membership; outcome only.",
+    "down_three_D_to_D2": "Any vendor limit_down membership over D,D+1,D+2; null unless the entire window stays within its research phase."
+  },
+  "feature_time_contract": {
+    "all_feature_last_session_is_strictly_before_outcome": true,
+    "historical_publication_time_certified": false,
+    "pit_status": "PIT_UNVERIFIED",
+    "same_day_or_future_target_used_as_feature": false,
+    "D_minus_1_close_event_input_available_by_next_day_0935_proven": false
+  },
+  "data_availability": {
+    "available": [
+      "vendor limit_up/limit_down/limit_break event pools",
+      "vendor market_indicator snapshots",
+      "vendor theme_limit_up labels"
+    ],
+    "unavailable": [
+      "independent OHLC",
+      "official per-stock daily limit prices",
+      "independent PIT ST/suspension",
+      "candidate minute bars and order-level fills",
+      "licensed point-in-time theme history proof"
+    ],
+    "limit_up_pool_semantics": "Historical vendor event-pool membership; not certified close-only limit-up status.",
+    "theme_semantics": "Vendor theme labels; no sector/core/leadership truth is implied."
+  },
+  "periods": {
+    "train": {
+      "outcome_sessions": 179,
+      "candidate_symbol_days": 17729,
+      "days_with_no_candidates": 0,
+      "candidate_pool_coverage": 1.0
+    },
+    "validation_2025H2": {
+      "outcome_sessions": 126,
+      "candidate_symbol_days": 9015,
+      "days_with_no_candidates": 0,
+      "candidate_pool_coverage": 1.0
+    },
+    "forward_2026H1": {
+      "outcome_sessions": 116,
+      "candidate_symbol_days": 10031,
+      "days_with_no_candidates": 0,
+      "candidate_pool_coverage": 1.0
+    }
+  },
+  "outcomes": {
+    "train": {
+      "Y1_D_vendor_limit_up_pool": {
+        "events": 5026,
+        "candidate_symbol_days": 17729,
+        "phase_eligible_candidate_coverage": 1.0,
+        "rate": 0.28349032658356366,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.2579199378741161,
+          0.30661912601651053
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 2768,
+                "candidate_days": 12663,
+                "coverage": 0.7142534829939647,
+                "rate": 0.2185895917239201,
+                "delta_vs_phase_overall": -0.06490073485964357,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19441848179550175,
+                  0.24447354973629307
+                ]
+              },
+              {
+                "level": "2",
+                "events": 1045,
+                "candidate_days": 2801,
+                "coverage": 0.15798973433357774,
+                "rate": 0.3730810424848269,
+                "delta_vs_phase_overall": 0.08959071590126322,
+                "day_block_bootstrap_95pct_ci": [
+                  0.32011927737231083,
+                  0.4233186196148118
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 1213,
+                "candidate_days": 2265,
+                "coverage": 0.12775678267245755,
+                "rate": 0.5355408388520971,
+                "delta_vs_phase_overall": 0.2520505122685335,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4908676079791548,
+                  0.576816725720002
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 2445,
+                "candidate_days": 11580,
+                "coverage": 0.6531671273055446,
+                "rate": 0.211139896373057,
+                "delta_vs_phase_overall": -0.07235043021050666,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18797256280802982,
+                  0.2382597042538369
+                ]
+              },
+              {
+                "level": "2",
+                "events": 1368,
+                "candidate_days": 3884,
+                "coverage": 0.21907609002199785,
+                "rate": 0.35221421215242016,
+                "delta_vs_phase_overall": 0.0687238855688565,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3098976791247028,
+                  0.3914942324204628
+                ]
+              },
+              {
+                "level": "3",
+                "events": 1213,
+                "candidate_days": 2265,
+                "coverage": 0.12775678267245755,
+                "rate": 0.5355408388520971,
+                "delta_vs_phase_overall": 0.2520505122685335,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4908676079791548,
+                  0.576816725720002
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 2142,
+                "candidate_days": 10335,
+                "coverage": 0.5829432004061142,
+                "rate": 0.20725689404934688,
+                "delta_vs_phase_overall": -0.07623343253421677,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18325550551108488,
+                  0.2358252750129251
+                ]
+              },
+              {
+                "level": "2",
+                "events": 1267,
+                "candidate_days": 3915,
+                "coverage": 0.2208246375994134,
+                "rate": 0.32362707535121327,
+                "delta_vs_phase_overall": 0.04013674876764961,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2895508676691904,
+                  0.35589883171762365
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 1617,
+                "candidate_days": 3479,
+                "coverage": 0.19623216199447233,
+                "rate": 0.4647887323943662,
+                "delta_vs_phase_overall": 0.18129840581080253,
+                "day_block_bootstrap_95pct_ci": [
+                  0.42675595166588376,
+                  0.5020573609180545
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 4609,
+                "candidate_days": 16357,
+                "coverage": 0.9226126685092222,
+                "rate": 0.28177538668459984,
+                "delta_vs_phase_overall": -0.0017149398989638187,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2553299295729979,
+                  0.3057341788521694
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 417,
+                "candidate_days": 1372,
+                "coverage": 0.07738733149077782,
+                "rate": 0.303935860058309,
+                "delta_vs_phase_overall": 0.02044553347474537,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2531620630029484,
+                  0.36680533384749675
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 193,
+                "candidate_days": 607,
+                "coverage": 0.03423768966100739,
+                "rate": 0.31795716639209226,
+                "delta_vs_phase_overall": 0.034466839808528604,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2568417395662475,
+                  0.3931844070198387
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 314,
+                "candidate_days": 1086,
+                "coverage": 0.06125556997010548,
+                "rate": 0.289134438305709,
+                "delta_vs_phase_overall": 0.005644111722145351,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23405966965107922,
+                  0.3639152909447532
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 4519,
+                "candidate_days": 16036,
+                "coverage": 0.9045067403688871,
+                "rate": 0.28180344225492643,
+                "delta_vs_phase_overall": -0.0016868843286372281,
+                "day_block_bootstrap_95pct_ci": [
+                  0.25552661189143033,
+                  0.30607917997944495
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 199,
+                "candidate_days": 637,
+                "coverage": 0.035929832477861134,
+                "rate": 0.31240188383045525,
+                "delta_vs_phase_overall": 0.028911557246891595,
+                "day_block_bootstrap_95pct_ci": [
+                  0.26314576764491876,
+                  0.3596820240518904
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 637,
+                "candidate_days": 1927,
+                "coverage": 0.10869197360257206,
+                "rate": 0.33056564608199274,
+                "delta_vs_phase_overall": 0.04707531949842908,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2804466740731211,
+                  0.37442466352885667
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 4190,
+                "candidate_days": 15165,
+                "coverage": 0.8553781939195668,
+                "rate": 0.27629409825255524,
+                "delta_vs_phase_overall": -0.007196228331008414,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2524739310370617,
+                  0.29864611727112905
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 2367,
+                "candidate_days": 10912,
+                "coverage": 0.6154887472502679,
+                "rate": 0.21691715542521994,
+                "delta_vs_phase_overall": -0.06657317115834371,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19078157536266394,
+                  0.2435095957397973
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 2659,
+                "candidate_days": 6817,
+                "coverage": 0.3845112527497321,
+                "rate": 0.3900542760745196,
+                "delta_vs_phase_overall": 0.10656394949095593,
+                "day_block_bootstrap_95pct_ci": [
+                  0.35143144790399067,
+                  0.42691464376220173
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 1584,
+                "candidate_days": 5642,
+                "coverage": 0.31823565908962714,
+                "rate": 0.28075150655795816,
+                "delta_vs_phase_overall": -0.002738820025605493,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2565195092822157,
+                  0.30575251690379696
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 3442,
+                "candidate_days": 12087,
+                "coverage": 0.6817643409103729,
+                "rate": 0.2847687598246049,
+                "delta_vs_phase_overall": 0.0012784332410412658,
+                "day_block_bootstrap_95pct_ci": [
+                  0.24847512187839313,
+                  0.31873159443966936
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 885,
+                "candidate_days": 3344,
+                "coverage": 0.1886175193186305,
+                "rate": 0.26465311004784686,
+                "delta_vs_phase_overall": -0.018837216535716794,
+                "day_block_bootstrap_95pct_ci": [
+                  0.24380646388782104,
+                  0.2864565962629103
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 819,
+                "candidate_days": 3502,
+                "coverage": 0.19752947148739353,
+                "rate": 0.23386636207881212,
+                "delta_vs_phase_overall": -0.04962396450475154,
+                "day_block_bootstrap_95pct_ci": [
+                  0.20498927591841618,
+                  0.2702716737509023
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 699,
+                "candidate_days": 2298,
+                "coverage": 0.12961813977099668,
+                "rate": 0.304177545691906,
+                "delta_vs_phase_overall": 0.02068721910834237,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2738646608856353,
+                  0.3455360290125231
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 2623,
+                "candidate_days": 8585,
+                "coverage": 0.4842348694229793,
+                "rate": 0.30553290623179963,
+                "delta_vs_phase_overall": 0.02204257964823597,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2646140649047474,
+                  0.3437500661012676
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 2518,
+                "candidate_days": 8898,
+                "coverage": 0.50188955947882,
+                "rate": 0.28298494043605305,
+                "delta_vs_phase_overall": -0.0005053861475106114,
+                "day_block_bootstrap_95pct_ci": [
+                  0.24585506985858727,
+                  0.3223888972802732
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 2508,
+                "candidate_days": 8831,
+                "coverage": 0.49811044052118,
+                "rate": 0.28399954705016417,
+                "delta_vs_phase_overall": 0.0005092204666005129,
+                "day_block_bootstrap_95pct_ci": [
+                  0.260396190200268,
+                  0.30788627213568914
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 2508,
+                "candidate_days": 11612,
+                "coverage": 0.6549720796435219,
+                "rate": 0.21598346538064073,
+                "delta_vs_phase_overall": -0.06750686120292293,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19063275431718704,
+                  0.24437858785090988
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 260,
+                "candidate_days": 1051,
+                "coverage": 0.059281403350442775,
+                "rate": 0.24738344433872503,
+                "delta_vs_phase_overall": -0.03610688224483863,
+                "day_block_bootstrap_95pct_ci": [
+                  0.20166242017246314,
+                  0.3123232830415066
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 943,
+                "candidate_days": 2577,
+                "coverage": 0.14535506796773648,
+                "rate": 0.36592937524253005,
+                "delta_vs_phase_overall": 0.0824390486589664,
+                "day_block_bootstrap_95pct_ci": [
+                  0.31022102730868706,
+                  0.41997504905290167
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 102,
+                "candidate_days": 224,
+                "coverage": 0.012634666365841277,
+                "rate": 0.45535714285714285,
+                "delta_vs_phase_overall": 0.1718668162735792,
+                "day_block_bootstrap_95pct_ci": [
+                  0.36955904150197627,
+                  0.5367034618339586
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 1158,
+                "candidate_days": 2168,
+                "coverage": 0.12228552089796378,
+                "rate": 0.5341328413284133,
+                "delta_vs_phase_overall": 0.25064251474484966,
+                "day_block_bootstrap_95pct_ci": [
+                  0.487857668746218,
+                  0.5766402456410168
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 55,
+                "candidate_days": 97,
+                "coverage": 0.0054712617744937676,
+                "rate": 0.5670103092783505,
+                "delta_vs_phase_overall": 0.28351998269478684,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4732118855606759,
+                  0.6494974226804123
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 866,
+                "candidate_days": 4045,
+                "coverage": 0.22815725647244628,
+                "rate": 0.21409147095179235,
+                "delta_vs_phase_overall": -0.06939885563177131,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19702040505576351,
+                  0.23432206827088914
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 1902,
+                "candidate_days": 8618,
+                "coverage": 0.4860962265215184,
+                "rate": 0.2207008586679044,
+                "delta_vs_phase_overall": -0.06278946791565926,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18605933056649432,
+                  0.255648699251243
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 331,
+                "candidate_days": 871,
+                "coverage": 0.04912854644932032,
+                "rate": 0.38002296211251435,
+                "delta_vs_phase_overall": 0.0965326355289507,
+                "day_block_bootstrap_95pct_ci": [
+                  0.33938243060329437,
+                  0.4231981332949106
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 714,
+                "candidate_days": 1930,
+                "coverage": 0.10886118788425743,
+                "rate": 0.3699481865284974,
+                "delta_vs_phase_overall": 0.08645785994493377,
+                "day_block_bootstrap_95pct_ci": [
+                  0.30295217575584193,
+                  0.44238542380738666
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 387,
+                "candidate_days": 726,
+                "coverage": 0.040949856167860565,
+                "rate": 0.5330578512396694,
+                "delta_vs_phase_overall": 0.24956752465610577,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4739136402855126,
+                  0.5797322848058142
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 826,
+                "candidate_days": 1539,
+                "coverage": 0.08680692650459698,
+                "rate": 0.5367121507472384,
+                "delta_vs_phase_overall": 0.2532218241636748,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4875600883178748,
+                  0.5787194756357189
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "Y2_D_vendor_limit_down_pool": {
+        "events": 674,
+        "candidate_symbol_days": 17729,
+        "phase_eligible_candidate_coverage": 1.0,
+        "rate": 0.03801680861864742,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.0294880879765722,
+          0.04677549335094633
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 248,
+                "candidate_days": 12663,
+                "coverage": 0.7142534829939647,
+                "rate": 0.019584616599541974,
+                "delta_vs_phase_overall": -0.018432192019105443,
+                "day_block_bootstrap_95pct_ci": [
+                  0.014353300497586013,
+                  0.025534350418767556
+                ]
+              },
+              {
+                "level": "2",
+                "events": 155,
+                "candidate_days": 2801,
+                "coverage": 0.15798973433357774,
+                "rate": 0.05533737950731882,
+                "delta_vs_phase_overall": 0.0173205708886714,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03638929675612286,
+                  0.075993716433942
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 271,
+                "candidate_days": 2265,
+                "coverage": 0.12775678267245755,
+                "rate": 0.1196467991169978,
+                "delta_vs_phase_overall": 0.08162999049835037,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09525511250003543,
+                  0.14580007114156726
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 164,
+                "candidate_days": 11580,
+                "coverage": 0.6531671273055446,
+                "rate": 0.014162348877374784,
+                "delta_vs_phase_overall": -0.023854459741272635,
+                "day_block_bootstrap_95pct_ci": [
+                  0.009736371034141171,
+                  0.019119356322759705
+                ]
+              },
+              {
+                "level": "2",
+                "events": 239,
+                "candidate_days": 3884,
+                "coverage": 0.21907609002199785,
+                "rate": 0.06153450051493306,
+                "delta_vs_phase_overall": 0.023517691896285643,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04422730819924816,
+                  0.07853936527663337
+                ]
+              },
+              {
+                "level": "3",
+                "events": 271,
+                "candidate_days": 2265,
+                "coverage": 0.12775678267245755,
+                "rate": 0.1196467991169978,
+                "delta_vs_phase_overall": 0.08162999049835037,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09525511250003543,
+                  0.14580007114156726
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 119,
+                "candidate_days": 10335,
+                "coverage": 0.5829432004061142,
+                "rate": 0.011514271891630382,
+                "delta_vs_phase_overall": -0.026502536727017037,
+                "day_block_bootstrap_95pct_ci": [
+                  0.007048893032477342,
+                  0.016681106077680908
+                ]
+              },
+              {
+                "level": "2",
+                "events": 161,
+                "candidate_days": 3915,
+                "coverage": 0.2208246375994134,
+                "rate": 0.04112388250319285,
+                "delta_vs_phase_overall": 0.003107073884545432,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02775444697278091,
+                  0.055100771753004346
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 394,
+                "candidate_days": 3479,
+                "coverage": 0.19623216199447233,
+                "rate": 0.1132509341764875,
+                "delta_vs_phase_overall": 0.07523412555784009,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08938839550342145,
+                  0.1366382826189159
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 608,
+                "candidate_days": 16357,
+                "coverage": 0.9226126685092222,
+                "rate": 0.03717063031118176,
+                "delta_vs_phase_overall": -0.0008461783074656601,
+                "day_block_bootstrap_95pct_ci": [
+                  0.028477518980922878,
+                  0.0463015010736872
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 66,
+                "candidate_days": 1372,
+                "coverage": 0.07738733149077782,
+                "rate": 0.048104956268221574,
+                "delta_vs_phase_overall": 0.010088147649574157,
+                "day_block_bootstrap_95pct_ci": [
+                  0.029406990068754774,
+                  0.07702415148890562
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 30,
+                "candidate_days": 607,
+                "coverage": 0.03423768966100739,
+                "rate": 0.04942339373970346,
+                "delta_vs_phase_overall": 0.011406585121056044,
+                "day_block_bootstrap_95pct_ci": [
+                  0.027501052574393243,
+                  0.08222740419378163
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 48,
+                "candidate_days": 1086,
+                "coverage": 0.06125556997010548,
+                "rate": 0.04419889502762431,
+                "delta_vs_phase_overall": 0.00618208640897689,
+                "day_block_bootstrap_95pct_ci": [
+                  0.026172974166282007,
+                  0.07692867540029112
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 596,
+                "candidate_days": 16036,
+                "coverage": 0.9045067403688871,
+                "rate": 0.037166375654776755,
+                "delta_vs_phase_overall": -0.000850432963870662,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02817406358388903,
+                  0.04638559203080785
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 64,
+                "candidate_days": 637,
+                "coverage": 0.035929832477861134,
+                "rate": 0.10047095761381476,
+                "delta_vs_phase_overall": 0.062454148995167345,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06666666666666667,
+                  0.13333629893238433
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 129,
+                "candidate_days": 1927,
+                "coverage": 0.10869197360257206,
+                "rate": 0.06694343539180073,
+                "delta_vs_phase_overall": 0.02892662677315331,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05110590988388769,
+                  0.08296871610717937
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 481,
+                "candidate_days": 15165,
+                "coverage": 0.8553781939195668,
+                "rate": 0.031717771183646555,
+                "delta_vs_phase_overall": -0.006299037435000862,
+                "day_block_bootstrap_95pct_ci": [
+                  0.023592105395211657,
+                  0.04010656988925305
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 141,
+                "candidate_days": 10912,
+                "coverage": 0.6154887472502679,
+                "rate": 0.012921554252199414,
+                "delta_vs_phase_overall": -0.025095254366448,
+                "day_block_bootstrap_95pct_ci": [
+                  0.008640499658907548,
+                  0.017795859743296914
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 533,
+                "candidate_days": 6817,
+                "coverage": 0.3845112527497321,
+                "rate": 0.07818688572685932,
+                "delta_vs_phase_overall": 0.0401700771082119,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06187701800188784,
+                  0.09386490341133923
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 230,
+                "candidate_days": 5642,
+                "coverage": 0.31823565908962714,
+                "rate": 0.04076568592697625,
+                "delta_vs_phase_overall": 0.0027488773083288315,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03112532914511524,
+                  0.050633028359951246
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 444,
+                "candidate_days": 12087,
+                "coverage": 0.6817643409103729,
+                "rate": 0.036733680814097794,
+                "delta_vs_phase_overall": -0.0012831278045496233,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0253943272585179,
+                  0.0478770915545138
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 154,
+                "candidate_days": 3344,
+                "coverage": 0.1886175193186305,
+                "rate": 0.046052631578947366,
+                "delta_vs_phase_overall": 0.008035822960299949,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03239725031288342,
+                  0.060422529979658295
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 143,
+                "candidate_days": 3502,
+                "coverage": 0.19752947148739353,
+                "rate": 0.04083380925185608,
+                "delta_vs_phase_overall": 0.002817000633208666,
+                "day_block_bootstrap_95pct_ci": [
+                  0.022723276137695834,
+                  0.06723067470956211
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 76,
+                "candidate_days": 2298,
+                "coverage": 0.12961813977099668,
+                "rate": 0.03307223672758921,
+                "delta_vs_phase_overall": -0.004944571891058208,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02807771739130435,
+                  0.03798614387013201
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 301,
+                "candidate_days": 8585,
+                "coverage": 0.4842348694229793,
+                "rate": 0.03506115317414094,
+                "delta_vs_phase_overall": -0.0029556554445064748,
+                "day_block_bootstrap_95pct_ci": [
+                  0.022333587651091558,
+                  0.0458396013672247
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 394,
+                "candidate_days": 8898,
+                "coverage": 0.50188955947882,
+                "rate": 0.044279613396268826,
+                "delta_vs_phase_overall": 0.0062628047776214085,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02905727316152855,
+                  0.0580043062897263
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 280,
+                "candidate_days": 8831,
+                "coverage": 0.49811044052118,
+                "rate": 0.031706488506397915,
+                "delta_vs_phase_overall": -0.006310320112249503,
+                "day_block_bootstrap_95pct_ci": [
+                  0.024730477937906434,
+                  0.03953173761761154
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 203,
+                "candidate_days": 11612,
+                "coverage": 0.6549720796435219,
+                "rate": 0.017481915260075784,
+                "delta_vs_phase_overall": -0.020534893358571633,
+                "day_block_bootstrap_95pct_ci": [
+                  0.012110168674668916,
+                  0.023554533631245943
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 45,
+                "candidate_days": 1051,
+                "coverage": 0.059281403350442775,
+                "rate": 0.04281636536631779,
+                "delta_vs_phase_overall": 0.0047995567476703735,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02516912320483749,
+                  0.07463535734979719
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 141,
+                "candidate_days": 2577,
+                "coverage": 0.14535506796773648,
+                "rate": 0.05471478463329453,
+                "delta_vs_phase_overall": 0.016697976014647113,
+                "day_block_bootstrap_95pct_ci": [
+                  0.033982169013689716,
+                  0.07645225504885611
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 14,
+                "candidate_days": 224,
+                "coverage": 0.012634666365841277,
+                "rate": 0.0625,
+                "delta_vs_phase_overall": 0.024483191381352583,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02984797203573212,
+                  0.1033093473924195
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 264,
+                "candidate_days": 2168,
+                "coverage": 0.12228552089796378,
+                "rate": 0.12177121771217712,
+                "delta_vs_phase_overall": 0.08375440909352971,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0970276152675859,
+                  0.1488236322524137
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 7,
+                "candidate_days": 97,
+                "coverage": 0.0054712617744937676,
+                "rate": 0.07216494845360824,
+                "delta_vs_phase_overall": 0.034148139834960824,
+                "day_block_bootstrap_95pct_ci": [
+                  0.028846153846153848,
+                  0.12087912087912088
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 83,
+                "candidate_days": 4045,
+                "coverage": 0.22815725647244628,
+                "rate": 0.020519159456118666,
+                "delta_vs_phase_overall": -0.01749764916252875,
+                "day_block_bootstrap_95pct_ci": [
+                  0.013208667909839999,
+                  0.0289522123142651
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 165,
+                "candidate_days": 8618,
+                "coverage": 0.4860962265215184,
+                "rate": 0.01914597354374565,
+                "delta_vs_phase_overall": -0.018870835074901768,
+                "day_block_bootstrap_95pct_ci": [
+                  0.011830842381490498,
+                  0.027839967848449353
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 49,
+                "candidate_days": 871,
+                "coverage": 0.04912854644932032,
+                "rate": 0.05625717566016074,
+                "delta_vs_phase_overall": 0.01824036704151332,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04055035883826113,
+                  0.07238193642067557
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 106,
+                "candidate_days": 1930,
+                "coverage": 0.10886118788425743,
+                "rate": 0.054922279792746116,
+                "delta_vs_phase_overall": 0.0169054711740987,
+                "day_block_bootstrap_95pct_ci": [
+                  0.027134747500854584,
+                  0.08069585519512242
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 98,
+                "candidate_days": 726,
+                "coverage": 0.040949856167860565,
+                "rate": 0.1349862258953168,
+                "delta_vs_phase_overall": 0.09696941727666938,
+                "day_block_bootstrap_95pct_ci": [
+                  0.10110345157738522,
+                  0.1690298038229376
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 173,
+                "candidate_days": 1539,
+                "coverage": 0.08680692650459698,
+                "rate": 0.11241065627030539,
+                "delta_vs_phase_overall": 0.07439384765165796,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08418000502929858,
+                  0.14088201306127207
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "Y3_D_to_D2_vendor_limit_down_pool": {
+        "events": 2740,
+        "candidate_symbol_days": 17599,
+        "phase_eligible_candidate_coverage": 0.9926673811269671,
+        "rate": 0.1556906642422865,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.12534907369146425,
+          0.1835204784468333
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1224,
+                "candidate_days": 12566,
+                "coverage": 0.7140178419228366,
+                "rate": 0.09740569791500875,
+                "delta_vs_phase_overall": -0.058284966327277754,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0706781585740989,
+                  0.12445514488615916
+                ]
+              },
+              {
+                "level": "2",
+                "events": 595,
+                "candidate_days": 2781,
+                "coverage": 0.15802034206489005,
+                "rate": 0.21395181589356346,
+                "delta_vs_phase_overall": 0.05826115165127696,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17287576182292677,
+                  0.24875523730936738
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 921,
+                "candidate_days": 2252,
+                "coverage": 0.12796181601227344,
+                "rate": 0.4089698046181172,
+                "delta_vs_phase_overall": 0.2532791403758307,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3449307120145027,
+                  0.4676971885437342
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 942,
+                "candidate_days": 11489,
+                "coverage": 0.6528211830217626,
+                "rate": 0.08199147010183654,
+                "delta_vs_phase_overall": -0.07369919414044997,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05726732462052725,
+                  0.10900520867494101
+                ]
+              },
+              {
+                "level": "2",
+                "events": 877,
+                "candidate_days": 3858,
+                "coverage": 0.21921700096596397,
+                "rate": 0.227319854847071,
+                "delta_vs_phase_overall": 0.07162919060478451,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18341860351475736,
+                  0.2650679442311715
+                ]
+              },
+              {
+                "level": "3",
+                "events": 921,
+                "candidate_days": 2252,
+                "coverage": 0.12796181601227344,
+                "rate": 0.4089698046181172,
+                "delta_vs_phase_overall": 0.2532791403758307,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3449307120145027,
+                  0.4676971885437342
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 752,
+                "candidate_days": 10252,
+                "coverage": 0.582533098471504,
+                "rate": 0.07335154116269996,
+                "delta_vs_phase_overall": -0.08233912307958655,
+                "day_block_bootstrap_95pct_ci": [
+                  0.048605674344381254,
+                  0.10072262010611194
+                ]
+              },
+              {
+                "level": "2",
+                "events": 716,
+                "candidate_days": 3891,
+                "coverage": 0.2210921075061083,
+                "rate": 0.18401439218709842,
+                "delta_vs_phase_overall": 0.028323727944811916,
+                "day_block_bootstrap_95pct_ci": [
+                  0.14458362583362583,
+                  0.217860476148071
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 1272,
+                "candidate_days": 3456,
+                "coverage": 0.19637479402238764,
+                "rate": 0.3680555555555556,
+                "delta_vs_phase_overall": 0.21236489131326908,
+                "day_block_bootstrap_95pct_ci": [
+                  0.30809971571553735,
+                  0.4241323707597431
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 2513,
+                "candidate_days": 16231,
+                "coverage": 0.9222683106994716,
+                "rate": 0.15482718255190683,
+                "delta_vs_phase_overall": -0.0008634816903796694,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1235704931043614,
+                  0.18289486292131232
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 227,
+                "candidate_days": 1368,
+                "coverage": 0.07773168930052844,
+                "rate": 0.16593567251461988,
+                "delta_vs_phase_overall": 0.010245008272333378,
+                "day_block_bootstrap_95pct_ci": [
+                  0.10480985590276616,
+                  0.25269326950821613
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 108,
+                "candidate_days": 606,
+                "coverage": 0.03443377464628672,
+                "rate": 0.1782178217821782,
+                "delta_vs_phase_overall": 0.022527157539891707,
+                "day_block_bootstrap_95pct_ci": [
+                  0.11211973605363032,
+                  0.27191549647901986
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 172,
+                "candidate_days": 1080,
+                "coverage": 0.06136712313199614,
+                "rate": 0.15925925925925927,
+                "delta_vs_phase_overall": 0.0035685950169727643,
+                "day_block_bootstrap_95pct_ci": [
+                  0.10762718928955776,
+                  0.2473026496218926
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 2460,
+                "candidate_days": 15913,
+                "coverage": 0.9041991022217172,
+                "rate": 0.15459058631307737,
+                "delta_vs_phase_overall": -0.0011000779292091312,
+                "day_block_bootstrap_95pct_ci": [
+                  0.12295342748856444,
+                  0.18326663587480985
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 180,
+                "candidate_days": 632,
+                "coverage": 0.03591113131427922,
+                "rate": 0.2848101265822785,
+                "delta_vs_phase_overall": 0.129119462339992,
+                "day_block_bootstrap_95pct_ci": [
+                  0.22082503473670545,
+                  0.34881547024404164
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 427,
+                "candidate_days": 1919,
+                "coverage": 0.10904028637990795,
+                "rate": 0.2225117248566962,
+                "delta_vs_phase_overall": 0.0668210606144097,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1802607965395854,
+                  0.2614379039202542
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 2133,
+                "candidate_days": 15048,
+                "coverage": 0.8550485823058128,
+                "rate": 0.1417464114832536,
+                "delta_vs_phase_overall": -0.01394425275903291,
+                "day_block_bootstrap_95pct_ci": [
+                  0.11104084967368527,
+                  0.17031791420224365
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 875,
+                "candidate_days": 10829,
+                "coverage": 0.6153190522188761,
+                "rate": 0.08080155138978669,
+                "delta_vs_phase_overall": -0.07488911285249981,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05615572665618865,
+                  0.10692673996605442
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 1865,
+                "candidate_days": 6770,
+                "coverage": 0.38468094778112394,
+                "rate": 0.275480059084195,
+                "delta_vs_phase_overall": 0.11978939484190848,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23161193364845467,
+                  0.3147330564026813
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 1002,
+                "candidate_days": 5512,
+                "coverage": 0.3131996136144099,
+                "rate": 0.18178519593613934,
+                "delta_vs_phase_overall": 0.02609453169385284,
+                "day_block_bootstrap_95pct_ci": [
+                  0.14169296147326685,
+                  0.22445012765422892
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 1738,
+                "candidate_days": 12087,
+                "coverage": 0.68680038638559,
+                "rate": 0.1437908496732026,
+                "delta_vs_phase_overall": -0.0118998145690839,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1059528147071195,
+                  0.17871264112020174
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 639,
+                "candidate_days": 3214,
+                "coverage": 0.18262401272799592,
+                "rate": 0.19881767268201617,
+                "delta_vs_phase_overall": 0.043127008439729664,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1433679790418363,
+                  0.26355192476589107
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 392,
+                "candidate_days": 3502,
+                "coverage": 0.1989885788965282,
+                "rate": 0.11193603655054254,
+                "delta_vs_phase_overall": -0.04375462769174396,
+                "day_block_bootstrap_95pct_ci": [
+                  0.081757950031597,
+                  0.14982591829003886
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 363,
+                "candidate_days": 2298,
+                "coverage": 0.130575600886414,
+                "rate": 0.15796344647519583,
+                "delta_vs_phase_overall": 0.0022727822329093317,
+                "day_block_bootstrap_95pct_ci": [
+                  0.11914951758705632,
+                  0.21628034827682485
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 1346,
+                "candidate_days": 8585,
+                "coverage": 0.4878118074890619,
+                "rate": 0.15678509027373325,
+                "delta_vs_phase_overall": 0.0010944260314467436,
+                "day_block_bootstrap_95pct_ci": [
+                  0.11170349940494333,
+                  0.1988251088813803
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 1385,
+                "candidate_days": 8838,
+                "coverage": 0.5021876242968351,
+                "rate": 0.15670966281964246,
+                "delta_vs_phase_overall": 0.0010189985773559618,
+                "day_block_bootstrap_95pct_ci": [
+                  0.11366303446756255,
+                  0.19096832224842658
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 1355,
+                "candidate_days": 8761,
+                "coverage": 0.49781237570316494,
+                "rate": 0.15466270973633148,
+                "delta_vs_phase_overall": -0.0010279545059550255,
+                "day_block_bootstrap_95pct_ci": [
+                  0.12199307666621093,
+                  0.19189647127868636
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 1076,
+                "candidate_days": 11518,
+                "coverage": 0.6544690039206773,
+                "rate": 0.0934189963535336,
+                "delta_vs_phase_overall": -0.06227166788875291,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06539403846885099,
+                  0.12058116142857385
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 148,
+                "candidate_days": 1048,
+                "coverage": 0.05954883800215922,
+                "rate": 0.14122137404580154,
+                "delta_vs_phase_overall": -0.014469290196484963,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0871635651762093,
+                  0.22991257892180667
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 548,
+                "candidate_days": 2558,
+                "coverage": 0.145349167566339,
+                "rate": 0.2142298670836591,
+                "delta_vs_phase_overall": 0.058539202841372595,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1711338533958746,
+                  0.24869015600687316
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 47,
+                "candidate_days": 223,
+                "coverage": 0.012671174498551053,
+                "rate": 0.21076233183856502,
+                "delta_vs_phase_overall": 0.05507166759627852,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13026261532910674,
+                  0.3098666867515252
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 889,
+                "candidate_days": 2155,
+                "coverage": 0.12245013921245525,
+                "rate": 0.41252900232018563,
+                "delta_vs_phase_overall": 0.25683833807789913,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3467323000269501,
+                  0.47518672878599544
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 32,
+                "candidate_days": 97,
+                "coverage": 0.005511676799818172,
+                "rate": 0.32989690721649484,
+                "delta_vs_phase_overall": 0.17420624297420834,
+                "day_block_bootstrap_95pct_ci": [
+                  0.221125,
+                  0.4444444444444444
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 486,
+                "candidate_days": 3948,
+                "coverage": 0.22433092789363032,
+                "rate": 0.12310030395136778,
+                "delta_vs_phase_overall": -0.03259036029091872,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08563241056064767,
+                  0.16581057969911595
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 738,
+                "candidate_days": 8618,
+                "coverage": 0.4896869140292062,
+                "rate": 0.08563471803202599,
+                "delta_vs_phase_overall": -0.07005594621026051,
+                "day_block_bootstrap_95pct_ci": [
+                  0.052206963276107986,
+                  0.12115996114953322
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 209,
+                "candidate_days": 851,
+                "coverage": 0.048355020171600656,
+                "rate": 0.245593419506463,
+                "delta_vs_phase_overall": 0.08990275526417649,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19425013089984292,
+                  0.2997482886523785
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 386,
+                "candidate_days": 1930,
+                "coverage": 0.1096653218932894,
+                "rate": 0.2,
+                "delta_vs_phase_overall": 0.04430933575771351,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15116576976099125,
+                  0.24169754818822708
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 307,
+                "candidate_days": 713,
+                "coverage": 0.04051366554917893,
+                "rate": 0.4305750350631136,
+                "delta_vs_phase_overall": 0.2748843708208271,
+                "day_block_bootstrap_95pct_ci": [
+                  0.35527952409271,
+                  0.507311332026956
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 614,
+                "candidate_days": 1539,
+                "coverage": 0.0874481504630945,
+                "rate": 0.39896036387264455,
+                "delta_vs_phase_overall": 0.24326969963035805,
+                "day_block_bootstrap_95pct_ci": [
+                  0.32039175879467463,
+                  0.4710637400563345
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "validation_2025H2": {
+      "Y1_D_vendor_limit_up_pool": {
+        "events": 2240,
+        "candidate_symbol_days": 9015,
+        "phase_eligible_candidate_coverage": 1.0,
+        "rate": 0.24847476428175264,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.23426232743586392,
+          0.26340684096095235
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1281,
+                "candidate_days": 6772,
+                "coverage": 0.7511924570160843,
+                "rate": 0.18916125221500296,
+                "delta_vs_phase_overall": -0.059313512066749674,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17754879653809352,
+                  0.20279879468699866
+                ]
+              },
+              {
+                "level": "2",
+                "events": 490,
+                "candidate_days": 1284,
+                "coverage": 0.14242928452579035,
+                "rate": 0.38161993769470404,
+                "delta_vs_phase_overall": 0.1331451734129514,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3543381054338896,
+                  0.4101429245792739
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 469,
+                "candidate_days": 959,
+                "coverage": 0.10637825845812535,
+                "rate": 0.48905109489051096,
+                "delta_vs_phase_overall": 0.24057633060875833,
+                "day_block_bootstrap_95pct_ci": [
+                  0.45052998058542415,
+                  0.5255034845964995
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1181,
+                "candidate_days": 6307,
+                "coverage": 0.6996117581808098,
+                "rate": 0.18725225939432377,
+                "delta_vs_phase_overall": -0.061222504887428864,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17478690899128574,
+                  0.20107948520050406
+                ]
+              },
+              {
+                "level": "2",
+                "events": 590,
+                "candidate_days": 1749,
+                "coverage": 0.1940099833610649,
+                "rate": 0.3373356203544883,
+                "delta_vs_phase_overall": 0.08886085607273564,
+                "day_block_bootstrap_95pct_ci": [
+                  0.31557384139938904,
+                  0.3608564982338488
+                ]
+              },
+              {
+                "level": "3",
+                "events": 469,
+                "candidate_days": 959,
+                "coverage": 0.10637825845812535,
+                "rate": 0.48905109489051096,
+                "delta_vs_phase_overall": 0.24057633060875833,
+                "day_block_bootstrap_95pct_ci": [
+                  0.45052998058542415,
+                  0.5255034845964995
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1043,
+                "candidate_days": 5664,
+                "coverage": 0.6282861896838602,
+                "rate": 0.1841454802259887,
+                "delta_vs_phase_overall": -0.06432928405576394,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17123147412487613,
+                  0.19865908993794035
+                ]
+              },
+              {
+                "level": "2",
+                "events": 604,
+                "candidate_days": 1915,
+                "coverage": 0.21242373821408764,
+                "rate": 0.3154046997389034,
+                "delta_vs_phase_overall": 0.06692993545715076,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2940844998985595,
+                  0.339975420146668
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 593,
+                "candidate_days": 1436,
+                "coverage": 0.15929007210205212,
+                "rate": 0.4129526462395543,
+                "delta_vs_phase_overall": 0.16447788195780166,
+                "day_block_bootstrap_95pct_ci": [
+                  0.38035855893028686,
+                  0.4439984602463606
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 2104,
+                "candidate_days": 8605,
+                "coverage": 0.954520244037715,
+                "rate": 0.24450900639163278,
+                "delta_vs_phase_overall": -0.003965757890119853,
+                "day_block_bootstrap_95pct_ci": [
+                  0.22970109384880763,
+                  0.2605357659833984
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 136,
+                "candidate_days": 410,
+                "coverage": 0.04547975596228508,
+                "rate": 0.33170731707317075,
+                "delta_vs_phase_overall": 0.08323255279141811,
+                "day_block_bootstrap_95pct_ci": [
+                  0.28940246283516013,
+                  0.37333940774487473
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 74,
+                "candidate_days": 216,
+                "coverage": 0.02396006655574043,
+                "rate": 0.3425925925925926,
+                "delta_vs_phase_overall": 0.09411782831083998,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2904982879798162,
+                  0.3848994138022915
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 88,
+                "candidate_days": 277,
+                "coverage": 0.030726566833056017,
+                "rate": 0.3176895306859206,
+                "delta_vs_phase_overall": 0.06921476640416796,
+                "day_block_bootstrap_95pct_ci": [
+                  0.254062627617992,
+                  0.37793573887543036
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 2078,
+                "candidate_days": 8522,
+                "coverage": 0.9453133666112036,
+                "rate": 0.24383947430180708,
+                "delta_vs_phase_overall": -0.004635289979945556,
+                "day_block_bootstrap_95pct_ci": [
+                  0.22922333727223146,
+                  0.25948932489658916
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 76,
+                "candidate_days": 288,
+                "coverage": 0.03194675540765391,
+                "rate": 0.2638888888888889,
+                "delta_vs_phase_overall": 0.01541412460713626,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2,
+                  0.32131213071340237
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 242,
+                "candidate_days": 876,
+                "coverage": 0.09717138103161398,
+                "rate": 0.2762557077625571,
+                "delta_vs_phase_overall": 0.027780943480804454,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23194733681938406,
+                  0.31963649809023287
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 1922,
+                "candidate_days": 7851,
+                "coverage": 0.8708818635607322,
+                "rate": 0.24480957839765635,
+                "delta_vs_phase_overall": -0.0036651858840962837,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23072807136052326,
+                  0.2597489943351864
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 1050,
+                "candidate_days": 5701,
+                "coverage": 0.6323904603438714,
+                "rate": 0.18417821434835993,
+                "delta_vs_phase_overall": -0.0642965499333927,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17123575443912223,
+                  0.19854964378023884
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 1190,
+                "candidate_days": 3314,
+                "coverage": 0.3676095396561287,
+                "rate": 0.35908267954133977,
+                "delta_vs_phase_overall": 0.11060791525958713,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3386467402343282,
+                  0.37780718219292614
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 1515,
+                "candidate_days": 6015,
+                "coverage": 0.6672212978369384,
+                "rate": 0.2518703241895262,
+                "delta_vs_phase_overall": 0.003395559907773571,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2389890058365861,
+                  0.2656551610618474
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 725,
+                "candidate_days": 3000,
+                "coverage": 0.33277870216306155,
+                "rate": 0.24166666666666667,
+                "delta_vs_phase_overall": -0.006808097615085967,
+                "day_block_bootstrap_95pct_ci": [
+                  0.20659957799058595,
+                  0.2760301553145049
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 1195,
+                "candidate_days": 4797,
+                "coverage": 0.5321131447587354,
+                "rate": 0.24911402960183449,
+                "delta_vs_phase_overall": 0.0006392653200818499,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23671480362894534,
+                  0.2610581648081648
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 446,
+                "candidate_days": 1848,
+                "coverage": 0.20499168053244593,
+                "rate": 0.24134199134199133,
+                "delta_vs_phase_overall": -0.007132772939761306,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19913807853409113,
+                  0.2861741185526554
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 320,
+                "candidate_days": 1218,
+                "coverage": 0.135108153078203,
+                "rate": 0.2627257799671593,
+                "delta_vs_phase_overall": 0.014251015685406654,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23203139294769584,
+                  0.2975080164530988
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 279,
+                "candidate_days": 1152,
+                "coverage": 0.12778702163061564,
+                "rate": 0.2421875,
+                "delta_vs_phase_overall": -0.006287264281752636,
+                "day_block_bootstrap_95pct_ci": [
+                  0.20259072911997608,
+                  0.27773801895449657
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 1024,
+                "candidate_days": 4226,
+                "coverage": 0.4687742651136994,
+                "rate": 0.2423095125414103,
+                "delta_vs_phase_overall": -0.006165251740342326,
+                "day_block_bootstrap_95pct_ci": [
+                  0.22353286976848927,
+                  0.26238269123515007
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 1216,
+                "candidate_days": 4789,
+                "coverage": 0.5312257348863006,
+                "rate": 0.25391522238463143,
+                "delta_vs_phase_overall": 0.005440458102878798,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2332333868700543,
+                  0.27291139198439174
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 1196,
+                "candidate_days": 6469,
+                "coverage": 0.7175818080976151,
+                "rate": 0.18488174370072655,
+                "delta_vs_phase_overall": -0.06359302058102609,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17324855598697056,
+                  0.1984853577960171
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 85,
+                "candidate_days": 303,
+                "coverage": 0.03361064891846922,
+                "rate": 0.28052805280528054,
+                "delta_vs_phase_overall": 0.0320532885235279,
+                "day_block_bootstrap_95pct_ci": [
+                  0.23124081173791472,
+                  0.32252056119980643
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 454,
+                "candidate_days": 1209,
+                "coverage": 0.1341098169717138,
+                "rate": 0.37551695616211744,
+                "delta_vs_phase_overall": 0.1270421918803648,
+                "day_block_bootstrap_95pct_ci": [
+                  0.34620979544720587,
+                  0.40441147317556686
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 36,
+                "candidate_days": 75,
+                "coverage": 0.008319467554076539,
+                "rate": 0.48,
+                "delta_vs_phase_overall": 0.23152523571824735,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3780131453911942,
+                  0.5866666666666667
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 454,
+                "candidate_days": 927,
+                "coverage": 0.10282861896838602,
+                "rate": 0.48975188781014023,
+                "delta_vs_phase_overall": 0.2412771235283876,
+                "day_block_bootstrap_95pct_ci": [
+                  0.44797310837845217,
+                  0.5276798832353851
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 15,
+                "candidate_days": 32,
+                "coverage": 0.003549639489739323,
+                "rate": 0.46875,
+                "delta_vs_phase_overall": 0.22027523571824736,
+                "day_block_bootstrap_95pct_ci": [
+                  0.30303030303030304,
+                  0.6060606060606061
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 837,
+                "candidate_days": 4445,
+                "coverage": 0.4930671103716029,
+                "rate": 0.18830146231721034,
+                "delta_vs_phase_overall": -0.06017330196454229,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17685937932320073,
+                  0.1997808536858978
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 444,
+                "candidate_days": 2327,
+                "coverage": 0.25812534664448145,
+                "rate": 0.19080360979802322,
+                "delta_vs_phase_overall": -0.05767115448372942,
+                "day_block_bootstrap_95pct_ci": [
+                  0.16042982619596152,
+                  0.22498577214325963
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 342,
+                "candidate_days": 884,
+                "coverage": 0.0980587909040488,
+                "rate": 0.38687782805429866,
+                "delta_vs_phase_overall": 0.13840306377254602,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3595854901837005,
+                  0.4167671482807273
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 148,
+                "candidate_days": 400,
+                "coverage": 0.044370493621741544,
+                "rate": 0.37,
+                "delta_vs_phase_overall": 0.12152523571824736,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3001973106131927,
+                  0.42563157387346706
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 336,
+                "candidate_days": 686,
+                "coverage": 0.07609539656128675,
+                "rate": 0.4897959183673469,
+                "delta_vs_phase_overall": 0.2413211540855943,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4473136157346684,
+                  0.5332328064948344
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 133,
+                "candidate_days": 273,
+                "coverage": 0.0302828618968386,
+                "rate": 0.48717948717948717,
+                "delta_vs_phase_overall": 0.23870472289773453,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4021972816253259,
+                  0.5567890314020345
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "Y2_D_vendor_limit_down_pool": {
+        "events": 256,
+        "candidate_symbol_days": 9015,
+        "phase_eligible_candidate_coverage": 1.0,
+        "rate": 0.028397115917914585,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.02309945088990804,
+          0.034569881561425764
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 93,
+                "candidate_days": 6772,
+                "coverage": 0.7511924570160843,
+                "rate": 0.01373301831069108,
+                "delta_vs_phase_overall": -0.014664097607223505,
+                "day_block_bootstrap_95pct_ci": [
+                  0.009871544638988358,
+                  0.017707549225801398
+                ]
+              },
+              {
+                "level": "2",
+                "events": 56,
+                "candidate_days": 1284,
+                "coverage": 0.14242928452579035,
+                "rate": 0.04361370716510903,
+                "delta_vs_phase_overall": 0.015216591247194447,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03271923964093149,
+                  0.05702548100221346
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 107,
+                "candidate_days": 959,
+                "coverage": 0.10637825845812535,
+                "rate": 0.11157455683003129,
+                "delta_vs_phase_overall": 0.0831774409121167,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08968942654166026,
+                  0.13494282454461326
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 60,
+                "candidate_days": 6307,
+                "coverage": 0.6996117581808098,
+                "rate": 0.009513239257967338,
+                "delta_vs_phase_overall": -0.018883876659947247,
+                "day_block_bootstrap_95pct_ci": [
+                  0.006332249692343484,
+                  0.012769490867948924
+                ]
+              },
+              {
+                "level": "2",
+                "events": 89,
+                "candidate_days": 1749,
+                "coverage": 0.1940099833610649,
+                "rate": 0.05088622069754145,
+                "delta_vs_phase_overall": 0.022489104779626866,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03940049776342784,
+                  0.06351796276470544
+                ]
+              },
+              {
+                "level": "3",
+                "events": 107,
+                "candidate_days": 959,
+                "coverage": 0.10637825845812535,
+                "rate": 0.11157455683003129,
+                "delta_vs_phase_overall": 0.0831774409121167,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08968942654166026,
+                  0.13494282454461326
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 38,
+                "candidate_days": 5664,
+                "coverage": 0.6282861896838602,
+                "rate": 0.006709039548022599,
+                "delta_vs_phase_overall": -0.021688076369891986,
+                "day_block_bootstrap_95pct_ci": [
+                  0.004034574654653173,
+                  0.009529368749711484
+                ]
+              },
+              {
+                "level": "2",
+                "events": 71,
+                "candidate_days": 1915,
+                "coverage": 0.21242373821408764,
+                "rate": 0.037075718015665796,
+                "delta_vs_phase_overall": 0.00867860209775121,
+                "day_block_bootstrap_95pct_ci": [
+                  0.026794142990632597,
+                  0.0483553688600973
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 147,
+                "candidate_days": 1436,
+                "coverage": 0.15929007210205212,
+                "rate": 0.10236768802228412,
+                "delta_vs_phase_overall": 0.07397057210436953,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08388429940147016,
+                  0.12298020987923189
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 231,
+                "candidate_days": 8605,
+                "coverage": 0.954520244037715,
+                "rate": 0.02684485764090645,
+                "delta_vs_phase_overall": -0.001552258277008136,
+                "day_block_bootstrap_95pct_ci": [
+                  0.021333901917098382,
+                  0.033476959270075775
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 25,
+                "candidate_days": 410,
+                "coverage": 0.04547975596228508,
+                "rate": 0.06097560975609756,
+                "delta_vs_phase_overall": 0.032578493838182974,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04075356336914383,
+                  0.08000228832951944
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 17,
+                "candidate_days": 216,
+                "coverage": 0.02396006655574043,
+                "rate": 0.0787037037037037,
+                "delta_vs_phase_overall": 0.05030658778578912,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05075501204942829,
+                  0.10553551180290689
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 9,
+                "candidate_days": 277,
+                "coverage": 0.030726566833056017,
+                "rate": 0.032490974729241874,
+                "delta_vs_phase_overall": 0.004093858811327289,
+                "day_block_bootstrap_95pct_ci": [
+                  0.018095489316802955,
+                  0.04878278012103429
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 230,
+                "candidate_days": 8522,
+                "coverage": 0.9453133666112036,
+                "rate": 0.02698896972541657,
+                "delta_vs_phase_overall": -0.0014081461924980165,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02152321505211997,
+                  0.0336611357477499
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 24,
+                "candidate_days": 288,
+                "coverage": 0.03194675540765391,
+                "rate": 0.08333333333333333,
+                "delta_vs_phase_overall": 0.054936217415418744,
+                "day_block_bootstrap_95pct_ci": [
+                  0.053950195548259375,
+                  0.11702677916360968
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 41,
+                "candidate_days": 876,
+                "coverage": 0.09717138103161398,
+                "rate": 0.04680365296803653,
+                "delta_vs_phase_overall": 0.018406537050121942,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03182374541003672,
+                  0.06290931894288962
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 191,
+                "candidate_days": 7851,
+                "coverage": 0.8708818635607322,
+                "rate": 0.024328111068653676,
+                "delta_vs_phase_overall": -0.004069004849260909,
+                "day_block_bootstrap_95pct_ci": [
+                  0.019679430234951157,
+                  0.029473410734249902
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 40,
+                "candidate_days": 5701,
+                "coverage": 0.6323904603438714,
+                "rate": 0.007016312927556569,
+                "delta_vs_phase_overall": -0.021380802990358015,
+                "day_block_bootstrap_95pct_ci": [
+                  0.004220642817439902,
+                  0.010020620032481624
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 216,
+                "candidate_days": 3314,
+                "coverage": 0.3676095396561287,
+                "rate": 0.06517803258901629,
+                "delta_vs_phase_overall": 0.036780916671101706,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05427184608505284,
+                  0.07823058721656602
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 189,
+                "candidate_days": 6015,
+                "coverage": 0.6672212978369384,
+                "rate": 0.0314214463840399,
+                "delta_vs_phase_overall": 0.0030243304661253176,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02358899586204075,
+                  0.04000825983553624
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 67,
+                "candidate_days": 3000,
+                "coverage": 0.33277870216306155,
+                "rate": 0.022333333333333334,
+                "delta_vs_phase_overall": -0.006063782584581252,
+                "day_block_bootstrap_95pct_ci": [
+                  0.01528032980654941,
+                  0.029223139645099136
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 149,
+                "candidate_days": 4797,
+                "coverage": 0.5321131447587354,
+                "rate": 0.031061079841567647,
+                "delta_vs_phase_overall": 0.002663963923653062,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02390304188033848,
+                  0.03870761612447492
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 27,
+                "candidate_days": 1848,
+                "coverage": 0.20499168053244593,
+                "rate": 0.01461038961038961,
+                "delta_vs_phase_overall": -0.013786726307524975,
+                "day_block_bootstrap_95pct_ci": [
+                  0.008403243716299509,
+                  0.021134133594092455
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 40,
+                "candidate_days": 1218,
+                "coverage": 0.135108153078203,
+                "rate": 0.03284072249589491,
+                "delta_vs_phase_overall": 0.004443606577980326,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0118581023215368,
+                  0.05330631139039717
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 40,
+                "candidate_days": 1152,
+                "coverage": 0.12778702163061564,
+                "rate": 0.034722222222222224,
+                "delta_vs_phase_overall": 0.006325106304307639,
+                "day_block_bootstrap_95pct_ci": [
+                  0.026979982593559618,
+                  0.04238161597945187
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 102,
+                "candidate_days": 4226,
+                "coverage": 0.4687742651136994,
+                "rate": 0.024136299100804542,
+                "delta_vs_phase_overall": -0.004260816817110043,
+                "day_block_bootstrap_95pct_ci": [
+                  0.020195184474971324,
+                  0.02809107670441828
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 154,
+                "candidate_days": 4789,
+                "coverage": 0.5312257348863006,
+                "rate": 0.032157026519106284,
+                "delta_vs_phase_overall": 0.003759910601191699,
+                "day_block_bootstrap_95pct_ci": [
+                  0.021840111051505674,
+                  0.0457871009225471
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 76,
+                "candidate_days": 6469,
+                "coverage": 0.7175818080976151,
+                "rate": 0.011748338228474263,
+                "delta_vs_phase_overall": -0.01664877768944032,
+                "day_block_bootstrap_95pct_ci": [
+                  0.008048333074506257,
+                  0.015743880193897837
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 17,
+                "candidate_days": 303,
+                "coverage": 0.03361064891846922,
+                "rate": 0.056105610561056105,
+                "delta_vs_phase_overall": 0.02770849464314152,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03571110828673106,
+                  0.07719330495356037
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 50,
+                "candidate_days": 1209,
+                "coverage": 0.1341098169717138,
+                "rate": 0.0413564929693962,
+                "delta_vs_phase_overall": 0.012959377051481612,
+                "day_block_bootstrap_95pct_ci": [
+                  0.030211360285111843,
+                  0.054471676044048616
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 6,
+                "candidate_days": 75,
+                "coverage": 0.008319467554076539,
+                "rate": 0.08,
+                "delta_vs_phase_overall": 0.051602884082085416,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03076923076923077,
+                  0.125
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 105,
+                "candidate_days": 927,
+                "coverage": 0.10282861896838602,
+                "rate": 0.11326860841423948,
+                "delta_vs_phase_overall": 0.08487149249632489,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09133978266631328,
+                  0.13774566352145817
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 2,
+                "candidate_days": 32,
+                "coverage": 0.003549639489739323,
+                "rate": 0.0625,
+                "delta_vs_phase_overall": 0.034102884082085415,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0,
+                  0.13333333333333333
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 72,
+                "candidate_days": 4445,
+                "coverage": 0.4930671103716029,
+                "rate": 0.016197975253093362,
+                "delta_vs_phase_overall": -0.012199140664821223,
+                "day_block_bootstrap_95pct_ci": [
+                  0.011351447385899056,
+                  0.021461237271149416
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 21,
+                "candidate_days": 2327,
+                "coverage": 0.25812534664448145,
+                "rate": 0.009024495058014611,
+                "delta_vs_phase_overall": -0.019372620859899974,
+                "day_block_bootstrap_95pct_ci": [
+                  0.004729148753224419,
+                  0.013694403561184718
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 38,
+                "candidate_days": 884,
+                "coverage": 0.0980587909040488,
+                "rate": 0.042986425339366516,
+                "delta_vs_phase_overall": 0.01458930942145193,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02891364767026584,
+                  0.057759549761650424
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 18,
+                "candidate_days": 400,
+                "coverage": 0.044370493621741544,
+                "rate": 0.045,
+                "delta_vs_phase_overall": 0.016602884082085413,
+                "day_block_bootstrap_95pct_ci": [
+                  0.025444753525682495,
+                  0.06879825733744974
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 79,
+                "candidate_days": 686,
+                "coverage": 0.07609539656128675,
+                "rate": 0.1151603498542274,
+                "delta_vs_phase_overall": 0.08676323393631283,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08284633998173456,
+                  0.15074448489628672
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 28,
+                "candidate_days": 273,
+                "coverage": 0.0302828618968386,
+                "rate": 0.10256410256410256,
+                "delta_vs_phase_overall": 0.07416698664618798,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06710771560594883,
+                  0.1423066064370412
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "Y3_D_to_D2_vendor_limit_down_pool": {
+        "events": 982,
+        "candidate_symbol_days": 8863,
+        "phase_eligible_candidate_coverage": 0.9831392124237383,
+        "rate": 0.11079769829628794,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.09403424244012706,
+          0.13124574915529305
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 403,
+                "candidate_days": 6666,
+                "coverage": 0.7521155365000565,
+                "rate": 0.06045604560456046,
+                "delta_vs_phase_overall": -0.05034165269172748,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04942590330102885,
+                  0.07426933225232711
+                ]
+              },
+              {
+                "level": "2",
+                "events": 237,
+                "candidate_days": 1259,
+                "coverage": 0.1420512241904547,
+                "rate": 0.18824463860206514,
+                "delta_vs_phase_overall": 0.0774469403057772,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15906258665927173,
+                  0.2218907612144694
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 342,
+                "candidate_days": 938,
+                "coverage": 0.10583323930948889,
+                "rate": 0.3646055437100213,
+                "delta_vs_phase_overall": 0.25380784541373336,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3181262960543136,
+                  0.4123341692370165
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 320,
+                "candidate_days": 6210,
+                "coverage": 0.7006656888186844,
+                "rate": 0.05152979066022544,
+                "delta_vs_phase_overall": -0.059267907636062496,
+                "day_block_bootstrap_95pct_ci": [
+                  0.041551966034798896,
+                  0.0630501104872184
+                ]
+              },
+              {
+                "level": "2",
+                "events": 320,
+                "candidate_days": 1715,
+                "coverage": 0.1935010718718267,
+                "rate": 0.18658892128279883,
+                "delta_vs_phase_overall": 0.07579122298651089,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15745499273684274,
+                  0.2193518217306441
+                ]
+              },
+              {
+                "level": "3",
+                "events": 342,
+                "candidate_days": 938,
+                "coverage": 0.10583323930948889,
+                "rate": 0.3646055437100213,
+                "delta_vs_phase_overall": 0.25380784541373336,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3181262960543136,
+                  0.4123341692370165
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 237,
+                "candidate_days": 5580,
+                "coverage": 0.6295836624167889,
+                "rate": 0.04247311827956989,
+                "delta_vs_phase_overall": -0.06832458001671804,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03385284439501948,
+                  0.052583491856762456
+                ]
+              },
+              {
+                "level": "2",
+                "events": 294,
+                "candidate_days": 1877,
+                "coverage": 0.2117793072323141,
+                "rate": 0.15663292488012787,
+                "delta_vs_phase_overall": 0.04583522658383993,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13033208335338842,
+                  0.18763778182342356
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 451,
+                "candidate_days": 1406,
+                "coverage": 0.158637030350897,
+                "rate": 0.3207681365576102,
+                "delta_vs_phase_overall": 0.20997043826132228,
+                "day_block_bootstrap_95pct_ci": [
+                  0.28365222453693806,
+                  0.36263648415602456
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 910,
+                "candidate_days": 8457,
+                "coverage": 0.9541915829854452,
+                "rate": 0.10760316897244886,
+                "delta_vs_phase_overall": -0.003194529323839082,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09121411919312607,
+                  0.12886969359214526
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 72,
+                "candidate_days": 406,
+                "coverage": 0.04580841701455489,
+                "rate": 0.17733990147783252,
+                "delta_vs_phase_overall": 0.06654220318154458,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13332929782082326,
+                  0.23015823280589062
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 44,
+                "candidate_days": 216,
+                "coverage": 0.024370980480649892,
+                "rate": 0.2037037037037037,
+                "delta_vs_phase_overall": 0.09290600540741575,
+                "day_block_bootstrap_95pct_ci": [
+                  0.14426280201203925,
+                  0.2591315789473684
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 41,
+                "candidate_days": 271,
+                "coverage": 0.030576554214148708,
+                "rate": 0.15129151291512916,
+                "delta_vs_phase_overall": 0.04049381461884122,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09999244712990937,
+                  0.22182828282828282
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 897,
+                "candidate_days": 8376,
+                "coverage": 0.9450524653052014,
+                "rate": 0.1070916905444126,
+                "delta_vs_phase_overall": -0.003706007751875337,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09113321411939651,
+                  0.1276825894230411
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 55,
+                "candidate_days": 285,
+                "coverage": 0.0321561548008575,
+                "rate": 0.19298245614035087,
+                "delta_vs_phase_overall": 0.08218475784406293,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15383141762452107,
+                  0.23166582731800123
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 143,
+                "candidate_days": 853,
+                "coverage": 0.09624280717589981,
+                "rate": 0.16764361078546308,
+                "delta_vs_phase_overall": 0.05684591248917514,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1292694716586643,
+                  0.20698900063991885
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 784,
+                "candidate_days": 7725,
+                "coverage": 0.8716010380232427,
+                "rate": 0.10148867313915858,
+                "delta_vs_phase_overall": -0.009309025157129364,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08599353599769229,
+                  0.12073084573904162
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 246,
+                "candidate_days": 5617,
+                "coverage": 0.6337583211102336,
+                "rate": 0.043795620437956206,
+                "delta_vs_phase_overall": -0.06700207785833173,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03403723109523703,
+                  0.055812162857756024
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 736,
+                "candidate_days": 3246,
+                "coverage": 0.36624167888976644,
+                "rate": 0.22674060382008626,
+                "delta_vs_phase_overall": 0.11594290552379832,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1971899398057095,
+                  0.2596823557715276
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 659,
+                "candidate_days": 5950,
+                "coverage": 0.6713302493512354,
+                "rate": 0.1107563025210084,
+                "delta_vs_phase_overall": -4.139577527953464e-05,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09440240725751668,
+                  0.12954397427622838
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 323,
+                "candidate_days": 2913,
+                "coverage": 0.3286697506487645,
+                "rate": 0.11088225197391006,
+                "delta_vs_phase_overall": 8.455367762212618e-05,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08559603832951945,
+                  0.13977959556275657
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 514,
+                "candidate_days": 4797,
+                "coverage": 0.5412388581744331,
+                "rate": 0.10715030227225349,
+                "delta_vs_phase_overall": -0.003647396024034452,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0924916550208116,
+                  0.1227419239501582
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 172,
+                "candidate_days": 1848,
+                "coverage": 0.2085072774455602,
+                "rate": 0.09307359307359307,
+                "delta_vs_phase_overall": -0.017724105222694866,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07356375700890956,
+                  0.11123543943195353
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 145,
+                "candidate_days": 1153,
+                "coverage": 0.13009139117680243,
+                "rate": 0.12575888985255854,
+                "delta_vs_phase_overall": 0.014961191556270598,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09125831406624954,
+                  0.1596353602281197
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 151,
+                "candidate_days": 1065,
+                "coverage": 0.12016247320320433,
+                "rate": 0.14178403755868543,
+                "delta_vs_phase_overall": 0.030986339262397494,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0945821854912764,
+                  0.1970873786407767
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 427,
+                "candidate_days": 4226,
+                "coverage": 0.4768137199593817,
+                "rate": 0.10104117368670137,
+                "delta_vs_phase_overall": -0.009756524609586564,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08796012962621018,
+                  0.1161007887051931
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 555,
+                "candidate_days": 4637,
+                "coverage": 0.5231862800406183,
+                "rate": 0.11968945438861332,
+                "delta_vs_phase_overall": 0.008891756092325384,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09433313313663819,
+                  0.15336216280293224
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 349,
+                "candidate_days": 6365,
+                "coverage": 0.7181541238858175,
+                "rate": 0.05483110761979576,
+                "delta_vs_phase_overall": -0.05596659067649218,
+                "day_block_bootstrap_95pct_ci": [
+                  0.043836695026152186,
+                  0.06864721309328166
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 54,
+                "candidate_days": 301,
+                "coverage": 0.03396141261423897,
+                "rate": 0.17940199335548174,
+                "delta_vs_phase_overall": 0.0686042950591938,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13724372485150413,
+                  0.226149461551405
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 222,
+                "candidate_days": 1184,
+                "coverage": 0.13358907819022905,
+                "rate": 0.1875,
+                "delta_vs_phase_overall": 0.07670230170371206,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15733820155971506,
+                  0.22086026481754573
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 15,
+                "candidate_days": 75,
+                "coverage": 0.008462146000225657,
+                "rate": 0.2,
+                "delta_vs_phase_overall": 0.08920230170371207,
+                "day_block_bootstrap_95pct_ci": [
+                  0.125,
+                  0.28206521739130436
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 339,
+                "candidate_days": 908,
+                "coverage": 0.10244838090939862,
+                "rate": 0.3733480176211454,
+                "delta_vs_phase_overall": 0.26255031932485745,
+                "day_block_bootstrap_95pct_ci": [
+                  0.32510602456912,
+                  0.42250328624436345
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 3,
+                "candidate_days": 30,
+                "coverage": 0.0033848584000902627,
+                "rate": 0.1,
+                "delta_vs_phase_overall": -0.010797698296287933,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03125,
+                  0.17857142857142858
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 268,
+                "candidate_days": 4403,
+                "coverage": 0.49678438451991425,
+                "rate": 0.06086759027935498,
+                "delta_vs_phase_overall": -0.049930108016932956,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04990879940666617,
+                  0.07358669484470673
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 135,
+                "candidate_days": 2263,
+                "coverage": 0.25533115198014217,
+                "rate": 0.05965532479010163,
+                "delta_vs_phase_overall": -0.051142373506186306,
+                "day_block_bootstrap_95pct_ci": [
+                  0.042698157713857245,
+                  0.07941637838737059
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 157,
+                "candidate_days": 869,
+                "coverage": 0.09804806498928129,
+                "rate": 0.1806674338319908,
+                "delta_vs_phase_overall": 0.06986973553570286,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1546544097298996,
+                  0.2084395392287508
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 80,
+                "candidate_days": 390,
+                "coverage": 0.04400315920117342,
+                "rate": 0.20512820512820512,
+                "delta_vs_phase_overall": 0.09433050683191718,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15739509456264775,
+                  0.26700984585650234
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 234,
+                "candidate_days": 678,
+                "coverage": 0.07649779984203994,
+                "rate": 0.34513274336283184,
+                "delta_vs_phase_overall": 0.2343350450665439,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2863756719890877,
+                  0.4064825393890162
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 108,
+                "candidate_days": 260,
+                "coverage": 0.029335439467448945,
+                "rate": 0.4153846153846154,
+                "delta_vs_phase_overall": 0.30458691708832747,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3480081677412036,
+                  0.4764606139933365
+                ]
+              }
+            ]
+          }
+        }
+      }
+    },
+    "forward_2026H1": {
+      "Y1_D_vendor_limit_up_pool": {
+        "events": 2105,
+        "candidate_symbol_days": 10031,
+        "phase_eligible_candidate_coverage": 1.0,
+        "rate": 0.20984946665337453,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.19322712521361723,
+          0.22870894701052205
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1336,
+                "candidate_days": 7942,
+                "coverage": 0.7917455886751071,
+                "rate": 0.16821959204230671,
+                "delta_vs_phase_overall": -0.04162987461106782,
+                "day_block_bootstrap_95pct_ci": [
+                  0.155501926276566,
+                  0.18269227192034265
+                ]
+              },
+              {
+                "level": "2",
+                "events": 411,
+                "candidate_days": 1318,
+                "coverage": 0.1313926826836806,
+                "rate": 0.3118361153262519,
+                "delta_vs_phase_overall": 0.10198664867287735,
+                "day_block_bootstrap_95pct_ci": [
+                  0.28061454789664325,
+                  0.34271178927573803
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 358,
+                "candidate_days": 771,
+                "coverage": 0.07686172864121224,
+                "rate": 0.46433203631647213,
+                "delta_vs_phase_overall": 0.25448256966309757,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4107110923768649,
+                  0.5074475486670333
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1231,
+                "candidate_days": 7453,
+                "coverage": 0.742996710198385,
+                "rate": 0.16516838856836175,
+                "delta_vs_phase_overall": -0.04468107808501279,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1525229252752528,
+                  0.180508458036038
+                ]
+              },
+              {
+                "level": "2",
+                "events": 516,
+                "candidate_days": 1807,
+                "coverage": 0.18014156116040275,
+                "rate": 0.28555617044825676,
+                "delta_vs_phase_overall": 0.07570670379488223,
+                "day_block_bootstrap_95pct_ci": [
+                  0.25820859640888205,
+                  0.3132339575530587
+                ]
+              },
+              {
+                "level": "3",
+                "events": 358,
+                "candidate_days": 771,
+                "coverage": 0.07686172864121224,
+                "rate": 0.46433203631647213,
+                "delta_vs_phase_overall": 0.25448256966309757,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4107110923768649,
+                  0.5074475486670333
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 1031,
+                "candidate_days": 6592,
+                "coverage": 0.6571627953344632,
+                "rate": 0.1564016990291262,
+                "delta_vs_phase_overall": -0.05344776762424833,
+                "day_block_bootstrap_95pct_ci": [
+                  0.14435610839554538,
+                  0.17120337770394453
+                ]
+              },
+              {
+                "level": "2",
+                "events": 573,
+                "candidate_days": 2142,
+                "coverage": 0.2135380321004885,
+                "rate": 0.26750700280112044,
+                "delta_vs_phase_overall": 0.05765753614774591,
+                "day_block_bootstrap_95pct_ci": [
+                  0.24337244776769365,
+                  0.29353965404234705
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 501,
+                "candidate_days": 1297,
+                "coverage": 0.12929917256504836,
+                "rate": 0.38627602158828067,
+                "delta_vs_phase_overall": 0.17642655493490614,
+                "day_block_bootstrap_95pct_ci": [
+                  0.3428869258750547,
+                  0.42431031816142434
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 1834,
+                "candidate_days": 9291,
+                "coverage": 0.9262286910577211,
+                "rate": 0.19739532881282962,
+                "delta_vs_phase_overall": -0.012454137840544915,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18131006081973922,
+                  0.21604710422960235
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 271,
+                "candidate_days": 740,
+                "coverage": 0.07377130894227893,
+                "rate": 0.3662162162162162,
+                "delta_vs_phase_overall": 0.15636674956284166,
+                "day_block_bootstrap_95pct_ci": [
+                  0.31597782038827915,
+                  0.4189829516315356
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 140,
+                "candidate_days": 378,
+                "coverage": 0.03768318213538032,
+                "rate": 0.37037037037037035,
+                "delta_vs_phase_overall": 0.16052090371699582,
+                "day_block_bootstrap_95pct_ci": [
+                  0.30926593849478695,
+                  0.42859047619047613
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 176,
+                "candidate_days": 502,
+                "coverage": 0.05004486093111355,
+                "rate": 0.350597609561753,
+                "delta_vs_phase_overall": 0.14074814290837848,
+                "day_block_bootstrap_95pct_ci": [
+                  0.29245117025397,
+                  0.40568273855766207
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 1789,
+                "candidate_days": 9151,
+                "coverage": 0.9122719569335062,
+                "rate": 0.19549775980767128,
+                "delta_vs_phase_overall": -0.01435170684570325,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17915646546550554,
+                  0.21435169027657616
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 77,
+                "candidate_days": 290,
+                "coverage": 0.028910377828730936,
+                "rate": 0.2655172413793103,
+                "delta_vs_phase_overall": 0.05566777472593579,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2195903412405211,
+                  0.31345174465510284
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 285,
+                "candidate_days": 1136,
+                "coverage": 0.11324892832220118,
+                "rate": 0.25088028169014087,
+                "delta_vs_phase_overall": 0.04103081503676634,
+                "day_block_bootstrap_95pct_ci": [
+                  0.21587818852739254,
+                  0.29087895814880427
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 1743,
+                "candidate_days": 8605,
+                "coverage": 0.8578406938490679,
+                "rate": 0.20255665310865775,
+                "delta_vs_phase_overall": -0.007292813544716781,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1867115339442563,
+                  0.2198578604994869
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 1042,
+                "candidate_days": 6635,
+                "coverage": 0.6614495065297578,
+                "rate": 0.1570459683496609,
+                "delta_vs_phase_overall": -0.05280349830371364,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1444492431051013,
+                  0.17167846806955311
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 1063,
+                "candidate_days": 3396,
+                "coverage": 0.33855049347024224,
+                "rate": 0.3130153121319199,
+                "delta_vs_phase_overall": 0.10316584547854538,
+                "day_block_bootstrap_95pct_ci": [
+                  0.28275844165565284,
+                  0.342822274376368
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 796,
+                "candidate_days": 3879,
+                "coverage": 0.3867012261987838,
+                "rate": 0.20520752771332817,
+                "delta_vs_phase_overall": -0.004641938940046358,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18780425314820903,
+                  0.22052887283167263
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 1309,
+                "candidate_days": 6152,
+                "coverage": 0.6132987738012162,
+                "rate": 0.21277633289986997,
+                "delta_vs_phase_overall": 0.0029268662464954354,
+                "day_block_bootstrap_95pct_ci": [
+                  0.18575216940118314,
+                  0.23827976119309602
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 469,
+                "candidate_days": 2205,
+                "coverage": 0.2198185624563852,
+                "rate": 0.2126984126984127,
+                "delta_vs_phase_overall": 0.0028489460450381587,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1967950190797624,
+                  0.2281105456303461
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 534,
+                "candidate_days": 2625,
+                "coverage": 0.26168876482903003,
+                "rate": 0.20342857142857143,
+                "delta_vs_phase_overall": -0.006420895224803103,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17701772946570066,
+                  0.22807971111454636
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 327,
+                "candidate_days": 1674,
+                "coverage": 0.16688266374239857,
+                "rate": 0.1953405017921147,
+                "delta_vs_phase_overall": -0.014508964861259827,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1799513311526055,
+                  0.21022262342797518
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 775,
+                "candidate_days": 3527,
+                "coverage": 0.35161000897218625,
+                "rate": 0.2197334845477743,
+                "delta_vs_phase_overall": 0.009884017894399771,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19461677022765464,
+                  0.2480249523778245
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 911,
+                "candidate_days": 4549,
+                "coverage": 0.45349416807895526,
+                "rate": 0.20026379424049243,
+                "delta_vs_phase_overall": -0.009585672412882107,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17794804532614017,
+                  0.22228332501564355
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 1194,
+                "candidate_days": 5482,
+                "coverage": 0.5465058319210447,
+                "rate": 0.21780372126960962,
+                "delta_vs_phase_overall": 0.007954254616235085,
+                "day_block_bootstrap_95pct_ci": [
+                  0.19621032913799347,
+                  0.24092873060420925
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 1172,
+                "candidate_days": 7408,
+                "coverage": 0.7385106170870303,
+                "rate": 0.15820734341252699,
+                "delta_vs_phase_overall": -0.05164212324084755,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1454107337375505,
+                  0.1734795718063744
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 164,
+                "candidate_days": 534,
+                "coverage": 0.05323497158807696,
+                "rate": 0.30711610486891383,
+                "delta_vs_phase_overall": 0.0972666382155393,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2572105662285136,
+                  0.3515150480950981
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 345,
+                "candidate_days": 1178,
+                "coverage": 0.11743594855946565,
+                "rate": 0.2928692699490662,
+                "delta_vs_phase_overall": 0.08301980329569167,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2599144792592262,
+                  0.3255640655392799
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 66,
+                "candidate_days": 140,
+                "coverage": 0.013956734124214934,
+                "rate": 0.4714285714285714,
+                "delta_vs_phase_overall": 0.26157910477519686,
+                "day_block_bootstrap_95pct_ci": [
+                  0.39004137115839244,
+                  0.5496771523178808
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 317,
+                "candidate_days": 705,
+                "coverage": 0.07028212541122521,
+                "rate": 0.44964539007092197,
+                "delta_vs_phase_overall": 0.23979592341754744,
+                "day_block_bootstrap_95pct_ci": [
+                  0.39725932267884323,
+                  0.49114123581336694
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 41,
+                "candidate_days": 66,
+                "coverage": 0.0065796032299870405,
+                "rate": 0.6212121212121212,
+                "delta_vs_phase_overall": 0.41136265455874665,
+                "day_block_bootstrap_95pct_ci": [
+                  0.5135046230440967,
+                  0.7301883439943141
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 465,
+                "candidate_days": 2992,
+                "coverage": 0.29827534642607917,
+                "rate": 0.1554144385026738,
+                "delta_vs_phase_overall": -0.054435028150700726,
+                "day_block_bootstrap_95pct_ci": [
+                  0.14104183278586224,
+                  0.16789226164038787
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 871,
+                "candidate_days": 4950,
+                "coverage": 0.493470242249028,
+                "rate": 0.17595959595959595,
+                "delta_vs_phase_overall": -0.03388987069377858,
+                "day_block_bootstrap_95pct_ci": [
+                  0.15362752662028906,
+                  0.19975862854877255
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 176,
+                "candidate_days": 549,
+                "coverage": 0.05473033595852856,
+                "rate": 0.3205828779599271,
+                "delta_vs_phase_overall": 0.11073341130655259,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2802321557534906,
+                  0.36037807681256584
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 235,
+                "candidate_days": 769,
+                "coverage": 0.07666234672515203,
+                "rate": 0.305591677503251,
+                "delta_vs_phase_overall": 0.09574221084987647,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2575023144883907,
+                  0.34732226107226105
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 155,
+                "candidate_days": 338,
+                "coverage": 0.033695543814176054,
+                "rate": 0.45857988165680474,
+                "delta_vs_phase_overall": 0.2487304150034302,
+                "day_block_bootstrap_95pct_ci": [
+                  0.4,
+                  0.518765120967742
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 203,
+                "candidate_days": 433,
+                "coverage": 0.043166184827036186,
+                "rate": 0.46882217090069284,
+                "delta_vs_phase_overall": 0.25897270424731833,
+                "day_block_bootstrap_95pct_ci": [
+                  0.39368732754559527,
+                  0.5309520722334858
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "Y2_D_vendor_limit_down_pool": {
+        "events": 300,
+        "candidate_symbol_days": 10031,
+        "phase_eligible_candidate_coverage": 1.0,
+        "rate": 0.029907287409032,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.02334979166589082,
+          0.037415205451544795
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 167,
+                "candidate_days": 7942,
+                "coverage": 0.7917455886751071,
+                "rate": 0.02102744900528834,
+                "delta_vs_phase_overall": -0.008879838403743661,
+                "day_block_bootstrap_95pct_ci": [
+                  0.015805283820804893,
+                  0.02653294401421861
+                ]
+              },
+              {
+                "level": "2",
+                "events": 50,
+                "candidate_days": 1318,
+                "coverage": 0.1313926826836806,
+                "rate": 0.03793626707132018,
+                "delta_vs_phase_overall": 0.008028979662288181,
+                "day_block_bootstrap_95pct_ci": [
+                  0.026226422593301334,
+                  0.050549537350485216
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 83,
+                "candidate_days": 771,
+                "coverage": 0.07686172864121224,
+                "rate": 0.10765239948119326,
+                "delta_vs_phase_overall": 0.07774511207216125,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07928142829037971,
+                  0.14035774253647218
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 132,
+                "candidate_days": 7453,
+                "coverage": 0.742996710198385,
+                "rate": 0.017710988863544882,
+                "delta_vs_phase_overall": -0.012196298545487119,
+                "day_block_bootstrap_95pct_ci": [
+                  0.013538242499146879,
+                  0.02224869994978642
+                ]
+              },
+              {
+                "level": "2",
+                "events": 85,
+                "candidate_days": 1807,
+                "coverage": 0.18014156116040275,
+                "rate": 0.04703929164360819,
+                "delta_vs_phase_overall": 0.01713200423457619,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03109402658706744,
+                  0.06480558325024925
+                ]
+              },
+              {
+                "level": "3",
+                "events": 83,
+                "candidate_days": 771,
+                "coverage": 0.07686172864121224,
+                "rate": 0.10765239948119326,
+                "delta_vs_phase_overall": 0.07774511207216125,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07928142829037971,
+                  0.14035774253647218
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 100,
+                "candidate_days": 6592,
+                "coverage": 0.6571627953344632,
+                "rate": 0.01516990291262136,
+                "delta_vs_phase_overall": -0.014737384496410641,
+                "day_block_bootstrap_95pct_ci": [
+                  0.011220887036669637,
+                  0.019547161707145235
+                ]
+              },
+              {
+                "level": "2",
+                "events": 81,
+                "candidate_days": 2142,
+                "coverage": 0.2135380321004885,
+                "rate": 0.037815126050420166,
+                "delta_vs_phase_overall": 0.007907838641388165,
+                "day_block_bootstrap_95pct_ci": [
+                  0.027560634183668192,
+                  0.0487689552826927
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 119,
+                "candidate_days": 1297,
+                "coverage": 0.12929917256504836,
+                "rate": 0.09175019275250579,
+                "delta_vs_phase_overall": 0.06184290534347379,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06571951147366414,
+                  0.12229236974940223
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 252,
+                "candidate_days": 9291,
+                "coverage": 0.9262286910577211,
+                "rate": 0.027123022279625444,
+                "delta_vs_phase_overall": -0.002784265129406556,
+                "day_block_bootstrap_95pct_ci": [
+                  0.020725671140939598,
+                  0.0346329007720282
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 48,
+                "candidate_days": 740,
+                "coverage": 0.07377130894227893,
+                "rate": 0.06486486486486487,
+                "delta_vs_phase_overall": 0.03495757745583287,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04589318708967252,
+                  0.08534969473120853
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 32,
+                "candidate_days": 378,
+                "coverage": 0.03768318213538032,
+                "rate": 0.08465608465608465,
+                "delta_vs_phase_overall": 0.05474879724705265,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05908422459893048,
+                  0.11604171745490005
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 22,
+                "candidate_days": 502,
+                "coverage": 0.05004486093111355,
+                "rate": 0.043824701195219126,
+                "delta_vs_phase_overall": 0.013917413786187126,
+                "day_block_bootstrap_95pct_ci": [
+                  0.023604487247048903,
+                  0.06718016828974815
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 246,
+                "candidate_days": 9151,
+                "coverage": 0.9122719569335062,
+                "rate": 0.02688230794448694,
+                "delta_vs_phase_overall": -0.0030249794645450592,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02053207881778182,
+                  0.034204478875015584
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 19,
+                "candidate_days": 290,
+                "coverage": 0.028910377828730936,
+                "rate": 0.06551724137931035,
+                "delta_vs_phase_overall": 0.03560995397027835,
+                "day_block_bootstrap_95pct_ci": [
+                  0.036476798748696554,
+                  0.0959313575491396
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 59,
+                "candidate_days": 1136,
+                "coverage": 0.11324892832220118,
+                "rate": 0.05193661971830986,
+                "delta_vs_phase_overall": 0.02202933230927786,
+                "day_block_bootstrap_95pct_ci": [
+                  0.03586374658728037,
+                  0.0694459527946713
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 222,
+                "candidate_days": 8605,
+                "coverage": 0.8578406938490679,
+                "rate": 0.02579895409645555,
+                "delta_vs_phase_overall": -0.00410833331257645,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02032738685845018,
+                  0.03196807531137371
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 101,
+                "candidate_days": 6635,
+                "coverage": 0.6614495065297578,
+                "rate": 0.015222305953278071,
+                "delta_vs_phase_overall": -0.014684981455753929,
+                "day_block_bootstrap_95pct_ci": [
+                  0.011334413205121014,
+                  0.019470246550872282
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 199,
+                "candidate_days": 3396,
+                "coverage": 0.33855049347024224,
+                "rate": 0.058598351001177856,
+                "delta_vs_phase_overall": 0.028691063592145856,
+                "day_block_bootstrap_95pct_ci": [
+                  0.044132214593543447,
+                  0.07558396720181464
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 147,
+                "candidate_days": 3879,
+                "coverage": 0.3867012261987838,
+                "rate": 0.03789636504253674,
+                "delta_vs_phase_overall": 0.007989077633504739,
+                "day_block_bootstrap_95pct_ci": [
+                  0.027796594858857108,
+                  0.04968539775140364
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 153,
+                "candidate_days": 6152,
+                "coverage": 0.6132987738012162,
+                "rate": 0.02486996098829649,
+                "delta_vs_phase_overall": -0.005037326420735511,
+                "day_block_bootstrap_95pct_ci": [
+                  0.017505530363386607,
+                  0.03357985026727389
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 80,
+                "candidate_days": 2205,
+                "coverage": 0.2198185624563852,
+                "rate": 0.036281179138321996,
+                "delta_vs_phase_overall": 0.006373891729289996,
+                "day_block_bootstrap_95pct_ci": [
+                  0.023681835597915375,
+                  0.05073143339082174
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 63,
+                "candidate_days": 2625,
+                "coverage": 0.26168876482903003,
+                "rate": 0.024,
+                "delta_vs_phase_overall": -0.005907287409032,
+                "day_block_bootstrap_95pct_ci": [
+                  0.014696175100227544,
+                  0.03398987501977535
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 67,
+                "candidate_days": 1674,
+                "coverage": 0.16688266374239857,
+                "rate": 0.04002389486260454,
+                "delta_vs_phase_overall": 0.01011660745357254,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02910036964299715,
+                  0.04991537496502791
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 90,
+                "candidate_days": 3527,
+                "coverage": 0.35161000897218625,
+                "rate": 0.025517436915225403,
+                "delta_vs_phase_overall": -0.004389850493806597,
+                "day_block_bootstrap_95pct_ci": [
+                  0.016096971620572526,
+                  0.03451399550765165
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 125,
+                "candidate_days": 4549,
+                "coverage": 0.45349416807895526,
+                "rate": 0.02747856671795999,
+                "delta_vs_phase_overall": -0.002428720691072011,
+                "day_block_bootstrap_95pct_ci": [
+                  0.018803238383406817,
+                  0.03830632107210091
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 175,
+                "candidate_days": 5482,
+                "coverage": 0.5465058319210447,
+                "rate": 0.03192265596497629,
+                "delta_vs_phase_overall": 0.002015368555944287,
+                "day_block_bootstrap_95pct_ci": [
+                  0.024106427212228894,
+                  0.041286872872199724
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 125,
+                "candidate_days": 7408,
+                "coverage": 0.7385106170870303,
+                "rate": 0.01687365010799136,
+                "delta_vs_phase_overall": -0.013033637301040641,
+                "day_block_bootstrap_95pct_ci": [
+                  0.011746298808660896,
+                  0.022117001623462938
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 42,
+                "candidate_days": 534,
+                "coverage": 0.05323497158807696,
+                "rate": 0.07865168539325842,
+                "delta_vs_phase_overall": 0.048744397984226424,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05320900718973592,
+                  0.1079484808179891
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 47,
+                "candidate_days": 1178,
+                "coverage": 0.11743594855946565,
+                "rate": 0.039898132427843805,
+                "delta_vs_phase_overall": 0.009990845018811804,
+                "day_block_bootstrap_95pct_ci": [
+                  0.02628736165418517,
+                  0.05382850605397459
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 3,
+                "candidate_days": 140,
+                "coverage": 0.013956734124214934,
+                "rate": 0.02142857142857143,
+                "delta_vs_phase_overall": -0.008478715980460572,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0,
+                  0.044125816993464045
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 80,
+                "candidate_days": 705,
+                "coverage": 0.07028212541122521,
+                "rate": 0.11347517730496454,
+                "delta_vs_phase_overall": 0.08356788989593253,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08270128048547765,
+                  0.14980912663100912
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 3,
+                "candidate_days": 66,
+                "coverage": 0.0065796032299870405,
+                "rate": 0.045454545454545456,
+                "delta_vs_phase_overall": 0.015547258045513455,
+                "day_block_bootstrap_95pct_ci": [
+                  0.0,
+                  0.08771929824561403
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 81,
+                "candidate_days": 2992,
+                "coverage": 0.29827534642607917,
+                "rate": 0.027072192513368985,
+                "delta_vs_phase_overall": -0.002835094895663016,
+                "day_block_bootstrap_95pct_ci": [
+                  0.018996930615588523,
+                  0.03656073404616106
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 86,
+                "candidate_days": 4950,
+                "coverage": 0.493470242249028,
+                "rate": 0.017373737373737375,
+                "delta_vs_phase_overall": -0.012533550035294626,
+                "day_block_bootstrap_95pct_ci": [
+                  0.011359034316382403,
+                  0.024271868038969614
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 24,
+                "candidate_days": 549,
+                "coverage": 0.05473033595852856,
+                "rate": 0.04371584699453552,
+                "delta_vs_phase_overall": 0.013808559585503519,
+                "day_block_bootstrap_95pct_ci": [
+                  0.024955351186016196,
+                  0.06451761695036305
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 26,
+                "candidate_days": 769,
+                "coverage": 0.07666234672515203,
+                "rate": 0.033810143042912875,
+                "delta_vs_phase_overall": 0.003902855633880875,
+                "day_block_bootstrap_95pct_ci": [
+                  0.019969858448976315,
+                  0.04993776577645028
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 42,
+                "candidate_days": 338,
+                "coverage": 0.033695543814176054,
+                "rate": 0.1242603550295858,
+                "delta_vs_phase_overall": 0.09435306762055379,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08745973926380368,
+                  0.16446493931805048
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 41,
+                "candidate_days": 433,
+                "coverage": 0.043166184827036186,
+                "rate": 0.09468822170900693,
+                "delta_vs_phase_overall": 0.06478093429997492,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05580749354005168,
+                  0.13985197527286775
+                ]
+              }
+            ]
+          }
+        }
+      },
+      "Y3_D_to_D2_vendor_limit_down_pool": {
+        "events": 1056,
+        "candidate_symbol_days": 9836,
+        "phase_eligible_candidate_coverage": 0.9805602631841293,
+        "rate": 0.10736071573810492,
+        "five_trading_day_block_bootstrap_95pct_ci": [
+          0.0859050607951286,
+          0.1325292125608313
+        ],
+        "groups": {
+          "vendor_streak": {
+            "field": "vendor_streak_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 568,
+                "candidate_days": 7774,
+                "coverage": 0.7903619357462383,
+                "rate": 0.07306405968613326,
+                "delta_vs_phase_overall": -0.03429665605197166,
+                "day_block_bootstrap_95pct_ci": [
+                  0.057588281294691165,
+                  0.0899838100712394
+                ]
+              },
+              {
+                "level": "2",
+                "events": 220,
+                "candidate_days": 1300,
+                "coverage": 0.1321675477836519,
+                "rate": 0.16923076923076924,
+                "delta_vs_phase_overall": 0.06187005349266432,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13269076218510176,
+                  0.2105301659415547
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 268,
+                "candidate_days": 762,
+                "coverage": 0.0774705164701098,
+                "rate": 0.35170603674540685,
+                "delta_vs_phase_overall": 0.24434532100730194,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2757748447204969,
+                  0.432223047352787
+                ]
+              }
+            ]
+          },
+          "limit_up_count_3": {
+            "field": "limit_up_count_3_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 464,
+                "candidate_days": 7294,
+                "coverage": 0.7415616104107361,
+                "rate": 0.0636139292569235,
+                "delta_vs_phase_overall": -0.043746786481181424,
+                "day_block_bootstrap_95pct_ci": [
+                  0.05088289426497442,
+                  0.07717704965971153
+                ]
+              },
+              {
+                "level": "2",
+                "events": 324,
+                "candidate_days": 1780,
+                "coverage": 0.18096787311915413,
+                "rate": 0.18202247191011237,
+                "delta_vs_phase_overall": 0.07466175617200745,
+                "day_block_bootstrap_95pct_ci": [
+                  0.14166188029020557,
+                  0.22823128641607904
+                ]
+              },
+              {
+                "level": "3",
+                "events": 268,
+                "candidate_days": 762,
+                "coverage": 0.0774705164701098,
+                "rate": 0.35170603674540685,
+                "delta_vs_phase_overall": 0.24434532100730194,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2757748447204969,
+                  0.432223047352787
+                ]
+              }
+            ]
+          },
+          "limit_up_count_5": {
+            "field": "limit_up_count_5_group",
+            "groups": [
+              {
+                "level": "1",
+                "events": 355,
+                "candidate_days": 6457,
+                "coverage": 0.656466043106954,
+                "rate": 0.05497909245779774,
+                "delta_vs_phase_overall": -0.05238162328030718,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04318784639990217,
+                  0.066699593876592
+                ]
+              },
+              {
+                "level": "2",
+                "events": 300,
+                "candidate_days": 2098,
+                "coverage": 0.21329808865392436,
+                "rate": 0.14299332697807435,
+                "delta_vs_phase_overall": 0.03563261123996943,
+                "day_block_bootstrap_95pct_ci": [
+                  0.11133074033303209,
+                  0.17885764382920666
+                ]
+              },
+              {
+                "level": "3+",
+                "events": 401,
+                "candidate_days": 1281,
+                "coverage": 0.1302358682391216,
+                "rate": 0.31303669008587043,
+                "delta_vs_phase_overall": 0.20567597434776552,
+                "day_block_bootstrap_95pct_ci": [
+                  0.24797843665768193,
+                  0.38393486613747974
+                ]
+              }
+            ]
+          },
+          "limit_down_count_5": {
+            "field": "limit_down_count_5_group",
+            "groups": [
+              {
+                "level": "0",
+                "events": 902,
+                "candidate_days": 9120,
+                "coverage": 0.9272061813745425,
+                "rate": 0.09890350877192983,
+                "delta_vs_phase_overall": -0.008457206966175093,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07694791291996891,
+                  0.12527443893191645
+                ]
+              },
+              {
+                "level": "1+",
+                "events": 154,
+                "candidate_days": 716,
+                "coverage": 0.0727938186254575,
+                "rate": 0.21508379888268156,
+                "delta_vs_phase_overall": 0.10772308314457664,
+                "day_block_bootstrap_95pct_ci": [
+                  0.16983177785459155,
+                  0.26142035130224106
+                ]
+              }
+            ]
+          },
+          "days_since_limit_down": {
+            "field": "days_since_limit_down_group",
+            "groups": [
+              {
+                "level": "0-2",
+                "events": 78,
+                "candidate_days": 363,
+                "coverage": 0.03690524603497357,
+                "rate": 0.21487603305785125,
+                "delta_vs_phase_overall": 0.10751531731974633,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1676777468624201,
+                  0.2649761904761905
+                ]
+              },
+              {
+                "level": "3-5",
+                "events": 109,
+                "candidate_days": 490,
+                "coverage": 0.049816998779991864,
+                "rate": 0.22244897959183674,
+                "delta_vs_phase_overall": 0.11508826385373182,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1680651509615704,
+                  0.2750735240055878
+                ]
+              },
+              {
+                "level": ">5_OR_NEVER",
+                "events": 869,
+                "candidate_days": 8983,
+                "coverage": 0.9132777551850345,
+                "rate": 0.0967382834242458,
+                "delta_vs_phase_overall": -0.01062243231385912,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07445650815887048,
+                  0.12289885357014144
+                ]
+              }
+            ]
+          },
+          "recent_acceleration": {
+            "field": "recent_limit_up_acceleration_group",
+            "groups": [
+              {
+                "level": "WEAKENING",
+                "events": 69,
+                "candidate_days": 284,
+                "coverage": 0.02887352582350549,
+                "rate": 0.24295774647887325,
+                "delta_vs_phase_overall": 0.13559703074076834,
+                "day_block_bootstrap_95pct_ci": [
+                  0.17406184486373166,
+                  0.31546172797553307
+                ]
+              },
+              {
+                "level": "STABLE",
+                "events": 176,
+                "candidate_days": 1106,
+                "coverage": 0.11244408296055307,
+                "rate": 0.15913200723327306,
+                "delta_vs_phase_overall": 0.05177129149516814,
+                "day_block_bootstrap_95pct_ci": [
+                  0.12168922320007794,
+                  0.2022746892365089
+                ]
+              },
+              {
+                "level": "ACCELERATING",
+                "events": 811,
+                "candidate_days": 8446,
+                "coverage": 0.8586823912159415,
+                "rate": 0.09602178546057305,
+                "delta_vs_phase_overall": -0.01133893027753187,
+                "day_block_bootstrap_95pct_ci": [
+                  0.076007192202679,
+                  0.11989892884111321
+                ]
+              }
+            ]
+          },
+          "market_relative_persistence": {
+            "field": "market_relative_up5_group",
+            "groups": [
+              {
+                "level": "BELOW_PEER_MEAN",
+                "events": 361,
+                "candidate_days": 6500,
+                "coverage": 0.6608377389182595,
+                "rate": 0.05553846153846154,
+                "delta_vs_phase_overall": -0.05182225419964338,
+                "day_block_bootstrap_95pct_ci": [
+                  0.04377006713293063,
+                  0.06732026462401533
+                ]
+              },
+              {
+                "level": "AT_OR_ABOVE_PEER_MEAN",
+                "events": 695,
+                "candidate_days": 3336,
+                "coverage": 0.3391622610817405,
+                "rate": 0.20833333333333334,
+                "delta_vs_phase_overall": 0.10097261759522842,
+                "day_block_bootstrap_95pct_ci": [
+                  0.16533916521873962,
+                  0.2608807931116733
+                ]
+              }
+            ]
+          },
+          "breadth_fixed_83": {
+            "field": "breadth_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 451,
+                "candidate_days": 3806,
+                "coverage": 0.38694591297275316,
+                "rate": 0.11849710982658959,
+                "delta_vs_phase_overall": 0.011136394088484672,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09711095786023197,
+                  0.13767858384251636
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 605,
+                "candidate_days": 6030,
+                "coverage": 0.6130540870272468,
+                "rate": 0.10033167495854063,
+                "delta_vs_phase_overall": -0.007029040779564288,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07259544832932968,
+                  0.1302263158476399
+                ]
+              }
+            ]
+          },
+          "breadth_transition_fixed_83": {
+            "field": "market_transition_group",
+            "groups": [
+              {
+                "level": "LOW_TO_LOW",
+                "events": 256,
+                "candidate_days": 2205,
+                "coverage": 0.2241764945099634,
+                "rate": 0.11609977324263039,
+                "delta_vs_phase_overall": 0.008739057504525471,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09171695313054827,
+                  0.14485480339496606
+                ]
+              },
+              {
+                "level": "LOW_TO_HIGH",
+                "events": 235,
+                "candidate_days": 2503,
+                "coverage": 0.25447336315575436,
+                "rate": 0.09388733519776268,
+                "delta_vs_phase_overall": -0.013473380540342236,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06464208438514245,
+                  0.1277833913425774
+                ]
+              },
+              {
+                "level": "HIGH_TO_LOW",
+                "events": 195,
+                "candidate_days": 1601,
+                "coverage": 0.16276941846278975,
+                "rate": 0.12179887570268583,
+                "delta_vs_phase_overall": 0.014438159964580907,
+                "day_block_bootstrap_95pct_ci": [
+                  0.08733424332198908,
+                  0.15646631595965627
+                ]
+              },
+              {
+                "level": "HIGH_TO_HIGH",
+                "events": 370,
+                "candidate_days": 3527,
+                "coverage": 0.3585807238714925,
+                "rate": 0.10490501842925999,
+                "delta_vs_phase_overall": -0.0024556973088449285,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06916469382266466,
+                  0.1401251858369346
+                ]
+              }
+            ]
+          },
+          "theme_concentration_train_median": {
+            "field": "theme_hhi_group",
+            "groups": [
+              {
+                "level": "LOW",
+                "events": 449,
+                "candidate_days": 4549,
+                "coverage": 0.46248474989833266,
+                "rate": 0.09870301165091229,
+                "delta_vs_phase_overall": -0.00865770408719263,
+                "day_block_bootstrap_95pct_ci": [
+                  0.07716108309269797,
+                  0.12564530391378695
+                ]
+              },
+              {
+                "level": "HIGH",
+                "events": 607,
+                "candidate_days": 5287,
+                "coverage": 0.5375152501016673,
+                "rate": 0.11480991110270475,
+                "delta_vs_phase_overall": 0.007449195364599828,
+                "day_block_bootstrap_95pct_ci": [
+                  0.09106506411860481,
+                  0.13892178081536322
+                ]
+              },
+              {
+                "level": "UNKNOWN",
+                "events": 0,
+                "candidate_days": 0,
+                "coverage": 0.0,
+                "rate": null,
+                "delta_vs_phase_overall": null,
+                "day_block_bootstrap_95pct_ci": null
+              }
+            ]
+          },
+          "streak_x_down5": {
+            "field": "streak_down5_group",
+            "groups": [
+              {
+                "level": "1|0",
+                "events": 465,
+                "candidate_days": 7260,
+                "coverage": 0.7381049206994713,
+                "rate": 0.0640495867768595,
+                "delta_vs_phase_overall": -0.04331112896124542,
+                "day_block_bootstrap_95pct_ci": [
+                  0.048991708423565254,
+                  0.08062815629806885
+                ]
+              },
+              {
+                "level": "1|1+",
+                "events": 103,
+                "candidate_days": 514,
+                "coverage": 0.052257015046766976,
+                "rate": 0.20038910505836577,
+                "delta_vs_phase_overall": 0.09302838932026085,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1519744072852881,
+                  0.2494316800506288
+                ]
+              },
+              {
+                "level": "2|0",
+                "events": 193,
+                "candidate_days": 1162,
+                "coverage": 0.118137454249695,
+                "rate": 0.16609294320137694,
+                "delta_vs_phase_overall": 0.058732227463272016,
+                "day_block_bootstrap_95pct_ci": [
+                  0.12567117279775133,
+                  0.20953656462585032
+                ]
+              },
+              {
+                "level": "2|1+",
+                "events": 27,
+                "candidate_days": 138,
+                "coverage": 0.014030093533956893,
+                "rate": 0.1956521739130435,
+                "delta_vs_phase_overall": 0.08829145817493857,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13326923076923078,
+                  0.2585034013605442
+                ]
+              },
+              {
+                "level": "3+|0",
+                "events": 244,
+                "candidate_days": 698,
+                "coverage": 0.07096380642537617,
+                "rate": 0.3495702005730659,
+                "delta_vs_phase_overall": 0.24220948483496102,
+                "day_block_bootstrap_95pct_ci": [
+                  0.26980255516840884,
+                  0.43573359073359075
+                ]
+              },
+              {
+                "level": "3+|1+",
+                "events": 24,
+                "candidate_days": 64,
+                "coverage": 0.0065067100447336315,
+                "rate": 0.375,
+                "delta_vs_phase_overall": 0.2676392842618951,
+                "day_block_bootstrap_95pct_ci": [
+                  0.2407222222222222,
+                  0.4807753164556962
+                ]
+              }
+            ]
+          },
+          "streak_x_breadth": {
+            "field": "streak_breadth_group",
+            "groups": [
+              {
+                "level": "1|LOW",
+                "events": 226,
+                "candidate_days": 2931,
+                "coverage": 0.2979869865799105,
+                "rate": 0.07710678949164108,
+                "delta_vs_phase_overall": -0.030253926246463836,
+                "day_block_bootstrap_95pct_ci": [
+                  0.06327712519120274,
+                  0.09195001336541031
+                ]
+              },
+              {
+                "level": "1|HIGH",
+                "events": 342,
+                "candidate_days": 4843,
+                "coverage": 0.4923749491663278,
+                "rate": 0.07061738591781953,
+                "delta_vs_phase_overall": -0.036743329820285386,
+                "day_block_bootstrap_95pct_ci": [
+                  0.048528931913716156,
+                  0.0934228019178178
+                ]
+              },
+              {
+                "level": "2|LOW",
+                "events": 104,
+                "candidate_days": 542,
+                "coverage": 0.055103700691337944,
+                "rate": 0.1918819188191882,
+                "delta_vs_phase_overall": 0.08452120308108328,
+                "day_block_bootstrap_95pct_ci": [
+                  0.13930472894294219,
+                  0.24132258000633713
+                ]
+              },
+              {
+                "level": "2|HIGH",
+                "events": 116,
+                "candidate_days": 758,
+                "coverage": 0.07706384709231395,
+                "rate": 0.15303430079155672,
+                "delta_vs_phase_overall": 0.0456735850534518,
+                "day_block_bootstrap_95pct_ci": [
+                  0.1129718939404898,
+                  0.20130825057295645
+                ]
+              },
+              {
+                "level": "3+|LOW",
+                "events": 121,
+                "candidate_days": 333,
+                "coverage": 0.033855225701504676,
+                "rate": 0.3633633633633634,
+                "delta_vs_phase_overall": 0.2560026476252585,
+                "day_block_bootstrap_95pct_ci": [
+                  0.29543758480325644,
+                  0.4325928336530556
+                ]
+              },
+              {
+                "level": "3+|HIGH",
+                "events": 147,
+                "candidate_days": 429,
+                "coverage": 0.043615290768605125,
+                "rate": 0.34265734265734266,
+                "delta_vs_phase_overall": 0.23529662691923775,
+                "day_block_bootstrap_95pct_ci": [
+                  0.24236241428685776,
+                  0.45557017543859646
+                ]
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
+  "feature_matrix_normalized_sha256": "f1a8a9e34feb9bffc78bdb9cfe35dae2c0fe1418f9fe4b13822be205845b5dd9",
+  "feature_matrix_output_path": "LOCAL_IGNORED_ONLY (path supplied by --matrix-out)",
+  "feature_matrix_source_sha_scope": "Partition SHA256 values are stored per row; archive SHA256 values are recorded in the aggregate report."
+}

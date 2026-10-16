@@ -1,0 +1,140 @@
+name: h01-evidence-pilot
+
+on:
+  push:
+    paths:
+      - ".github/workflows/h01-evidence-pilot.yml"
+  workflow_dispatch:
+
+jobs:
+  audited-activity-slice:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+    env:
+      DATA_ROOT: /tmp/h01-real-xgb
+      OUT_ROOT: /tmp/h01-activity-pilot
+      START_DATE: "2025-01-02"
+      END_DATE: "2025-03-31"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install audited research package
+        run: pip install -e ".[dev]"
+      - name: Run deterministic tests
+        run: pytest
+      - name: Real public source preflight
+        run: logic-b preflight-xgb --date 2025-03-31
+      - name: Fetch historical market-wide event lists
+        run: |
+          set -euo pipefail
+          logic-b fetch-xgb-evidence \
+            --start "$START_DATE" \
+            --end "$END_DATE" \
+            --data-root "$DATA_ROOT" \
+            --sleep 0.05
+      - name: Audit H01 market activity (blocked ledger status is EXPECTED)
+        run: |
+          set -euo pipefail
+          set +e
+          python -m logic_b.h01_cli \
+            --data-root "$DATA_ROOT" \
+            --start "$START_DATE" \
+            --end "$END_DATE" \
+            --out "$OUT_ROOT"
+          rc=$?
+          set -e
+          echo "Research status code: $rc"
+          H01_RC="$rc" python - <<'PY'
+          import json, os
+          from pathlib import Path
+          import pandas as pd
+          root=Path(os.environ["OUT_ROOT"])
+          s=json.loads((root/"h01_readiness.json").read_text())
+          assert int(os.environ["H01_RC"]) == 2, (os.environ["H01_RC"], s)
+          assert s["status"] == "BLOCKED_MISSING_EXECUTABLE_COHORT_LEDGER", s
+          a=pd.read_parquet(root/"h01_market_activity.parquet")
+          assert len(a)>=35, "inadequate historical market window"
+          assert a["trade_date"].nunique()==len(a)
+          r=a["repeat_rate"].dropna()
+          assert len(r)>=30
+          assert r.between(0,1).all()
+          summary={
+              "data_status":"MARKET_ACTIVITY_AUDITED",
+              "h01_experience_status":s["status"],
+              "scope":"Jan-Mar 2025 historical public XGB event-list sample",
+              "trade_days":int(len(a)),
+              "repeat_rate_observed_days":int(len(r)),
+              "mean_repeat_fraction":float(r.mean()),
+              "median_repeat_fraction":float(r.median()),
+              "limit_up_day_median":float(a.limitup_count.median()),
+              "first":str(a.trade_date.iloc[0]),
+              "last":str(a.trade_date.iloc[-1]),
+              "forecast_mae":None,
+              "net_alpha":None,
+              "causal_psychology_proven":False,
+          }
+          (root/"real_data_audit.json").write_text(
+              json.dumps(summary,indent=2,ensure_ascii=False)
+          )
+          print(json.dumps(summary,ensure_ascii=False,indent=2))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as fh:
+              fh.write("# H01 Real-Market Data Audit\n\n")
+              for k,v in summary.items():
+                  fh.write(f"- {k}: {v}\n")
+          PY
+      - name: Historical market-experience H01 forecast diagnostic
+        run: |
+          set -euo pipefail
+          set +e
+          python -m logic_b.h01_cli \
+            --data-root "$DATA_ROOT" \
+            --start "$START_DATE" \
+            --end "$END_DATE" \
+            --vendor-market-experience \
+            --audit-market-summary \
+            --min-train 20 \
+            --min-test 15 \
+            --out /tmp/h01-vendor-probe
+          rc=$?
+          set -e
+          H01_RC="$rc" python - <<'PY'
+          import json, os
+          from pathlib import Path
+          root=Path("/tmp/h01-vendor-probe")
+          rc=int(os.environ["H01_RC"])
+          metrics=root/"h01_metrics.json"
+          if metrics.exists() and rc==0:
+              result=json.loads(metrics.read_text())
+              state="EXPLORATORY_FORECAST_COMPUTED"
+          else:
+              report=root/"h01_readiness.json"
+              result=json.loads(report.read_text()) if report.exists() else {
+                  "status":"BLOCKED_MISSING_REPORT"
+              }
+              state="BLOCKED_EXPERIENCE_STUDY"
+          out={"status":state,"cli_rc":rc,"result":result}
+          root.mkdir(parents=True,exist_ok=True)
+          (root/"probe_status.json").write_text(json.dumps(out,indent=2,ensure_ascii=False))
+          print(json.dumps(out,indent=2,ensure_ascii=False))
+          with open(os.environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as f:
+              f.write("\\n## H01 experience forecast pilot (unseen holdout NOT evaluated)\\n\\n")
+              f.write(f"- status: {state}\\n")
+              for k in ["baseline_mae","h01_mae","paired_mae_improvement","test_days","reason"]:
+                  if k in result:
+                      f.write(f"- {k}: {result[k]}\\n")
+          PY
+      - name: Archive real market audit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: h01-activity-2025q1
+          retention-days: 14
+          path: |
+            /tmp/h01-activity-pilot/
+            /tmp/h01-vendor-probe/
+          if-no-files-found: warn

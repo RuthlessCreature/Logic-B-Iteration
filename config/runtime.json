@@ -1,0 +1,54 @@
+{
+  "schema_version": "logic-b-runtime-v0.1",
+  "status": "SCAFFOLD_NOT_DEPLOYED",
+  "mode": "SHADOW",
+  "orders_transmitted": 0,
+  "timezone": "Asia/Shanghai",
+  "review_checkpoint": "09:35",
+  "hard_rules": {
+    "risk_gate_cannot_be_overridden": true,
+    "allow_auto_broker_orders": false,
+    "unverified_features_default_no_follow": true,
+    "protected_backtest_from": "2026-07-01",
+    "protected_backtest_through": "2026-09-28"
+  },
+  "roles": {
+    "codex": {
+      "stage": "OFFLINE_RESEARCH_ONLY",
+      "used_in_runtime": false
+    },
+    "deterministic": {
+      "stage": "RUNTIME_REQUIRED",
+      "enabled": true,
+      "hard_gate_authority": true
+    },
+    "deepseek": {
+      "stage": "RUNTIME_CONTEXT_INFERENCE",
+      "enabled": false,
+      "network_calls_allowed": false,
+      "transport": "NOT_CONNECTED",
+      "on_error": "NO_FOLLOW",
+      "credential_env": "DEEPSEEK_API_KEY",
+      "endpoint": "https://api.deepseek.com/chat/completions",
+      "model": null
+    },
+    "jev_typesafe": {
+      "stage": "RUNTIME_TYPED_DECISION",
+      "enabled": false,
+      "network_calls_allowed": false,
+      "transport": "NOT_CONNECTED",
+      "on_error": "NO_FOLLOW",
+      "credential_env": "TYPESAFE_API_KEY",
+      "endpoint": "https://api.typesafe.ai/v1/systemone",
+      "model": null
+    }
+  },
+  "promotion": {
+    "approved_strategy_sha": null,
+    "approved_risk_policy_sha": null,
+    "require_manual_approval": true
+  },
+  "advisory_use": "SHADOW_ONLY_UNTIL_VALIDATED",
+  "degraded_mode": "NO_FOLLOW",
+  "external_provider_call_budget": 0
+}

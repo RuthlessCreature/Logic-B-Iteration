@@ -1,0 +1,295 @@
+[
+  {
+    "iteration": 0,
+    "version": "V0_SIMPLE_STREAK",
+    "parent_strategy_sha": null,
+    "candidate_strategy_sha": "b026cb4ab7b2650e5794c27e9d1d53757257db56386b743f5b41121b04eb5885",
+    "hypothesis": "原始昨日涨停候选排序作为负面基线。",
+    "participant_psychology_mechanism": "候选延续排序代理；不代表完整 Logic A。",
+    "parameters": {
+      "min_streak": 1,
+      "max_breaks": 100,
+      "min_market_temperature": null
+    },
+    "expected_direction": "固定参照。",
+    "falsification_criteria": "训练风险调整分数不改善，或执行/来源门禁不满足则拒绝晋级。",
+    "train": {
+      "sessions": 243,
+      "initial_cash": 10000.0,
+      "final_equity": 2307.82363,
+      "return_pct": -76.9218,
+      "max_drawdown_pct": -78.0509,
+      "economic_reconciliation": true,
+      "coverage_status": "SIMULATED_FULL_COVERAGE",
+      "buy_fills": 65,
+      "sell_fills": 65,
+      "completed_trades": 65,
+      "order_reasons": {
+        "NO_FILL_LIMIT_UP": 85,
+        "SIMULATED_BAR_CLOSE_FILL": 130,
+        "NO_FILL_LIMIT_DOWN": 15,
+        "SUSPENDED": 6,
+        "INSUFFICIENT_CASH_FOR_100_SHARES": 6
+      },
+      "fees_total": 767.17637,
+      "fee_commission": 650.0,
+      "fee_transfer": 4.57337,
+      "fee_stamp": 112.603,
+      "turnover_cny": 457337.0,
+      "cash_days": 163,
+      "locked_or_unfilled_limit_up": 85,
+      "locked_or_unfilled_limit_down": 15,
+      "corporate_action_flags": 48,
+      "classification": "BAR_CLOSE_SIMULATION_NOT_REAL_FILL"
+    },
+    "train_score": -115.94725,
+    "decision": "KEEP_AS_REFERENCE",
+    "decision_reason": "所有版本只作探索性价格条模拟；官方价限、09:35 PIT、公司行动及全市场候选覆盖门禁未通过，不能成为交易候选。",
+    "next_train_experiment": "保留 V0 对照；只有补齐可得性/价格限制证据后才考虑额外版本。",
+    "source_coverage": {
+      "event_days": 243,
+      "xuangubao_event_rows": 31779,
+      "unique_daily_symbols": 100,
+      "daily_symbol_days": 24184,
+      "minute_symbol_days": 236,
+      "minute_bars": 11328,
+      "coverage_complete_for_version_path_only": true,
+      "missing_daily_target_days": 0,
+      "missing_minute_target_days": 0,
+      "suspended_target_days": 6,
+      "unknown_trade_status_target_days": 0,
+      "event_failures": 0,
+      "daily_failures": 0,
+      "baostock_retries": 0,
+      "baostock_api_failures": 0,
+      "baostock_queries": 0,
+      "calendar_cache": {
+        "cache_reused_bytes": 7218,
+        "cache_reused_months": 12,
+        "downloaded_bytes": 0,
+        "downloaded_months": 0
+      },
+      "events_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_files": 0,
+        "reused_bytes": 4264997,
+        "reused_files": 243
+      },
+      "minute_cache": {
+        "cache_reused_bytes": 1640553,
+        "cache_reused_files": 236,
+        "downloaded_bytes": 0,
+        "downloaded_files": 0
+      },
+      "daily_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_months": 0,
+        "reused_bytes": 5334353,
+        "reused_months": 1200
+      },
+      "classification": "CANDIDATE_POOL_PROXY_NOT_FULL_MARKET_PRICE_COVERAGE"
+    },
+    "data_snapshot_sha256": "438accbad744d668b5b91fffd8b49822a4cec6b6d4f047fb3d16d244087c4e61",
+    "date_window": [
+      "2025-01-02",
+      "2025-12-31"
+    ],
+    "session_count": 243
+  },
+  {
+    "iteration": 1,
+    "version": "V1_MARKET_STATE_GATE",
+    "parent_strategy_sha": "b026cb4ab7b2650e5794c27e9d1d53757257db56386b743f5b41121b04eb5885",
+    "candidate_strategy_sha": "89fccd5d2e012dcde0cef0a9da1d2231b69ed456451cef829f050cf458a2b458",
+    "hypothesis": "昨日选股宝 market_temperature < 40 时不新开仓，减少低风险偏好代理状态下的暴露。",
+    "participant_psychology_mechanism": "仅把供应商温度当作市场风险偏好代理；不声称识别真实心理。",
+    "parameters": {
+      "min_streak": 1,
+      "max_breaks": 100,
+      "min_market_temperature": 40
+    },
+    "expected_direction": "降低弱市暴露/失败接力暴露；收益和风险都可能恶化。",
+    "falsification_criteria": "训练风险调整分数不改善，或执行/来源门禁不满足则拒绝晋级。",
+    "train": {
+      "sessions": 243,
+      "initial_cash": 10000.0,
+      "final_equity": 1938.80161,
+      "return_pct": -80.612,
+      "max_drawdown_pct": -81.2785,
+      "economic_reconciliation": true,
+      "coverage_status": "SIMULATED_FULL_COVERAGE",
+      "buy_fills": 52,
+      "sell_fills": 52,
+      "completed_trades": 52,
+      "order_reasons": {
+        "MARKET_GATE": 47,
+        "SIMULATED_BAR_CLOSE_FILL": 104,
+        "NO_FILL_LIMIT_DOWN": 13,
+        "NO_FILL_LIMIT_UP": 69,
+        "SUSPENDED": 3,
+        "INSUFFICIENT_CASH_FOR_100_SHARES": 6
+      },
+      "fees_total": 598.19839,
+      "fee_commission": 520.0,
+      "fee_transfer": 3.07939,
+      "fee_stamp": 75.119,
+      "turnover_cny": 307939.0,
+      "cash_days": 178,
+      "locked_or_unfilled_limit_up": 69,
+      "locked_or_unfilled_limit_down": 13,
+      "corporate_action_flags": 31,
+      "classification": "BAR_CLOSE_SIMULATION_NOT_REAL_FILL"
+    },
+    "train_score": -121.25125,
+    "decision": "REJECT",
+    "decision_reason": "所有版本只作探索性价格条模拟；官方价限、09:35 PIT、公司行动及全市场候选覆盖门禁未通过，不能成为交易候选。",
+    "next_train_experiment": "保留 V0 对照；只有补齐可得性/价格限制证据后才考虑额外版本。",
+    "source_coverage": {
+      "event_days": 243,
+      "xuangubao_event_rows": 31779,
+      "unique_daily_symbols": 79,
+      "daily_symbol_days": 19081,
+      "minute_symbol_days": 192,
+      "minute_bars": 9216,
+      "coverage_complete_for_version_path_only": true,
+      "missing_daily_target_days": 0,
+      "missing_minute_target_days": 0,
+      "suspended_target_days": 3,
+      "unknown_trade_status_target_days": 0,
+      "event_failures": 0,
+      "daily_failures": 0,
+      "baostock_retries": 0,
+      "baostock_api_failures": 0,
+      "baostock_queries": 0,
+      "calendar_cache": {
+        "cache_reused_bytes": 7218,
+        "cache_reused_months": 12,
+        "downloaded_bytes": 0,
+        "downloaded_months": 0
+      },
+      "events_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_files": 0,
+        "reused_bytes": 4264997,
+        "reused_files": 243
+      },
+      "minute_cache": {
+        "cache_reused_bytes": 1335263,
+        "cache_reused_files": 192,
+        "downloaded_bytes": 0,
+        "downloaded_files": 0
+      },
+      "daily_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_months": 0,
+        "reused_bytes": 4207217,
+        "reused_months": 948
+      },
+      "classification": "CANDIDATE_POOL_PROXY_NOT_FULL_MARKET_PRICE_COVERAGE"
+    },
+    "data_snapshot_sha256": "4f2d0c572df8a6cd961b3d1ec8ef657bb48be7c06ab4e4761bad108836beb2c3",
+    "date_window": [
+      "2025-01-02",
+      "2025-12-31"
+    ],
+    "session_count": 243
+  },
+  {
+    "iteration": 2,
+    "version": "V2_BREAK_FEEDBACK_VETO",
+    "parent_strategy_sha": "89fccd5d2e012dcde0cef0a9da1d2231b69ed456451cef829f050cf458a2b458",
+    "candidate_strategy_sha": "7d649daa67efa9c4e6cf2eb1e7a4576d6f4b4dfc409b82ed61c339872a1c8c78",
+    "hypothesis": "在 V1 之外，昨日候选炸板次数 > 1 时拒绝该候选，检验个股负反馈代理是否减少尾部损失。",
+    "participant_psychology_mechanism": "炸板次数代理接力失败/负反馈；没有订单流或投资者账户数据。",
+    "parameters": {
+      "min_streak": 1,
+      "max_breaks": 1,
+      "min_market_temperature": 40
+    },
+    "expected_direction": "降低弱市暴露/失败接力暴露；收益和风险都可能恶化。",
+    "falsification_criteria": "训练风险调整分数不改善，或执行/来源门禁不满足则拒绝晋级。",
+    "train": {
+      "sessions": 243,
+      "initial_cash": 10000.0,
+      "final_equity": 3920.65574,
+      "return_pct": -60.7934,
+      "max_drawdown_pct": -62.3941,
+      "economic_reconciliation": true,
+      "coverage_status": "SIMULATED_FULL_COVERAGE",
+      "buy_fills": 48,
+      "sell_fills": 48,
+      "completed_trades": 48,
+      "order_reasons": {
+        "MARKET_GATE": 51,
+        "SIMULATED_BAR_CLOSE_FILL": 96,
+        "NO_FILL_LIMIT_DOWN": 8,
+        "NO_FILL_LIMIT_UP": 81,
+        "SUSPENDED": 4,
+        "INSUFFICIENT_CASH_FOR_100_SHARES": 2
+      },
+      "fees_total": 601.34426,
+      "fee_commission": 480.0,
+      "fee_transfer": 4.71976,
+      "fee_stamp": 116.6245,
+      "turnover_cny": 471976.0,
+      "cash_days": 187,
+      "locked_or_unfilled_limit_up": 81,
+      "locked_or_unfilled_limit_down": 8,
+      "corporate_action_flags": 37,
+      "classification": "BAR_CLOSE_SIMULATION_NOT_REAL_FILL"
+    },
+    "train_score": -91.99045,
+    "decision": "REJECT",
+    "decision_reason": "所有版本只作探索性价格条模拟；官方价限、09:35 PIT、公司行动及全市场候选覆盖门禁未通过，不能成为交易候选。",
+    "next_train_experiment": "保留 V0 对照；只有补齐可得性/价格限制证据后才考虑额外版本。",
+    "source_coverage": {
+      "event_days": 243,
+      "xuangubao_event_rows": 31779,
+      "unique_daily_symbols": 84,
+      "daily_symbol_days": 20296,
+      "minute_symbol_days": 187,
+      "minute_bars": 8976,
+      "coverage_complete_for_version_path_only": true,
+      "missing_daily_target_days": 0,
+      "missing_minute_target_days": 0,
+      "suspended_target_days": 4,
+      "unknown_trade_status_target_days": 0,
+      "event_failures": 0,
+      "daily_failures": 0,
+      "baostock_retries": 0,
+      "baostock_api_failures": 0,
+      "baostock_queries": 0,
+      "calendar_cache": {
+        "cache_reused_bytes": 7218,
+        "cache_reused_months": 12,
+        "downloaded_bytes": 0,
+        "downloaded_months": 0
+      },
+      "events_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_files": 0,
+        "reused_bytes": 4264997,
+        "reused_files": 243
+      },
+      "minute_cache": {
+        "cache_reused_bytes": 1301319,
+        "cache_reused_files": 187,
+        "downloaded_bytes": 0,
+        "downloaded_files": 0
+      },
+      "daily_cache": {
+        "downloaded_bytes": 0,
+        "downloaded_months": 0,
+        "reused_bytes": 4453601,
+        "reused_months": 1008
+      },
+      "classification": "CANDIDATE_POOL_PROXY_NOT_FULL_MARKET_PRICE_COVERAGE"
+    },
+    "data_snapshot_sha256": "f5575ceb4034a4c95f431b7ea30ebc7ed510cea85846738d134d1762eae58f87",
+    "date_window": [
+      "2025-01-02",
+      "2025-12-31"
+    ],
+    "session_count": 243
+  }
+]

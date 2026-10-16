@@ -1,0 +1,10 @@
+{
+  "name": "Market breadth veto experiment",
+  "hypothesis": "A stricter historical market temperature and small break count may reduce locked exits at the expense of opportunities.",
+  "risk": "May select too few symbols to beat minimum commissions; validation is not untouched.",
+  "params": {
+    "min_streak": 1,
+    "max_breaks": 1,
+    "min_market_temperature": 40
+  }
+}

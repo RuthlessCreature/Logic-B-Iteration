@@ -1,0 +1,68 @@
+name: h02-baostock-2020-independent-daily-probe
+on:
+  push:
+    paths: [".github/workflows/h02-baostock-2020-independent-daily-probe.yml"]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 9
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install baostock pandas
+      - name: Independently query 2020 unadjusted daily ST and trade status
+        shell: bash
+        run: |
+          mkdir -p /tmp/h02-independent-daily
+          timeout 240s python - <<'PY'
+          import json
+          import baostock as bs
+          from pathlib import Path
+          import pandas as pd
+
+          symbols=["000998.SZ","000716.SZ","600421.SH"]
+          lg=bs.login()
+          report={"provider":"baostock","login_error_code":str(lg.error_code),
+                  "date":"2020-01-03","adjustflag":"3 / unadjusted",
+                  "samples":[]}
+          if lg.error_code!="0":
+              report["status"]="BLOCKED_PROVIDER_LOGIN"
+          else:
+              try:
+                  for symbol in symbols:
+                      code=("sh."+symbol[:6]) if symbol.endswith(".SH") else ("sz."+symbol[:6])
+                      fields="date,code,open,high,low,close,preclose,volume,amount,tradestatus,pctChg,isST"
+                      q=bs.query_history_k_data_plus(code,fields,
+                           start_date="2020-01-02",end_date="2020-01-03",frequency="d",adjustflag="3")
+                      records=[]
+                      if q.error_code=="0":
+                          while q.next():records.append(dict(zip(q.fields,q.get_row_data())))
+                      item={"symbol":symbol,"api_code":str(q.error_code),
+                            "dates":[x["date"] for x in records],
+                            "has_st_field":bool(records) and all("isST" in x for x in records),
+                            "has_trade_status":bool(records) and all("tradestatus" in x for x in records),
+                            "has_unadjusted_preclose":bool(records) and all("preclose" in x for x in records),
+                            "history_sample":records}
+                      report["samples"].append(item)
+                  report["status"]="PASS_INDEPENDENT_HISTORY" if all(
+                      x["api_code"]=="0" and x["has_st_field"]
+                      and x["has_trade_status"] and x["has_unadjusted_preclose"]
+                      and "2020-01-03" in x["dates"] for x in report["samples"]
+                  ) else "BLOCKED_HISTORY_COVERAGE"
+              finally:
+                  bs.logout()
+          Path("/tmp/h02-independent-daily/report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2))
+          print(json.dumps(report,ensure_ascii=False,indent=2))
+          assert report["status"]=="PASS_INDEPENDENT_HISTORY"
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-baostock-2020-daily-probe
+          path: /tmp/h02-independent-daily
+          retention-days: 30
+          if-no-files-found: warn

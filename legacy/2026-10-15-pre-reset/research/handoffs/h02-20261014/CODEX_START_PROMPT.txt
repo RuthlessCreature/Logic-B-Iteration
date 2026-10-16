@@ -1,0 +1,11 @@
+你现在是 Logic-B-Iteration 的本地工程执行代理。
+
+必须先完整阅读我给你的 HANDOFF_H02.md 和 patches/ 中两份 patch，再阅读仓库 README.md、config/b0.yaml、src/logic_b/h02_minute_audit.py、h02_certification.py、portfolio.py、tests/test_h02_certification.py，以及 PR #1。
+
+目标：先完成 HANDOFF_H02.md 的 P0，即分钟线与官方逐股涨跌停价校验补丁的审查、验证、单独提交至 research/behavioral-edge-20261013、推送及新 HEAD CI 验证。P0 未过关，不得做 P1/P2。P0 完成后若无阻碍，再考虑单独提交 P1（账户非法价格保护）。
+
+绝对禁止：触碰 main；访问或解锁 2026-07-01~2026-09-28 保护留出集；修改冻结策略/成本参数；使用 09:35 后数据生成 09:35 信号；对缺失数据补造；报告未经认证的真实成交收益；拿旧 CI 当新 CI；泄漏 Token。保留 PR #1 Draft，不合并。
+
+必须执行真实命令、显示关键输出；发现工作区不干净或 HEAD 与交接快照不同先停下报告，不得覆盖用户变更。先读文档后改代码；先检查基线后打补丁；补丁冲突时不要强行应用；测试失败先修复，不得删测试或降低门槛。提交后必须提供 commit 和对应 HEAD 的 Actions URL。不能推送/CI 则明确 PARTIAL，不要宣称 DONE。
+
+按 HANDOFF_H02.md 第 6 节模板汇报：实际变更、运行命令与测试结果、GitHub 证据、阻碍、下一步。不要只给下一轮计划。现在开始。

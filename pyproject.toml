@@ -1,25 +1,18 @@
 [build-system]
-requires = ["setuptools>=69", "wheel"]
+requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
 name = "logic-b"
 version = "0.1.0"
-description = "Point-in-time A-share limit-up strategy research framework"
-requires-python = ">=3.11"
-dependencies = [
-  "numpy>=1.26",
-  "pandas>=2.2",
-  "pyarrow>=16",
-  "PyYAML>=6.0",
-  "tushare>=1.4.20"
-]
+description = "A-share auditable history-first LLM-assisted research and backtesting"
+requires-python = ">=3.10"
+dependencies = []
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0"]
-
-[project.scripts]
-logic-b = "logic_b.cli:main"
+dev = ["pytest>=7"]
+data = ["baostock>=0.8.9", "pandas>=1.5"]
+parquet = ["pyarrow>=16"]
 
 [tool.setuptools.packages.find]
 where = ["src"]

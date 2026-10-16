@@ -1,0 +1,89 @@
+# Logic-B new 2020-2026 backtest contract (not a drop-in B0.0.3 config).
+# User-defined 2026-10-15; see docs/14_LOGIC_B_2020_2026_CANONICAL_REPLAY_CONTRACT.md.
+schema_version: logic-b-2020-replay-v1
+contract_status: specification_not_yet_wired_to_runner
+legacy_reference: config/b0.yaml
+
+research:
+  start_date: "2020-01-01"
+  end_date: "2026-06-30"
+  historical_holdout_start: "2026-07-01"
+  historical_holdout_end: "2026-09-28"
+  allow_post_end_market_data: false
+
+symbol_identity:
+  primary_key: exchange_plus_six_digit_code
+  historical_name_changes_new_security: false
+  st_name_changes_new_security: false
+  alias_rules:
+    xuangubao_suffix_SS: SH
+    baostock_prefix_sh: SH
+    baostock_prefix_sz: SZ
+  keep_st_stock_history: true
+  exclude_st_by_default: false
+  st_status_remains_dated_attribute: true
+
+sources:
+  event_source: xuangubao
+  event_datasets: [limit_up, limit_down, limit_up_broken, market_indicator]
+  kline_primary: baostock
+  kline_adjustflag: "3"  # unadjusted execution prices
+  kline_daily_frequency: "d"
+  kline_intraday_frequency: "5"
+  optional_one_minute: xuangubao_market_kline
+  cached_data_first: true
+  prohibit_unapproved_paid_sources: true
+
+portfolio:
+  starting_cash_cny: 10000.0
+  max_positions: 1
+  target_position_pct: 1.0
+  buy_lot_size_shares: 100
+  t_plus_one: true
+  permit_cash: true
+  borrow_cash: false
+
+brokerage:
+  commission_rate_each_side: 0.00025
+  minimum_commission_cny_per_order_each_side: 5.0
+  commission_is_exclusive_of_stamp_and_transfer: true
+  # Historical public charges: separate from broker commission. Check actual broker all-in wording before live use.
+  sell_stamp_duty:
+    - valid_from: "2020-01-01"
+      valid_until: "2023-08-27"
+      rate: 0.001
+    - valid_from: "2023-08-28"
+      valid_until: "2026-06-30"
+      rate: 0.0005
+  share_transfer_fee_buy_and_sell:
+    - valid_from: "2020-01-01"
+      valid_until: "2022-04-28"
+      rate: 0.00002
+    - valid_from: "2022-04-29"
+      valid_until: "2026-06-30"
+      rate: 0.00001
+
+execution:
+  decision_checkpoint: "09:35"
+  freeze_legacy_exit_rule: E0_NEXT_DAY_0935
+  forbid_same_bar_fill: true
+  prefer_first_eligible_bar_after_signal: true
+  buy_at_limit_up_unfillable: true
+  sell_at_limit_down_unfillable: true
+  suspended_stock_tradeable: false
+  unknown_limit_action: report_bounded_scenarios_no_certain_fill
+  restrict_candidate_to_prior_completed_day: true
+  max_daily_sell_attempts: 1
+  max_daily_buy_attempts: 1
+  no_substitute_after_blocked_priority: true
+
+output:
+  required:
+    - baseline_contract.json
+    - source_coverage_by_year.csv
+    - orders_and_rejections.csv
+    - trades.csv
+    - daily_equity.csv
+    - yearly_metrics.csv
+    - final_backtest_report.md
+    - reproduction.md

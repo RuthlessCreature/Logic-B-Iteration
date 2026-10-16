@@ -1,0 +1,35 @@
+{
+  "status": "NO_CANDIDATE",
+  "selected_strategy": null,
+  "selected_for_validation": null,
+  "selection_rule": "training_score = net_return_pct + 0.5 * max_drawdown_pct; promotion also requires fully verified PIT, official price limits, corporate-action accounting, and complete candidate coverage",
+  "train_window": [
+    "2025-01-01",
+    "2025-12-31"
+  ],
+  "training_sessions": 243,
+  "versions_evaluated": [
+    "V0_SIMPLE_STREAK",
+    "V1_MARKET_STATE_GATE",
+    "V2_BREAK_FEEDBACK_VETO"
+  ],
+  "training_data_sha256_by_version": {
+    "V0_SIMPLE_STREAK": "438accbad744d668b5b91fffd8b49822a4cec6b6d4f047fb3d16d244087c4e61",
+    "V1_MARKET_STATE_GATE": "4f2d0c572df8a6cd961b3d1ec8ef657bb48be7c06ab4e4761bad108836beb2c3",
+    "V2_BREAK_FEEDBACK_VETO": "f5575ceb4034a4c95f431b7ea30ebc7ed510cea85846738d134d1762eae58f87"
+  },
+  "config_sha256": "3df1e1dc84efb2ddbf1dc85068c7c9bcf8cc3fec21229d23244bede035ddaac1",
+  "strategy_source_sha256": "a789271ae0ccc98ec408c2ca34aebd44851dfa96a391d8a09b19bccf915e1d6e",
+  "code_head_before_freeze": "c73b0c15cafbfa4074d496e07321bfb0fa401e5a",
+  "freeze_created_utc": "2026-10-15T10:44:23.867624+00:00",
+  "gates": {
+    "full_market_candidate_universe": false,
+    "official_per_security_price_limits": false,
+    "historical_0935_pit_certified": false,
+    "corporate_actions_fully_reconciled": false,
+    "broker_fill_evidence": false
+  },
+  "reason": "2025 rows support exploratory bar-price simulations only. No strategy qualifies for promotion to 2026 validation economics.",
+  "version_digest": "64d7c3a5f090ae8f15e65b04354ca91edbb9aaa730126d2d594af235025e7c85",
+  "selection_sha256": "365de66462abb5802cd3bfced28a0ae290334022cb7ad2c98331dab219373e45"
+}

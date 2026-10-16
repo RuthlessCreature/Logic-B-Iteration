@@ -1,0 +1,71 @@
+name: h02-executable-data-gate
+on:
+  push:
+    paths: [".github/workflows/h02-executable-data-gate.yml"]
+  workflow_dispatch:
+
+jobs:
+  original-2020-sample:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      actions: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11", cache: pip}
+      - run: pip install -e ".[dev]"
+      - uses: actions/download-artifact@v4
+        with:
+          name: h01-raw-2020h1
+          run-id: 38358815302
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          path: /tmp/h02-sample
+      - name: Audit original historical input coverage for tradable replay
+        run: |
+          mkdir -p /tmp/h02-readiness
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          import pandas as pd
+          from logic_b.storage import LocalParquetStore
+          from logic_b.xgb_readiness import assess_xgb_candidate_readiness
+          s=LocalParquetStore("/tmp/h02-sample")
+          cal=s.read_all_parts("calendar")
+          dates=sorted(pd.to_datetime(cal.cal_date).dt.strftime("%Y%m%d").unique())
+          report=assess_xgb_candidate_readiness(
+              store=s,trade_dates=dates,include_boards=None,
+              exclude_st=True,exclude_no_limit_ipo_days=True
+          )
+          keys=("trade_days","evidence_partitions_missing","market_partitions_missing",
+                "manifest_failures","candidate_symbol_days_expected",
+                "candidate_daily_missing","candidate_limit_missing",
+                "minute_partitions_missing","indicator_date_failures")
+          metrics={k:getattr(report,k) for k in keys}
+          out={
+             "sample":"2020h1 event-only raw source",
+             "requested_history_start":"2020-01-01",
+             "coverage":metrics,
+             "replay_ready":bool(report.ready),
+             "mandatory_2020_to_2026_net_equity_claim":"BLOCKED" if not report.ready else "COVERAGE_READY_ONLY",
+             "next_step":"Collect candidate-specific daily, limit-price, ST/suspension and 1-minute bars with complete manifests before running fee-inclusive T+1 simulation",
+             "no_strategy_returns_computed":True,
+             "missing_sample":{
+               "market":report.missing_market[:8],
+               "minute":report.missing_minutes[:8]
+             },
+             "not_a_full_history_readiness_audit":True,
+          }
+          Path("/tmp/h02-readiness/readiness.json").write_text(json.dumps(out,ensure_ascii=False,indent=2))
+          print(json.dumps(out,ensure_ascii=False,indent=2))
+          assert report.trade_days >= 100
+          assert not report.ready, "unexpected market data present: inspect provenance before claiming coverage"
+          PY
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: h02-2020-executable-data-readiness
+          retention-days: 30
+          path: /tmp/h02-readiness
+          if-no-files-found: warn
