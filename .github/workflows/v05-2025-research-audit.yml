@@ -1,0 +1,100 @@
+name: V05 train and validate 2025 evidence
+on:
+  workflow_run:
+    workflows:
+      - "Logic A v0.5 2025 full-year ML and minute evidence"
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      source_run_id:
+        description: "Completed 2025 full-year extraction GitHub Actions run"
+        required: true
+        default: "40641159671"
+permissions:
+  contents: read
+  actions: read
+
+jobs:
+  research-evaluate:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Verify deterministic research tests
+        run: pytest tests/test_v05_research.py tests/test_v05_aggregate.py tests/test_v05_execution.py tests/test_v05_model_report.py
+      - name: Retrieve finished sanitized feature shards, not vendor OHLCV
+        uses: actions/download-artifact@v4
+        with:
+          run-id: ${{ env.SOURCE_RUN_ID }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: v05-2025-*
+          path: /tmp/v05-study-shards
+          merge-multiple: false
+      - name: Reconstruct 2025 market calendar and feature-only events
+        run: |
+          python -m logic_b.v05_aggregate \
+            --input /tmp/v05-study-shards \
+            --out /tmp/v05-research-evaluation \
+            --expected-shards 12
+      - name: Fit and score chronological validation without touching blind holdout
+        run: |
+          python -m logic_b.v05_model_report \
+            --features /tmp/v05-research-evaluation/features.csv \
+            --summary /tmp/v05-research-evaluation/summary.json \
+            --out /tmp/v05-research-evaluation
+      - name: Safety assertions
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path('/tmp/v05-research-evaluation')
+          train=json.loads((root/'oos-diagnostics.json').read_text())
+          model=json.loads((root/'research-only-model.json').read_text())
+          assert train['blind_holdout_used'] is False
+          assert train['may_trade_live'] is False
+          assert train['fill_certified'] is False
+          if model.get('trained'):
+              assert model['trade_permissions']=='NEVER'
+              assert model['model_promotable'] is False
+          print('SAFE: no trained weight has broker/order/live gate permissions')
+          PY
+      - name: Upload only model diagnostics and audit summaries
+        uses: actions/upload-artifact@v4
+        with:
+          name: v05-2025-ml-research-only
+          path: |
+            /tmp/v05-research-evaluation/summary.json
+            /tmp/v05-research-evaluation/training.json
+            /tmp/v05-research-evaluation/oos-diagnostics.json
+            /tmp/v05-research-evaluation/research-only-model.json
+          if-no-files-found: error
+          retention-days: 30
+      - name: Present research verdict
+        run: |
+          python - <<'PY'
+          import json,os
+          from pathlib import Path
+          root=Path('/tmp/v05-research-evaluation')
+          base=json.loads((root/'summary.json').read_text())
+          oos=json.loads((root/'oos-diagnostics.json').read_text())
+          model=json.loads((root/'research-only-model.json').read_text())
+          with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf8') as f:
+              f.write('# Logic A v0.5 2025 out-of-sample price-direction research\n\n')
+              for key in ['market_session_count','candidate_stock_days',
+                          'usable_primary_minute_days','signal_candidates',
+                          'rows_after_dedup','class_positive','class_negative']:
+                  f.write(f"- {key}: {base.get(key)}\n")
+              f.write(f"- validated chronological folds: {oos.get('n_valid_folds',0)}\n")
+              f.write(f"- mean OOS AUC: {oos.get('mean_auc')}\n")
+              f.write(f"- OOS Brier: {oos.get('mean_brier')}; unconditional baseline Brier: {oos.get('mean_baseline_brier')}\n")
+              f.write(f"- model fitted: {model.get('trained',False)}\n")
+              f.write('\n**NOT REALIZED TRADING RETURN. No broker orders, no live promotion, no blind holdout.**\n')
+          PY
