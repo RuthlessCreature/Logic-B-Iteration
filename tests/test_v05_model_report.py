@@ -2,7 +2,7 @@ from datetime import date,timedelta
 import numpy as np
 import pandas as pd
 import pytest
-from logic_b.v05_model_report import _auc,evaluate_oos,fit_research_candidate
+from logic_b.v05_model_report import _auc,evaluate_oos,fit_research_candidate,classify_research_verdict
 from logic_b.v05_research import FEATURES
 
 def generate(n=180):
@@ -44,3 +44,32 @@ def test_blind_holdout_and_missing_samples_are_blocked():
     assert not evaluate_oos(data,session)["ready"]
     with pytest.raises(ValueError,match="BLIND_HOLDOUT_LOCKED"):
         evaluate_oos(data,session+["2026-07-01"])
+
+
+def test_out_of_sample_underperformance_is_strategy_failure_not_ci_success():
+    output=classify_research_verdict(
+        {"ready":True,"n_valid_folds":3,"mean_auc":.442944,
+         "mean_brier":.246948,"mean_baseline_brier":.234584},
+        {"trained":True,"trade_permissions":"NEVER"})
+    assert output["verdict"]=="FAIL"
+    assert "OOS_RANKING_NOT_BETTER_THAN_RANDOM" in output["reason_codes"]
+    assert "OOS_BRIER_NOT_BETTER_THAN_BASELINE" in output["reason_codes"]
+    assert output["brier_skill_score"]<0
+    assert output["model_safe_for_live"] is False
+
+
+def test_better_than_random_is_only_research_review_not_live_approval():
+    output=classify_research_verdict(
+        {"ready":True,"n_valid_folds":3,"mean_auc":.55,
+         "mean_brier":.18,"mean_baseline_brier":.22},
+        {"trained":True})
+    assert output["verdict"]=="RESEARCH_REVIEW"
+    assert not output["model_safe_for_live"]
+    assert output["requires_execution_replay"]
+
+
+def test_missing_data_or_missing_model_cannot_be_reframed_as_strategy_failure():
+    output=classify_research_verdict(
+        {"ready":False,"n_valid_folds":0}, {"trained":False})
+    assert output["verdict"]=="BLOCKED"
+    assert output["brier_skill_score"] is None
