@@ -33,7 +33,7 @@ def test_monthly_shards_are_aggregated_with_duplicate_events_removed(tmp_path):
         base=tmp_path/shard
         (base/"public").mkdir(parents=True)
         sample().drop(columns=["code","entry_reference_price"]).to_csv(base/"public"/"features.csv",index=False)
-        (base/"quality.json").write_text(json.dumps({"candidate_stock_days":10,"missing_or_bad":0}))
+        (base/"quality.json").write_text(json.dumps({"candidate_stock_days":10,"missing_or_bad":0,"market_sessions":["2025-01-06","2025-01-07"]}))
     out,report=merge_monthly_features(tmp_path,expected_segments=2)
     assert len(out)==1
     assert report["shards"]==2
@@ -46,6 +46,6 @@ def test_missing_or_bad_shard_data_is_not_silently_dropped(tmp_path):
     p=tmp_path/"jan"/"public"
     p.mkdir(parents=True)
     sample().drop(columns=["code","entry_reference_price"]).to_csv(p/"features.csv",index=False)
-    (p.parent/"quality.json").write_text(json.dumps({"candidate_stock_days":10,"missing_or_bad":2}))
+    (p.parent/"quality.json").write_text(json.dumps({"candidate_stock_days":10,"missing_or_bad":2,"market_sessions":["2025-01-06","2025-01-07"]}))
     with pytest.raises(ValueError,match="SHARD_SOURCE_ERRORS"):
         merge_monthly_features(tmp_path,expected_segments=1)
