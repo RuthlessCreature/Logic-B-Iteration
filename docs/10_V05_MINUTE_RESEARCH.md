@@ -25,3 +25,35 @@
 **尚未执行完整历史研究集，也尚未训练出可信策略参数；这份文档不是收益报告。**
 
 试验记录：https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/40635120872
+
+
+## 2026-10-28历史研究实测验收
+
+### 2025年一季度真实分钟数据
+
+GitHub Actions：https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/40640540042
+
+- 真实市场交易日57天；前日涨停核心代理候选股票日162个。
+- 成功获取完整当日1分钟交易数据162个候选股票日，缺失或不完整0个。
+- 完整半路结构事件38个；取得次日09:35价格标签38个；去重后仍38个。
+- 有信号的交易日31天。训练门禁显示INSUFFICIENT_TRADING_DAYS，因为57个交易日小于120训练日加40验证日。
+- 以上只是历史数据和价格形态的验收，不是实盘成交，不代表策略胜率或收益率。
+
+### 全年2025模型研究
+
+12个月独立数据扩容工作流：https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/40641159671
+完成后触发的样本外模型评价工作流：https://github.com/RuthlessCreature/Logic-B-Iteration/actions/workflows/v05-2025-research-audit.yml
+审计输出包括年度市场日历、候选股票日、数据覆盖、样本外AUC/Brier、同期基准Brier、2025研究专用权重及其SHA256。
+模型权重永不自动部署到曜衡Radar，冻结的2026年7月至9月盲测区间不会在2025训练任务中被使用。
+
+### 原始B0正式历史交易回放
+
+GitHub Actions：https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/40641323827
+2026年6月26日至30日：历史候选分钟readiness通过，B0.0.3真实时间顺序、T+1及现实成交约束回放成功。
+短区间仅有1条信号、0笔真实模型成交，0%模拟收益不具统计意义。完整区间三档成交及净资产统计尚未完成。
+
+### 代理模型与真实性边界
+
+历史1分钟K线不等于实盘原始Tick快照，历史核心代理不等于人工批准白名单，次日价差标签不等于可以成交。
+已增加v05_execution.py用于近似的逐事件买卖可成交性审计，参考涨跌停封锁、100股整手、成本、分钟容量，若次日卖不出必须维持POSITION_OPEN。
+缺历史官方ST/IPO逐日状态和真实盘口队列时，审计只能标为估计，不得宣称完成真实成交回测。
