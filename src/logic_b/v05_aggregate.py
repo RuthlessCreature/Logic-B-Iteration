@@ -44,6 +44,7 @@ def merge_monthly_features(root:str|Path,expected_segments:int=3)->tuple[pd.Data
         raise ValueError("MISSING_SEGMENTS:expected="+str(expected_segments)+" actual="+str(len(files)))
     observations=[]
     qualities=[]
+    sessions=set()
     for path in files:
         shard=path.parent.parent
         qfile=shard/"quality.json"
@@ -54,6 +55,12 @@ def merge_monthly_features(root:str|Path,expected_segments:int=3)->tuple[pd.Data
             raise ValueError("SHARD_SOURCE_ERRORS:"+str(shard))
         if quality.get("candidate_stock_days",0)<=0:
             raise ValueError("EMPTY_CANDIDATE_SHARD:"+str(shard))
+        calendar=quality.get("market_sessions")
+        if not isinstance(calendar,list) or not calendar:
+            raise ValueError("MISSING_DATED_SESSION_CALENDAR:"+str(shard))
+        if any(str(day)>=BLIND_START or str(day)>DEV_END for day in calendar):
+            raise ValueError("BLIND_HOLDOUT_LOCKED")
+        sessions.update(str(day) for day in calendar)
         qualities.append(quality)
         data=pd.read_csv(path)
         observations.append(sanitize_training_events(data))
@@ -73,6 +80,8 @@ def merge_monthly_features(root:str|Path,expected_segments:int=3)->tuple[pd.Data
       "missing_or_partial_forward_days":sum(int(q.get("missing_or_partial_next_day_minutes",0)) for q in qualities),
       "rows_after_dedup":len(combined),
       "unique_signal_days":int(combined.trade_date.nunique()) if not combined.empty else 0,
+      "market_sessions":sorted(sessions),
+      "market_session_count":len(sessions),
       "class_positive":int(combined.label.sum()) if not combined.empty else 0,
       "class_negative":int((combined.label==0).sum()) if not combined.empty else 0,
       "fill_certified":False,"market_0925_replayed":False,
@@ -93,7 +102,7 @@ def main(argv=None):
         data.to_csv(out/"features.csv",index=False)
     # The 120+40-day study readiness remains frozen; no small-sample train
     # is passed off as validated research.
-    outcome=walkforward(data,min_train_days=120,valid_days=40)
+    outcome=walkforward(data,min_train_days=120,valid_days=40,calendar=summary['market_sessions'])
     summary["training_ready"]=bool(outcome.get("ready"))
     (out/"summary.json").write_text(json.dumps(summary,ensure_ascii=False,indent=2),encoding="utf-8")
     (out/"training.json").write_text(json.dumps(outcome,ensure_ascii=False,indent=2),encoding="utf-8")
