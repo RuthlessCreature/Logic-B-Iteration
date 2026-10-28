@@ -149,14 +149,21 @@ def fit_logistic(X,y,iterations=500):
         w-=.1*grad
     return w,mu,sd
 
-def walkforward(events,min_train_days=120,valid_days=40,step_days=40):
+def walkforward(events,min_train_days=120,valid_days=40,step_days=40,calendar=None):
     if events is None or events.empty:return {"ready":False,"reason":"NO_EVENTS","folds":[]}
     rows=events.sort_values("trade_date").copy()
     if any(BLIND_START<=date.fromisoformat(str(x))<=BLIND_END for x in rows.trade_date):
         raise ValueError("BLIND_HOLDOUT_LOCKED")
     if not set(FEATURES).issubset(rows.columns) or "label" not in rows:
         raise ValueError("MISSING_FEATURES_OR_LABEL")
-    days=sorted(rows.trade_date.unique())
+    # Calendar spans ALL observed market sessions, even CASH/no-signal days.
+    # Counting only event dates would silently convert 120 trading sessions
+    # into 120 unusually active signal days and misalign the benchmark.
+    days=sorted(set(str(d) for d in calendar)) if calendar is not None else sorted(rows.trade_date.unique())
+    if any(BLIND_START<=date.fromisoformat(str(d))<=BLIND_END for d in days):
+        raise ValueError("BLIND_HOLDOUT_LOCKED")
+    if days and (rows.trade_date.lt(days[0]).any() or rows.trade_date.gt(days[-1]).any()):
+        raise ValueError("EVENT_OUTSIDE_RESEARCH_CALENDAR")
     if len(days)<min_train_days+valid_days:
         return {"ready":False,"reason":"INSUFFICIENT_TRADING_DAYS","observed_days":len(days),
           "required_days":min_train_days+valid_days,"folds":[]}
@@ -195,7 +202,14 @@ def run_pilot(start,end,per_day=2):
             except Exception:pass
         d+=timedelta(days=1)
     if len(dates)<3:raise RuntimeError("HISTORICAL_DATE_SOURCE_NOT_READY")
-    return build_proxy_events(dates,evidence,minute,per_day,eval_start=start,eval_end=end)
+    events,quality=build_proxy_events(dates,evidence,minute,per_day,eval_start=start,eval_end=end)
+    # This list is safe metadata for shard aggregation: exchange-local
+    # market dates only, no vendor minute bars or symbol identifiers.
+    quality["market_sessions"]=[str(d) for d in dates if start<=d<=end]
+    quality["market_session_count"]=len(quality["market_sessions"])
+    quality["requested_start"]=str(start)
+    quality["requested_end"]=str(end)
+    return events,quality
 
 def main(argv=None):
     ap=argparse.ArgumentParser()
@@ -214,7 +228,8 @@ def main(argv=None):
     else:
         events,quality=run_pilot(date.fromisoformat(a.start),date.fromisoformat(a.end),a.per_day)
         if not events.empty:events.to_parquet(folder/"private-labels.parquet",index=False)
-    report=walkforward(events,min_train_days=a.min_train_days,valid_days=a.valid_days)
+    report=walkforward(events,min_train_days=a.min_train_days,valid_days=a.valid_days,
+       calendar=quality.get("market_sessions"))
     (folder/"quality.json").write_text(json.dumps(quality,ensure_ascii=False,indent=2),encoding="utf8")
     (folder/"training.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf8")
     print(json.dumps({"quality":quality,"training":report},ensure_ascii=False,indent=2))
