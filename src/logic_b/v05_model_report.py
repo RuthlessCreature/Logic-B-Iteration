@@ -87,6 +87,41 @@ def evaluate_oos(events,calendar,min_train_days=120,validation_days=40,step_days
       "all_models_research_only":True
     }
 
+def classify_research_verdict(validation,model):
+    """Data/ML acceptance is not production-trading or trade-profit acceptance.
+
+    Use the untrained unconditional class-rate Brier and random-ranking AUC
+    as the minimal, *unchanged* baselines. Any worse-than-baseline result is a
+    failure to demonstrate incremental predictive value, not a successful model.
+    """
+    base={"verdict":"BLOCKED","model_safe_for_live":False,
+          "requires_execution_replay":True,"research_only":True,
+          "reason_codes":[],"n_valid_folds":validation.get("n_valid_folds",0),
+          "mean_auc":validation.get("mean_auc"),
+          "mean_brier":validation.get("mean_brier"),
+          "mean_baseline_brier":validation.get("mean_baseline_brier"),
+          "brier_skill_score":None}
+    if not validation.get("ready") or not model.get("trained"):
+        base["reason_codes"].append("MISSING_VALID_OOS_FOLDS_OR_MODEL")
+        return base
+    a,b,ref=(validation.get(k) for k in
+               ["mean_auc","mean_brier","mean_baseline_brier"])
+    if a is None or b is None or ref is None or not all(np.isfinite(x) for x in [a,b,ref]) or ref<=0:
+        base["reason_codes"].append("OOS_METRICS_INCOMPLETE")
+        return base
+    base["brier_skill_score"]=round(1-b/ref,6)
+    if a<=.5:base["reason_codes"].append("OOS_RANKING_NOT_BETTER_THAN_RANDOM")
+    if b>=ref:base["reason_codes"].append("OOS_BRIER_NOT_BETTER_THAN_BASELINE")
+    if base["reason_codes"]:
+        base["verdict"]="FAIL"
+    else:
+        # Beating random ranking and unconditional Brier on one development
+        # year does NOT certify actual fills, trading returns, or live rules.
+        base["verdict"]="RESEARCH_REVIEW"
+        base["reason_codes"].append("PORTFOLIO_FILLS_AND_HOLDOUT_NOT_VALIDATED")
+    return base
+
+
 def fit_research_candidate(events,calendar,min_observations=60):
     """Research-only 2025 chronological refit; not Radar deployment weights."""
     if events is None or events.empty or len(events)<min_observations:
@@ -134,7 +169,9 @@ def main(argv=None):
     out=Path(args.out);out.mkdir(parents=True,exist_ok=True)
     (out/"oos-diagnostics.json").write_text(json.dumps(validation,ensure_ascii=False,indent=2),encoding="utf8")
     (out/"research-only-model.json").write_text(json.dumps(model,ensure_ascii=False,indent=2),encoding="utf8")
-    print(json.dumps({"validation":validation,"model":model},ensure_ascii=False,indent=2))
+    verdict=classify_research_verdict(validation,model)
+    (out/"strategy-verdict.json").write_text(json.dumps(verdict,ensure_ascii=False,indent=2),encoding="utf8")
+    print(json.dumps({"validation":validation,"model":model,"verdict":verdict},ensure_ascii=False,indent=2))
     return 0
 
 if __name__=="__main__":
