@@ -20,7 +20,7 @@ FEATURES=("prev_score","prev_height","break_pct","retrace_pct","volume_ratio","v
 BLIND_START=date(2026,7,1)
 BLIND_END=date(2026,9,28)
 
-def first_signal(bars,preclose):
+def first_signal(bars,preclose,code=''):
     if not preclose or preclose<=0 or bars is None or len(bars)<7:return None
     f=bars.copy()
     needed={"trade_time","open","close","vol","amount"}
@@ -42,7 +42,8 @@ def first_signal(bars,preclose):
         if len(window)<6 or (window.trade_time.iloc[-1]-window.trade_time.iloc[0]).total_seconds()<90:continue
         close=window.close.to_numpy(float);vol=window.vol.to_numpy(float)
         latest=close[-1]
-        if not 1.8<=(latest/preclose-1)*100<8.2 or latest<=dayopen or latest<=vwap.iloc[end]:continue
+        cap=17.0 if str(code).startswith(('30','68')) else 8.2
+        if not 1.8<=(latest/preclose-1)*100<cap or latest<=dayopen or latest<=vwap.iloc[end]:continue
         for i in range(len(close)-3,1,-1):
             high=max(close[:i]);first=close[i]
             if not first>high*1.002 or first<close[0]*1.008:continue
@@ -74,6 +75,13 @@ def build_proxy_events(sessions,evidence,minute,per_day=2):
         try:
             prev=evidence.limit_list(prior,"涨停池")
             if prev.empty:continue
+            # The pool request can silently yield another day's list on
+            # holidays. Keep only stocks with real exchange event timestamps
+            # matching D-1 in Shanghai local time (no point-in-time leakage).
+            event_day=pd.to_datetime(pd.to_numeric(prev.get('last_limit_up'),errors='coerce'),
+                                      unit='s',utc=True).dt.tz_convert('Asia/Shanghai').dt.date
+            prev=prev[event_day==prior].copy()
+            if prev.empty:continue
             prev=build_prev_day_candidate_features(prev)
             prev=prev.sort_values(["prev_core_score","ts_code"],ascending=[False,True]).head(per_day)
         except Exception as ex:
@@ -84,7 +92,7 @@ def build_proxy_events(sessions,evidence,minute,per_day=2):
                 bars=minute.historical_minute_day(code,day).bars
                 later=minute.historical_minute_day(code,future).bars
                 price=float(stock.get("price") or stock.get("prev_close") or 0)
-                s=first_signal(bars,price)
+                s=first_signal(bars,price,code=code)
                 if not s or later.empty:continue
                 futurebars=later.copy()
                 futurebars["trade_time"]=pd.to_datetime(futurebars.trade_time)
