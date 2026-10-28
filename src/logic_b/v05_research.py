@@ -193,7 +193,9 @@ def run_pilot(start,end,per_day=2):
     if end>=BLIND_START:raise ValueError("DEVELOPMENT_ONLY")
     evidence=XuangubaoEvidenceProvider(timeout=12,max_attempts=2)
     minute=XuangubaoMarketProvider(timeout=12,max_attempts=2)
-    dates=[];d=start-timedelta(days=8)
+    # Allow the prior exchange session after long Golden-Week/CNY closures.
+    # Context sessions are NEVER evaluated as in-window trade signals.
+    dates=[];d=start-timedelta(days=16)
     while d<=end:
         if d.weekday()<5:
             try:
