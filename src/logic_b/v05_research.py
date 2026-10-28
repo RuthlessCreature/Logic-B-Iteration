@@ -66,7 +66,7 @@ def first_signal(bars,preclose,code=''):
                 }
     return None
 
-def build_proxy_events(sessions,evidence,minute,per_day=2):
+def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_end=None):
     events=[];failures=[];candidates=0
     usable_primary=0;empty_primary=0;signal_candidates=0
     usable_forward=0;empty_forward=0
@@ -74,6 +74,8 @@ def build_proxy_events(sessions,evidence,minute,per_day=2):
     if any(BLIND_START<=d<=BLIND_END for d in dates):raise ValueError("BLIND_HOLDOUT_LOCKED")
     for n in range(1,len(dates)-1):
         prior,day,future=dates[n-1:n+2]
+        if eval_start is not None and day<eval_start:continue
+        if eval_end is not None and day>eval_end:continue
         try:
             prev=evidence.limit_list(prior,"涨停池")
             if prev.empty:continue
@@ -193,7 +195,7 @@ def run_pilot(start,end,per_day=2):
             except Exception:pass
         d+=timedelta(days=1)
     if len(dates)<3:raise RuntimeError("HISTORICAL_DATE_SOURCE_NOT_READY")
-    return build_proxy_events(dates,evidence,minute,per_day)
+    return build_proxy_events(dates,evidence,minute,per_day,eval_start=start,eval_end=end)
 
 def main(argv=None):
     ap=argparse.ArgumentParser()
