@@ -1,0 +1,135 @@
+name: Logic A v0.5 2025 Q1 historical minute expansion
+on:
+  push:
+    paths:
+      - ".github/workflows/v05-2025q1-scale.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v05-2025q1-source-pilot
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - run: pytest tests/test_v05_research.py tests/test_v05_aggregate.py
+
+  month:
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        include:
+          - shard: jan
+            start: '2025-01-02'
+            end: '2025-01-27'
+          - shard: feb
+            start: '2025-02-05'
+            end: '2025-02-28'
+          - shard: mar
+            start: '2025-03-03'
+            end: '2025-03-31'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - name: Collect original dated D-1 pool + D/D+1 completed minute bars
+        run: |
+          set -euo pipefail
+          python -m logic_b.v05_research \
+            --start "${{ matrix.start }}" \
+            --end "${{ matrix.end }}" \
+            --per-day 3 \
+            --out runs/v05-month
+      - name: Publish only sanitized feature rows, full dated calendar, and coverage
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import pandas as pd
+          from logic_b.v05_aggregate import sanitize_training_events,COLUMNS
+          root=Path("runs/v05-month")
+          destination=root/"public"
+          destination.mkdir(parents=True,exist_ok=True)
+          src=root/"private-labels.parquet"
+          data=pd.read_parquet(src) if src.exists() else pd.DataFrame(columns=COLUMNS)
+          output=sanitize_training_events(data)
+          output.to_csv(destination/"features.csv",index=False)
+          print("sanitized rows:",len(output))
+          assert "code" not in output.columns and "entry_reference_price" not in output.columns
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v05-q1-${{ matrix.shard }}
+          path: |
+            runs/v05-month/public/features.csv
+            runs/v05-month/quality.json
+            runs/v05-month/training.json
+          retention-days: 21
+          if-no-files-found: error
+
+  aggregate:
+    needs: month
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: pip
+      - run: pip install -e ".[dev]"
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: v05-q1-*
+          path: runs/q1-months
+          merge-multiple: false
+      - name: Full market-session chronological aggregation and strict readiness
+        run: |
+          python -m logic_b.v05_aggregate \
+            --input runs/q1-months \
+            --out runs/q1-aggregate \
+            --expected-shards 3
+      - uses: actions/upload-artifact@v4
+        with:
+          name: v05-q1-combined-research-only
+          path: |
+            runs/q1-aggregate/summary.json
+            runs/q1-aggregate/training.json
+          if-no-files-found: error
+          retention-days: 21
+      - name: Explicitly distinguish data readiness from strategy validation
+        shell: bash
+        run: |
+          python - <<'PY'
+          import json
+          from pathlib import Path
+          root=Path("runs/q1-aggregate")
+          summary=json.loads((root/"summary.json").read_text())
+          training=json.loads((root/"training.json").read_text())
+          with open(__import__("os").environ["GITHUB_STEP_SUMMARY"],"a",encoding="utf-8") as fh:
+              fh.write("## Logic A v0.5 2025 Q1 (historical BAR proxy, not live fills)\n\n")
+              for k in ["market_session_count","candidate_stock_days","usable_primary_minute_days",
+                "signal_candidates","forward_minute_days","rows_after_dedup",
+                "unique_signal_days","class_positive","class_negative"]:
+                  fh.write(f"- {k}: {summary.get(k)}\n")
+              fh.write(f"- training_ready: {training.get('ready')}\n")
+              fh.write(f"- training_gate: {training.get('reason','FOLDS_AVAILABLE')}\n")
+              fh.write("- **No live execution P&L, no model promotion, blind holdout not touched.**\n")
+          PY
