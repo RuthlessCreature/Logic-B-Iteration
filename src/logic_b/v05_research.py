@@ -14,6 +14,8 @@ import pandas as pd
 from .features import build_prev_day_candidate_features
 from .providers.xuangubao import XuangubaoEvidenceProvider
 from .providers.xuangubao_market import XuangubaoMarketProvider
+from .v05_execution import audit_event_fills
+from .models import FillModel
 
 VERSION="logic-a-v05-1m-bar-proxy"
 FEATURES=("prev_score","prev_height","break_pct","retrace_pct","volume_ratio","vwap_gap","clock_minute")
@@ -86,6 +88,10 @@ def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_e
     usable_primary=0;empty_primary=0;signal_candidates=0
     excluded_st=0;excluded_ipo=0
     usable_forward=0;empty_forward=0
+    estimated_fills={"realistic":{"entry_filled":0,"exit_filled":0,"censored_exit":0,
+                                  "after_cost_returns":[]},
+                     "conservative":{"entry_filled":0,"exit_filled":0,"censored_exit":0,
+                                     "after_cost_returns":[]}}
     dates=sorted(set(sessions))
     if any(BLIND_START<=d<=BLIND_END for d in dates):raise ValueError("BLIND_HOLDOUT_LOCKED")
     for n in range(1,len(dates)-1):
@@ -142,22 +148,53 @@ def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_e
                 if futurebars.empty:continue
                 exitproxy=float(futurebars.iloc[0]["close"])
                 if s["entry_reference_price"]<=0 or exitproxy<=0:continue
+                # Strictly diagnostic: official dated ST/IPO status and queue
+                # priority remain unavailable from this public source.
+                # Mark every estimate unverified and NEVER feed fills into ML
+                # features or claim the single-position portfolio return.
+                fill_proxies={}
+                for model in (FillModel.REALISTIC,FillModel.CONSERVATIVE):
+                    estimated=audit_event_fills(
+                        code=code,signal_time=s["signal_time"],
+                        entry_day_bars=bars,exit_day_bars=later,
+                        entry_day_preclose=price,
+                        exit_day_preclose=float(bars.iloc[-1]["close"]),
+                        risk_warning=False,ipo_no_limit=False,
+                        model=model)
+                    key=model.value
+                    result=estimated_fills[key]
+                    result["entry_filled"]+=int(estimated["entry_filled"])
+                    result["exit_filled"]+=int(estimated["exit_filled"])
+                    result["censored_exit"]+=int(estimated["entry_filled"] and
+                                                 not estimated["exit_filled"])
+                    if estimated["net_return"] is not None:
+                        result["after_cost_returns"].append(estimated["net_return"])
+                    fill_proxies[key+"_fill_state"]=estimated["state"]
+                    fill_proxies[key+"_after_cost_price_proxy"]=estimated["net_return"]
                 events.append({
                   "trade_date":str(day),"outcome_date":str(future),"code":code,
                   "prior_day":str(prior),"label":int(exitproxy>s["entry_reference_price"]),
                   "target_t1_proxy_return":exitproxy/s["entry_reference_price"]-1,
                   "prev_score":float(stock.get("prev_core_score") or 0),
                   "prev_height":float(stock.get("f_height") or 0),
+                  **fill_proxies,
                   **s
                 })
             except Exception as ex:
                 failures.append({"date":str(day),"code":code,"phase":"minute","reason":str(ex)[:120]})
+    fill_audits={}
+    for name,counter in estimated_fills.items():
+        vals=counter.pop("after_cost_returns")
+        fill_audits[name]={**counter,"priced_returns":len(vals),
+            "median_after_cost_proxy_return":round(float(np.median(vals)),6) if vals else None}
     return pd.DataFrame(events),{
       "candidate_stock_days":candidates,"excluded_d1_st_name":excluded_st,
       "excluded_d1_ipo_flag":excluded_ipo,
       "usable_primary_minute_days":usable_primary,
       "missing_or_partial_primary_days":empty_primary,
       "historical_signal_candidates":signal_candidates,
+      "estimated_nonst_fill_audits":fill_audits,
+      "fill_assumptions":"D-1 name/IPO flag, approximate 10%/20% limits, 10% minute capacity, no official ST changes or queue priority",
       "usable_next_day_minutes":usable_forward,
       "missing_or_partial_next_day_minutes":empty_forward,
       "labelled_events":len(events),
