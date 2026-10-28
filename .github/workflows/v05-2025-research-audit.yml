@@ -1,5 +1,10 @@
 name: V05 train and validate 2025 evidence
 on:
+  push:
+    paths:
+      - 'src/logic_b/v05_model_report.py'
+      - 'tests/test_v05_model_report.py'
+      - '.github/workflows/v05-2025-research-audit.yml'
   workflow_run:
     workflows:
       - "Logic A v0.5 2025 full-year ML and minute evidence"
@@ -16,11 +21,11 @@ permissions:
 
 jobs:
   research-evaluate:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     env:
-      SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id }}
+      SOURCE_RUN_ID: ${{ github.event.workflow_run.id || inputs.source_run_id || '40641159671' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -61,6 +66,10 @@ jobs:
           assert train['blind_holdout_used'] is False
           assert train['may_trade_live'] is False
           assert train['fill_certified'] is False
+          verdict=json.loads((root/'strategy-verdict.json').read_text())
+          assert verdict['model_safe_for_live'] is False
+          assert verdict['verdict'] in ('FAIL','BLOCKED','RESEARCH_REVIEW')
+          print('MODEL ACCEPTANCE:',verdict['verdict'],verdict['reason_codes'])
           if model.get('trained'):
               assert model['trade_permissions']=='NEVER'
               assert model['model_promotable'] is False
@@ -75,6 +84,7 @@ jobs:
             /tmp/v05-research-evaluation/training.json
             /tmp/v05-research-evaluation/oos-diagnostics.json
             /tmp/v05-research-evaluation/research-only-model.json
+            /tmp/v05-research-evaluation/strategy-verdict.json
           if-no-files-found: error
           retention-days: 30
       - name: Present research verdict
@@ -86,6 +96,7 @@ jobs:
           base=json.loads((root/'summary.json').read_text())
           oos=json.loads((root/'oos-diagnostics.json').read_text())
           model=json.loads((root/'research-only-model.json').read_text())
+          verdict=json.loads((root/'strategy-verdict.json').read_text())
           with open(os.environ['GITHUB_STEP_SUMMARY'],'a',encoding='utf8') as f:
               f.write('# Logic A v0.5 2025 out-of-sample price-direction research\n\n')
               for key in ['market_session_count','candidate_stock_days',
@@ -96,5 +107,8 @@ jobs:
               f.write(f"- mean OOS AUC: {oos.get('mean_auc')}\n")
               f.write(f"- OOS Brier: {oos.get('mean_brier')}; unconditional baseline Brier: {oos.get('mean_baseline_brier')}\n")
               f.write(f"- model fitted: {model.get('trained',False)}\n")
+              f.write(f"- **STRATEGY VERDICT: {verdict['verdict']}**\n")
+              f.write(f"- failure reasons: {', '.join(verdict['reason_codes'])}\n")
+              f.write(f"- Brier skill versus unconditional baseline: {verdict.get('brier_skill_score')}\n")
               f.write('\n**NOT REALIZED TRADING RETURN. No broker orders, no live promotion, no blind holdout.**\n')
           PY
