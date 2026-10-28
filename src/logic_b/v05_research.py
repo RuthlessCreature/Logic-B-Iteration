@@ -68,6 +68,8 @@ def first_signal(bars,preclose,code=''):
 
 def build_proxy_events(sessions,evidence,minute,per_day=2):
     events=[];failures=[];candidates=0
+    usable_primary=0;empty_primary=0;signal_candidates=0
+    usable_forward=0;empty_forward=0
     dates=sorted(set(sessions))
     if any(BLIND_START<=d<=BLIND_END for d in dates):raise ValueError("BLIND_HOLDOUT_LOCKED")
     for n in range(1,len(dates)-1):
@@ -89,11 +91,24 @@ def build_proxy_events(sessions,evidence,minute,per_day=2):
         for _,stock in prev.iterrows():
             candidates+=1;code=str(stock["ts_code"])
             try:
+                # Source provides dated bars. Empty or truncated sessions are
+                # audited as unavailable, not treated as a legitimate no-signal.
                 bars=minute.historical_minute_day(code,day).bars
-                later=minute.historical_minute_day(code,future).bars
+                if bars.empty or len(bars)<180:
+                    empty_primary+=1
+                    continue
+                usable_primary+=1
                 price=float(stock.get("price") or stock.get("prev_close") or 0)
                 s=first_signal(bars,price,code=code)
-                if not s or later.empty:continue
+                if not s:continue
+                signal_candidates+=1
+                # The D+1 query is deliberately performed only AFTER a D
+                # signal has been recognized from D's closed minute bars.
+                later=minute.historical_minute_day(code,future).bars
+                if later.empty or len(later)<180:
+                    empty_forward+=1
+                    continue
+                usable_forward+=1
                 futurebars=later.copy()
                 futurebars["trade_time"]=pd.to_datetime(futurebars.trade_time)
                 futurebars=futurebars[futurebars.trade_time.dt.strftime("%H:%M")>="09:35"]
@@ -111,7 +126,12 @@ def build_proxy_events(sessions,evidence,minute,per_day=2):
             except Exception as ex:
                 failures.append({"date":str(day),"code":code,"phase":"minute","reason":str(ex)[:120]})
     return pd.DataFrame(events),{
-      "candidate_stock_days":candidates,"labelled_events":len(events),
+      "candidate_stock_days":candidates,"usable_primary_minute_days":usable_primary,
+      "missing_or_partial_primary_days":empty_primary,
+      "historical_signal_candidates":signal_candidates,
+      "usable_next_day_minutes":usable_forward,
+      "missing_or_partial_next_day_minutes":empty_forward,
+      "labelled_events":len(events),
       "missing_or_bad":len(failures),"examples":failures[:5],
       "source":"dated-XGB-limit-pool + historical-1m-bars",
       "label":"T+1_09:35_REFERENCE_PRICE_NOT_FILL",
