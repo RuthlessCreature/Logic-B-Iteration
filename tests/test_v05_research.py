@@ -68,5 +68,6 @@ def test_true_calendar_sessions_are_separate_from_sparser_trigger_days():
     x=pd.DataFrame([{"trade_date":sessions[5],"outcome_date":sessions[6],
       "label":1,**{f:1.0 for f in FEATURES}}])
     result=walkforward(x,min_train_days=10,valid_days=5,calendar=sessions)
-    assert result["reason"] if not result["ready"] else True
-    assert result.get("observed_days",15)==15
+    assert result["ready"] is False
+    assert len(result["folds"])==1
+    assert result["folds"][0]["reason"]=="INSUFFICIENT_LABELS"
