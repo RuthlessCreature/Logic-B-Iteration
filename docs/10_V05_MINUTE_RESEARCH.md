@@ -57,3 +57,15 @@ GitHub Actions：https://github.com/RuthlessCreature/Logic-B-Iteration/actions/r
 历史1分钟K线不等于实盘原始Tick快照，历史核心代理不等于人工批准白名单，次日价差标签不等于可以成交。
 已增加v05_execution.py用于近似的逐事件买卖可成交性审计，参考涨跌停封锁、100股整手、成本、分钟容量，若次日卖不出必须维持POSITION_OPEN。
 缺历史官方ST/IPO逐日状态和真实盘口队列时，审计只能标为估计，不得宣称完成真实成交回测。
+
+
+## 2026-10-28 2025年模型复验：研究训练已完成，但策略判FAIL
+
+- 真正2025年市场交易日243；D-1历史涨停候选股票日693（其中完整分钟689，缺失/不完整4）；历史半路代理信号184，正例54，负例130。
+- 训练模型为7特征L2 Logistic（研究专用），184事件用于年末拟合；独立扩展Walk-forward样本外共3个验证折。
+- 平均样本外AUC=0.442944，Brier=0.246948，同期不使用个股特征的基准Brier=0.234584，Brier技能分=-0.052706。
+- GitHub研究工作流成功只说明数据与计算代码执行成功；新的strategy-verdict.json明确返回FAIL，原因OOS_RANKING_NOT_BETTER_THAN_RANDOM和OOS_BRIER_NOT_BETTER_THAN_BASELINE。
+- 这个模型不接入Radar、不产生行情开仓权。不存在可信交易收益率：历史一分钟BAR价格、非官方ST/IPO状态及限价排队不足以证明真实成交。
+- 工作流与源数据： https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/40644997364 ， https://github.com/RuthlessCreature/Logic-B-Iteration/actions/runs/40641159671 。
+
+后续建议：先排查目标标签/题材强度/候选角色映射及成交可执行性，事先注册新假设，再于未被用于调参的验证集测试。不得反复调参直到2025年同一验证集变漂亮，也不准触碰冻结的2026-07至09盲测。
