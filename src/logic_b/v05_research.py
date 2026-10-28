@@ -66,9 +66,25 @@ def first_signal(bars,preclose,code=''):
                 }
     return None
 
+def _complete_stock_session(bars,trading_day):
+    """Refuse incomplete/misdated daily minute slices, not merely empty ones."""
+    if bars is None or bars.empty or len(bars)<220 or "trade_time" not in bars.columns:
+        return False
+    ts=pd.to_datetime(bars["trade_time"],errors="coerce")
+    if ts.isna().any():
+        return False
+    if not (ts.dt.date==trading_day).all():
+        return False
+    sorted_times=ts.sort_values()
+    return (sorted_times.iloc[0].strftime("%H:%M")<="09:35"
+            and sorted_times.iloc[-1].strftime("%H:%M")>="14:55"
+            and ts.nunique()>=220)
+
+
 def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_end=None):
     events=[];failures=[];candidates=0
     usable_primary=0;empty_primary=0;signal_candidates=0
+    excluded_st=0;excluded_ipo=0
     usable_forward=0;empty_forward=0
     dates=sorted(set(sessions))
     if any(BLIND_START<=d<=BLIND_END for d in dates):raise ValueError("BLIND_HOLDOUT_LOCKED")
@@ -91,12 +107,21 @@ def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_e
         except Exception as ex:
             failures.append({"date":str(day),"phase":"D-1","reason":str(ex)[:120]});continue
         for _,stock in prev.iterrows():
+            # D-1 visible names are conservative but not an authoritative
+            # official ST-status feed; excludes cannot claim full protection.
+            visible_name=str(stock.get("name") or "")
+            if "ST" in visible_name.upper():
+                excluded_st+=1
+                continue
+            if bool(stock.get("is_new_stock",False)):
+                excluded_ipo+=1
+                continue
             candidates+=1;code=str(stock["ts_code"])
             try:
                 # Source provides dated bars. Empty or truncated sessions are
                 # audited as unavailable, not treated as a legitimate no-signal.
                 bars=minute.historical_minute_day(code,day).bars
-                if bars.empty or len(bars)<180:
+                if not _complete_stock_session(bars,day):
                     empty_primary+=1
                     continue
                 usable_primary+=1
@@ -107,7 +132,7 @@ def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_e
                 # The D+1 query is deliberately performed only AFTER a D
                 # signal has been recognized from D's closed minute bars.
                 later=minute.historical_minute_day(code,future).bars
-                if later.empty or len(later)<180:
+                if not _complete_stock_session(later,future):
                     empty_forward+=1
                     continue
                 usable_forward+=1
@@ -128,7 +153,9 @@ def build_proxy_events(sessions,evidence,minute,per_day=2,eval_start=None,eval_e
             except Exception as ex:
                 failures.append({"date":str(day),"code":code,"phase":"minute","reason":str(ex)[:120]})
     return pd.DataFrame(events),{
-      "candidate_stock_days":candidates,"usable_primary_minute_days":usable_primary,
+      "candidate_stock_days":candidates,"excluded_d1_st_name":excluded_st,
+      "excluded_d1_ipo_flag":excluded_ipo,
+      "usable_primary_minute_days":usable_primary,
       "missing_or_partial_primary_days":empty_primary,
       "historical_signal_candidates":signal_candidates,
       "usable_next_day_minutes":usable_forward,
